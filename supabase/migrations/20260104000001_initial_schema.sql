@@ -181,11 +181,7 @@ CREATE TABLE family_members (
   date_of_birth DATE,
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-  CONSTRAINT chk_family_member_personal CHECK (
-    (SELECT member_class FROM members WHERE id = member_id) = 'Personal'
-  )
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_family_members_member_id ON family_members(member_id);
@@ -575,6 +571,37 @@ CREATE TRIGGER update_requests_updated_at BEFORE UPDATE ON requests
 
 CREATE TRIGGER update_events_updated_at BEFORE UPDATE ON events
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Function to validate family members can only be added to Personal memberships
+CREATE OR REPLACE FUNCTION validate_family_member_personal()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_member_class member_class;
+BEGIN
+  -- Get the member_class of the parent member
+  SELECT member_class INTO v_member_class
+  FROM members
+  WHERE id = NEW.member_id;
+
+  -- Check if member exists
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Member with ID % does not exist', NEW.member_id;
+  END IF;
+
+  -- Check if member_class is Personal
+  IF v_member_class != 'Personal' THEN
+    RAISE EXCEPTION 'Family members can only be added to Personal memberships (member_class = Personal)';
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Apply validation trigger to family_members table
+CREATE TRIGGER validate_family_member_personal_trigger
+  BEFORE INSERT OR UPDATE ON family_members
+  FOR EACH ROW
+  EXECUTE FUNCTION validate_family_member_personal();
 
 -- Function to generate next membership ID for a given level
 CREATE OR REPLACE FUNCTION generate_membership_id(p_level membership_level)
