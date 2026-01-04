@@ -11,12 +11,11 @@
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
-    "@types/nodemailer": "^7.0.4",
     "next": "^15.1.4",
-    "nodemailer": "^7.0.12",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "resend": "^6.6.0",
     "stripe": "^17.5.0",
     "zod": "^3.24.1"
   },
