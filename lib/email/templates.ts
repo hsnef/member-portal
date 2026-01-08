@@ -241,7 +241,7 @@ export function welcomeEmail(member: Member): { subject: string; html: string; t
 
     <h3 style="color: #333;">What's Next?</h3>
     <ul style="color: #666; line-height: 1.8;">
-      <li>Access your digital membership pass</li>
+      <li>Access your membership pass</li>
       <li>Manage your family members</li>
       <li>Register for upcoming events</li>
       <li>Make donations and payments</li>

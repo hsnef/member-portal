@@ -9,19 +9,28 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@stripe/stripe-js": "^8.6.1",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
+    "@zxing/library": "^0.21.3",
+    "jsonwebtoken": "^9.0.3",
+    "jspdf": "^4.0.0",
+    "jspdf-autotable": "^5.0.7",
     "next": "^15.1.4",
+    "papaparse": "^5.5.3",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hook-form": "^7.70.0",
     "resend": "^6.6.0",
-    "stripe": "^17.5.0",
-    "zod": "^3.24.1"
+    "stripe": "^17.7.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22",
-    "@types/qrcode": "^1.5.5",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.20",

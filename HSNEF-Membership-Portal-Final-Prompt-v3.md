@@ -288,10 +288,49 @@ QR code MUST reflect current membership status and level; use a signed/time‑bo
 When staff scan the QR in a staff UI:
 
 They see membership type, validity, primary name, and family members.
-
 They can attach a service/event booking or check‑in.
-
 The system may auto‑log a visit/check‑in as an activity.
+
+Office-facing QR scan
+
+- The system MUST provide a dedicated staff-only “Scan QR / Check-in” screen accessible to Office Staff, Office Manager, and Admin roles.  
+- This screen MUST allow scanning a member’s digital membership pass (QR code) using any of the following devices used by staff:
+  - An office desktop or laptop with a webcam (browser-based scanning), or  
+  - An optional USB QR scanner that emulates keyboard input into a focused text field, or  
+  - A mobile device (Android or iPhone) using its built-in camera via a mobile-friendly web UI.  
+
+Scan behavior
+
+- When the QR is scanned, the portal MUST decode a secure, signed token or opaque reference (not raw PII) that maps to a membership record.  
+- The backend MUST validate the token (signature, integrity, and, if implemented, expiry) and resolve it to the correct membership (Personal or Business) and MembershipID.  
+- On successful validation, the staff UI MUST display at least:
+  - Primary member or business name.  
+  - MembershipID and membership type (Community / Annual / Lifetime).  
+  - Membership status (Active / Expiring / Expired) and relevant dates.  
+  - Linked family members (for Personal memberships), if configured to show.  
+
+Staff actions after scan
+
+- From the scan result view, staff MUST be able to quickly:
+  - Record a temple visit/check-in as a ledger activity entry.  
+  - Start a booking for services/events (e.g., puja, hall rental, camp registration) against that membership.  
+  - Initiate or link a Payment/Request (for membership, events, donations, sponsorships, or services) to that membership.  
+
+Mobile use (Android / iPhone)
+
+- The “Scan QR / Check-in” screen MUST be responsive and optimized for use on Android and iPhone so that office staff can use a phone or tablet as the primary scanner device when logged into the staff portal.  
+- On mobile, the scan screen MUST:
+  - Use the device camera (e.g., via browser camera APIs or platform QR intent) to read the QR code, and  
+  - Follow the same token validation and member lookup flow as on desktop, showing the same membership details and available staff actions.  
+
+Fallback and usability
+
+- If camera access or QR decoding fails, staff MUST have a manual fallback to look up the member by MembershipID, name, email, or phone, with access to the same post-lookup actions.  
+- The scan/check-in flow SHOULD be optimized for front-desk usage:
+  - Minimal clicks and clear success/error states.  
+  - Auto-focus on the input field when using USB scanners.  
+  - Fast re-scan capability to handle a line of members efficiently.
+
 
 2.5 Payments, Requests & Accounting
 2.5.1 Payment Methods

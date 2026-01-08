@@ -2,16 +2,31 @@
 // Supabase Client Configuration
 // ============================================================================
 
-import { createBrowserClient } from '@supabase/ssr'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 
-// Browser client for client components
+// Singleton browser client
+let supabaseClient: ReturnType<typeof createSupabaseClient<Database>> | null = null
+
+// Browser client for client components (singleton)
 export function createClient() {
-  return createBrowserClient<Database>(
+  if (supabaseClient) {
+    return supabaseClient
+  }
+
+  supabaseClient = createSupabaseClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    }
   )
+
+  return supabaseClient
 }
 
 // Service role client for server-side operations (bypasses RLS)
