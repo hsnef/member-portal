@@ -1,3 +1,5 @@
+'use client'
+
 import { getVersionString, getDeploymentDateString } from '@/lib/constants/version'
 
 export function AppFooter() {

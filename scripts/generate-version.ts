@@ -189,5 +189,8 @@ export function getFullVersionString(): string {
   writeFileSync(join(outputDir, 'version.generated.json'), JSON.stringify(fallbackVersionInfo, null, 2), 'utf-8')
   writeFileSync(join(outputDir, 'version.generated.ts'), fallbackTsContent, 'utf-8')
   console.log('⚠️  Using fallback version (git not available)')
-  process.exit(1)
+  console.log(`   Version: ${fallbackVersion}`)
+  console.log(`   Build Date: ${fallbackDate}`)
+  // Exit with 0 to allow build to continue with fallback version
+  process.exit(0)
 }
