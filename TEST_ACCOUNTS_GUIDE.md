@@ -22,14 +22,19 @@ After running the migration, these test accounts will be available:
 
 ## Setup Instructions
 
-### 1. Run the Migration
+### 1. Run the Migrations (IN ORDER)
+
+**IMPORTANT:** You must run Migration 5 BEFORE Migration 4
 
 ```bash
-# Apply the test accounts migration
-# This adds the is_test_account column and creates the 5 test accounts
-```
+# FIRST: Apply the constraint update migration
+# This allows prefix 9 for test accounts
+# File: supabase/migrations/20260108000005_update_constraints_for_test_accounts.sql
 
-The migration is located at: `supabase/migrations/20260108000004_test_accounts.sql`
+# SECOND: Apply the test accounts migration
+# This adds the is_test_account column and creates the 5 test accounts
+# File: supabase/migrations/20260108000004_test_accounts.sql
+```
 
 ### 2. Register Test Users
 

@@ -60,11 +60,11 @@ This document addresses your three items and summarizes all new features.
 I've created a robust test account system that won't skew your data:
 
 **5 Test Accounts Created:**
-1. **test.manager@example.com** (Membership ID: 99991001) - Office Manager role
-2. **test.staff@example.com** (Membership ID: 99991002) - Office Staff role
-3. **test.lifetime@example.com** (Membership ID: 19991003) - Lifetime Member
-4. **test.annual@example.com** (Membership ID: 29991004) - Annual Member
-5. **test.community@example.com** (Membership ID: 39991005) - Community Member
+1. **test.manager@example.com** (Membership ID: 99991000) - Office Manager role
+2. **test.staff@example.com** (Membership ID: 99992000) - Office Staff role
+3. **test.lifetime@example.com** (Membership ID: 99993000) - Lifetime Member
+4. **test.annual@example.com** (Membership ID: 99994000) - Annual Member
+5. **test.community@example.com** (Membership ID: 99995000) - Community Member
 
 **Key Features:**
 
@@ -100,9 +100,13 @@ I've created a robust test account system that won't skew your data:
 
 **Setup Steps:**
 
-1. **Run the Migration:**
+1. **Run the Migrations (IN ORDER):**
    ```bash
-   # Run: supabase/migrations/20260108000004_test_accounts.sql
+   # FIRST: Run Migration 5 (updates constraints)
+   # supabase/migrations/20260108000005_update_constraints_for_test_accounts.sql
+
+   # SECOND: Run Migration 4 (creates test accounts)
+   # supabase/migrations/20260108000004_test_accounts.sql
    ```
 
 2. **Register Test Users:**
@@ -216,7 +220,7 @@ Both pages have been created and are fully functional!
 - `members.is_test_account` (boolean) - Flags test accounts
 
 ### New Test Data:
-- 5 test member accounts (99991001 - 39991005)
+- 5 test member accounts (99991000 - 99995000)
 
 ### New Indexes:
 - `idx_members_is_test_account` - For efficient filtering
