@@ -265,6 +265,14 @@ function LoginForm() {
               By signing in, you agree to our terms of service and privacy policy.
             </p>
           </div>
+
+          {/* Link to Register */}
+          <div className="text-center text-sm mt-4">
+            <span className="text-gray-600">Don't have an account? </span>
+            <a href="/register" className="text-[#FF9933] hover:text-[#FF8800] font-medium">
+              Create one here
+            </a>
+          </div>
         </div>
 
         {/* Footer */}
