@@ -162,7 +162,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   )
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="flex-1 flex flex-col bg-gray-100">
       {/* Mobile sidebar */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
@@ -279,7 +279,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Page content */}
-        <main className="py-6">
+        <main className="py-6 flex-1">
           <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</div>
         </main>
       </div>
