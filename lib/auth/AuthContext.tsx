@@ -92,16 +92,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log('[AuthContext] Initializing auth state...')
 
-    // Add timeout to detect hanging getSession
-    const timeoutId = setTimeout(() => {
-      console.error('[AuthContext] getSession() timeout - forcing loading to false')
-      setLoading(false)
+    // Add timeout to detect slow getSession (warning only)
+    const warningTimeoutId = setTimeout(() => {
+      console.warn('[AuthContext] getSession() taking longer than expected (5s)...')
     }, 5000)
+
+    // Add final timeout to prevent infinite loading
+    const finalTimeoutId = setTimeout(() => {
+      console.error('[AuthContext] getSession() timeout after 15s - forcing loading to false')
+      setLoading(false)
+    }, 15000)
 
     // Get initial session
     supabase.auth.getSession()
       .then(async ({ data: { session }, error }) => {
-        clearTimeout(timeoutId)
+        clearTimeout(warningTimeoutId)
+        clearTimeout(finalTimeoutId)
         console.log('[AuthContext] Got session response:', { hasSession: !!session, error })
 
         if (error) {
@@ -121,7 +127,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false)
       })
       .catch((err) => {
-        clearTimeout(timeoutId)
+        clearTimeout(warningTimeoutId)
+        clearTimeout(finalTimeoutId)
         console.error('[AuthContext] getSession() error:', err)
         setUser(null)
         setLoading(false)

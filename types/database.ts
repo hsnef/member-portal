@@ -300,6 +300,26 @@ export interface AuditLog {
   reason: string | null;
 }
 
+export type MemberAuditLogActionType = 'CREATED' | 'MEMBERSHIP_ID_CHANGED' | 'FIELD_UPDATED' | 'BULK_UPDATE';
+export type CreationSource = 'AUTO_IMPORT' | 'SELF_REGISTRATION' | 'OFFICE_STAFF' | 'OFFICE_MANAGER' | 'ADMIN';
+
+export interface MemberAuditLog {
+  id: string;
+  member_id: string;
+  action_type: MemberAuditLogActionType;
+  changed_by: string | null;
+  changed_by_role: string | null;
+  changed_by_name: string | null;
+  creation_source: CreationSource | null;
+  old_membership_id: string | null;
+  new_membership_id: string | null;
+  changed_fields: Record<string, { old: any; new: any }> | null;
+  field_names: string[] | null;
+  change_reason: string | null;
+  metadata: Record<string, any> | null;
+  changed_at: string;
+}
+
 // Database schema type for Supabase client
 export interface Database {
   public: {
@@ -446,6 +466,14 @@ export interface Database {
           changed_at?: string;
         };
         Update: Partial<AuditLog>;
+      };
+      member_audit_log: {
+        Row: MemberAuditLog;
+        Insert: Omit<MemberAuditLog, 'id' | 'changed_at'> & {
+          id?: string;
+          changed_at?: string;
+        };
+        Update: Partial<MemberAuditLog>;
       };
     };
     Views: {};

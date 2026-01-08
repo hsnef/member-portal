@@ -28,10 +28,10 @@ interface Member {
   member_class: string
   primary_email: string
   primary_phone?: string
-  address_line1?: string
+  address_line_1?: string
   city?: string
   state?: string
-  zip_code?: string
+  zip?: string
 }
 
 export default function ViewRequestPage() {
@@ -110,8 +110,8 @@ export default function ViewRequestPage() {
       memberName,
       membershipId: request.membership_id,
       memberEmail: member.primary_email,
-      memberAddress: member.address_line1
-        ? `${member.address_line1}, ${member.city}, ${member.state} ${member.zip_code}`
+      memberAddress: member.address_line_1
+        ? `${member.address_line_1}, ${member.city}, ${member.state} ${member.zip}`
         : undefined,
       requestType: request.request_type,
       serviceDescription: request.service_description,
