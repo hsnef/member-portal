@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -12,30 +12,79 @@ function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  // Initialize Supabase client
   const supabase = createClient()
+  
+  // Check for error in URL params (from callback)
+  useEffect(() => {
+    const errorParam = searchParams.get('error')
+    if (errorParam) {
+      setMessage({ type: 'error', text: decodeURIComponent(errorParam) })
+    }
+  }, [searchParams])
 
   // Handle Google OAuth sign-in
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (e?: React.MouseEvent) => {
+    e?.preventDefault()
+    e?.stopPropagation()
+    
     try {
       setLoading(true)
       setMessage(null)
 
-      const { error } = await supabase.auth.signInWithOAuth({
+      // Check if Supabase client is initialized
+      if (!supabase) {
+        console.error('Supabase client not initialized')
+        setMessage({ type: 'error', text: 'Authentication service not available. Please refresh the page.' })
+        return
+      }
+
+      // Check environment variables
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      if (!supabaseUrl) {
+        console.error('NEXT_PUBLIC_SUPABASE_URL not set')
+        setMessage({ type: 'error', text: 'Configuration error. Please contact support.' })
+        return
+      }
+
+      console.log('Starting Google OAuth...')
+      console.log('Supabase URL:', supabaseUrl)
+      const redirectUrl = `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`
+      console.log('Redirect to:', redirectUrl)
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?redirect=${redirectTo}`,
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       })
 
+      console.log('OAuth response:', { data, error, hasUrl: !!data?.url })
+
       if (error) {
+        console.error('OAuth error:', error)
         setMessage({ type: 'error', text: error.message })
+        setLoading(false)
+      } else if (data?.url) {
+        console.log('Redirecting to:', data.url)
+        // Force redirect immediately
+        window.location.href = data.url
+        // Don't set loading to false here as we're redirecting
+      } else {
+        console.warn('No redirect URL returned from OAuth')
+        setMessage({ type: 'error', text: 'OAuth redirect failed. Please check your configuration.' })
+        setLoading(false)
       }
     } catch (error) {
+      console.error('OAuth exception:', error)
       setMessage({
         type: 'error',
         text: error instanceof Error ? error.message : 'An error occurred',
       })
-    } finally {
       setLoading(false)
     }
   }
@@ -56,7 +105,7 @@ function LoginForm() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirectTo}`,
+          emailRedirectTo: `${window.location.origin}/auth/callback-handler?redirect=${redirectTo}`,
         },
       })
 
@@ -112,9 +161,15 @@ function LoginForm() {
 
           {/* Google Sign-In Button */}
           <button
-            onClick={handleGoogleSignIn}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              handleGoogleSignIn(e)
+            }}
             disabled={loading}
             className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9933] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            suppressHydrationWarning
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -164,6 +219,7 @@ function LoginForm() {
                 className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
                 placeholder="you@example.com"
                 disabled={loading}
+                suppressHydrationWarning
               />
             </div>
 
@@ -171,6 +227,7 @@ function LoginForm() {
               type="submit"
               disabled={loading}
               className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#FF9933] to-[#800000] hover:from-[#FF8800] hover:to-[#700000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9933] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              suppressHydrationWarning
             >
               {loading ? (
                 <div className="flex items-center gap-2">
