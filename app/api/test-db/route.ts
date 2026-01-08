@@ -20,7 +20,7 @@ export async function GET() {
     const supabase = await createClient()
 
     // Test 1: Check connection
-    const { data: connectionTest, error: connectionError } = await supabase
+    const { error: connectionError } = await supabase
       .from('members')
       .select('count')
       .limit(0)
@@ -59,7 +59,8 @@ export async function GET() {
 
     // Test 3: Test MembershipID generation function
     const { data: functionTest, error: functionError } = await supabase
-      .rpc('generate_membership_id', { p_level: 'Community' })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .rpc('generate_membership_id', { p_level: 'Community' } as any)
 
     const allTablesExist = tableChecks.every((check) => check.exists)
 
