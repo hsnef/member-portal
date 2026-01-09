@@ -66,6 +66,40 @@ This page shows:
 
 ## Key Features
 
+### Three-Tier Access Model
+
+**🔒 Regular Members (Production Users):**
+- NEVER see test-created data (events, bookings, etc.)
+- Events page shows ONLY production events
+- Complete protection from test data pollution
+- Clean, production-only experience
+
+**🧪 Test Users (Test Accounts):**
+- See ONLY test-created events (isolated sandbox)
+- Cannot see production events
+- Perfect isolation for safe testing
+- Full workflow testing without affecting production
+
+**⚙️ Staff (Admin/Manager/Office Staff):**
+- Default: See production data only (test data hidden)
+- Toggle ON: See both production AND test data (marked with 🧪 badges)
+- Can switch between views for debugging
+- Full control over data visibility
+
+### Staff Test Data Toggle
+
+Look for the **purple toggle in the admin header** (top right):
+- **Toggle OFF (Default):** Production data only, test data hidden
+- **Toggle ON (Debug):** Shows test data with 🧪 TEST badges
+- Persists across sessions (localStorage)
+- Only visible to Admin/Manager/Staff roles
+
+**Toggle States:**
+```
+🧪 SHOWING  (Toggle ON - purple background)
+🧪 HIDDEN   (Toggle OFF - gray background)
+```
+
 ### Automatic Filtering
 
 Test accounts are **automatically excluded** from:
@@ -73,20 +107,24 @@ Test accounts are **automatically excluded** from:
 ✅ Dashboard metrics (total members, active members, etc.)
 ✅ Financial reports and totals
 ✅ Analytics and insights
-✅ Receipts page (unless explicitly included)
+✅ Events lists (when staff toggle is OFF)
+✅ Bookings lists (when staff toggle is OFF)
+✅ Payments lists (when staff toggle is OFF)
 
 Test accounts **ARE visible** in:
 - Admin member lists (for management)
 - Search results (clearly marked with "TEST" badge)
-- Direct queries (when needed)
+- Events/Bookings/Payments (when staff toggle is ON, marked with 🧪)
+- Test Accounts management page
 
 ### Visual Indicators
 
-Test accounts are marked with a **purple "TEST" badge** throughout the UI:
-- Member lists
-- Search results
-- Payment records
-- Booking details
+Test accounts and test data are marked with a **purple 🧪 TEST badge** throughout the UI:
+- Member lists (always visible)
+- Search results (always visible)
+- Events (when toggle is ON)
+- Bookings (when toggle is ON)
+- Payments (when toggle is ON)
 
 ### Clean Test Data
 
@@ -107,21 +145,25 @@ The "Clean Test Data" button removes:
 - Approve/reject service bookings
 - Manage member records
 - Create bookings on behalf of members
+- **Toggle test data** to see test events/bookings/payments with 🧪 badges
 
 ### 2. Member Experience - Lifetime (use test.lifetime@example.com)
 - Book services (get member pricing)
 - Register for events
 - Make donations
 - View membership pass/QR code
+- **Verify isolation:** Should ONLY see test-created events
 
 ### 3. Member Experience - Annual (use test.annual@example.com)
 - Same as Lifetime but with Annual pricing
 - Test membership renewal flow
+- **Verify isolation:** Should NOT see production events
 
 ### 4. Community Member (use test.community@example.com)
 - Book services (get community pricing - higher rates)
 - Register for events
 - No membership pass (not a paid member)
+- **Verify isolation:** Should ONLY see test-created events
 
 ### 5. Pricing Verification
 Compare service booking prices between:
@@ -134,9 +176,31 @@ Compare service booking prices between:
 2. Create a service booking
 3. Logout and login as test.manager@example.com
 4. Go to `/admin/bookings`
-5. Review and approve the booking
-6. Logout and login as test.annual@example.com
-7. Pay for the approved booking
+5. **Toggle test data ON** to see the test booking with 🧪 badge
+6. Review and approve the booking
+7. Logout and login as test.annual@example.com
+8. Pay for the approved booking
+
+### 7. Test Data Isolation Testing
+1. Login as test.manager@example.com (staff)
+2. Create an event (it will be marked as test-created)
+3. Logout and login as regular production member
+4. **Verify:** Production member should NOT see the test event
+5. Logout and login as test.lifetime@example.com
+6. **Verify:** Test user SHOULD see ONLY the test event
+7. Logout and login as test.manager@example.com
+8. **Verify:** With toggle OFF, test event is hidden
+9. **Verify:** With toggle ON, test event shows with 🧪 badge
+
+### 8. Staff Toggle Testing
+1. Login as test.manager@example.com or test.staff@example.com
+2. Look for purple toggle in admin header (top right)
+3. Click toggle to turn ON → Should see 🧪 SHOWING
+4. Go to Events/Bookings/Payments pages
+5. **Verify:** Test items show with 🧪 TEST badges
+6. Click toggle to turn OFF → Should see 🧪 HIDDEN
+7. **Verify:** Test items are now hidden
+8. Refresh page → **Verify:** Toggle state persists
 
 ---
 
@@ -144,17 +208,25 @@ Compare service booking prices between:
 
 ### DO:
 ✅ Use test accounts for all development and testing
+✅ Keep staff toggle OFF during normal operations
+✅ Toggle ON only when debugging or verifying test data
 ✅ Clean test data regularly to start fresh
 ✅ Test pricing differences between member types
-✅ Verify workflows from start to finish
+✅ Verify workflows from start to finish (including isolation)
 ✅ Use test accounts for demo/training purposes
+✅ Verify test user isolation (they should ONLY see test events)
+✅ Verify production members NEVER see test events
+✅ Check that toggle state persists across sessions
 
 ### DON'T:
 ❌ Mix real and test data in production testing
 ❌ Use test accounts for real transactions
+❌ Leave staff toggle ON during production operations
 ❌ Forget to clean test data before important reports
 ❌ Delete test account member records (just clean their data)
 ❌ Share test account passwords in production
+❌ Ignore 🧪 badges (they indicate test data)
+❌ Test with production accounts when test accounts are available
 
 ---
 
@@ -181,6 +253,41 @@ Use the "Reset Password" button or register at `/register`.
 1. Create new member records with membership numbers in 9999xxxx range
 2. Set `is_test_account = true`
 3. Register them normally
+
+### Staff Toggle Not Visible
+**Solution:**
+1. Verify you're logged in as Admin, Office Manager, or Office Staff
+2. Check that you're on an admin page (not member portal)
+3. Look in the top right of the admin header (next to user menu)
+4. Toggle only appears for authorized staff roles
+
+### Test User Seeing Production Events
+**Solution:**
+1. Verify the member has `is_test_account = true` in database
+2. Check that member is properly authenticated
+3. Verify test isolation logic in member events page
+4. Check browser console for errors
+
+### Production Member Seeing Test Events
+**Solution:**
+1. **CRITICAL:** This should NEVER happen - report immediately
+2. Verify member has `is_test_account = false` in database
+3. Check test filtering logic in member events page
+4. Verify test data filtering is working correctly
+
+### Toggle Not Persisting
+**Solution:**
+1. Check browser localStorage is enabled
+2. Look for `hsnef_show_test_data` key in localStorage
+3. Try clearing localStorage and setting toggle again
+4. Check browser console for errors
+
+### Test Badges Not Showing
+**Solution:**
+1. Verify staff toggle is ON (🧪 SHOWING)
+2. Check that test items have proper flags (`is_test_event`, `is_test_booking`, etc.)
+3. Verify you're viewing Events/Bookings/Payments pages (not dashboard)
+4. Refresh the page after toggling
 
 ---
 
@@ -242,17 +349,26 @@ If you encounter issues with test accounts:
 ## Quick Reference Card
 
 ```
-╔══════════════════════════════════════════════════════════╗
+╔═══════════════════════════════════════════════════════════╗
 ║               TEST ACCOUNTS QUICK REFERENCE               ║
-╠══════════════════════════════════════════════════════════╣
-║ Manager:     test.manager@example.com    (99991000)     ║
-║ Staff:       test.staff@example.com      (99992000)     ║
-║ Lifetime:    test.lifetime@example.com   (99993000)     ║
-║ Annual:      test.annual@example.com     (99994000)     ║
-║ Community:   test.community@example.com  (99995000)     ║
-╠══════════════════════════════════════════════════════════╣
-║ Management:  /admin/test-accounts                        ║
-║ Clean Data:  Click "Clean Test Data" button             ║
-║ Password:    Use "Reset Password" on management page    ║
-╚══════════════════════════════════════════════════════════╝
+╠═══════════════════════════════════════════════════════════╣
+║ Manager:     test.manager@example.com    (99991000)      ║
+║ Staff:       test.staff@example.com      (99992000)      ║
+║ Lifetime:    test.lifetime@example.com   (99993000)      ║
+║ Annual:      test.annual@example.com     (99994000)      ║
+║ Community:   test.community@example.com  (99995000)      ║
+╠═══════════════════════════════════════════════════════════╣
+║ Management:  /admin/test-accounts                         ║
+║ Clean Data:  Click "Clean Test Data" button              ║
+║ Password:    Use "Reset Password" on management page     ║
+╠═══════════════════════════════════════════════════════════╣
+║ STAFF TOGGLE (Admin Header - Top Right):                 ║
+║   🧪 HIDDEN  = Production data only (DEFAULT)            ║
+║   🧪 SHOWING = Test data visible with badges             ║
+║                                                           ║
+║ TEST USER ISOLATION:                                      ║
+║   • Test users see ONLY test events                      ║
+║   • Regular members see ONLY production events           ║
+║   • No cross-contamination                               ║
+╚═══════════════════════════════════════════════════════════╝
 ```

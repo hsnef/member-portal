@@ -7,6 +7,8 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
 import type { PaymentCategory, PaymentMethod } from '@/types/database'
+import { useTestData } from '@/lib/context/TestDataContext'
+import { getTestMemberIds } from '@/lib/utils/testDataFiltering'
 
 interface Payment {
   id: string
@@ -22,11 +24,13 @@ interface Payment {
   notes?: string
   member_name?: string
   member_email?: string
+  is_test_payment?: boolean
 }
 
 export default function PaymentsPage() {
   const router = useRouter()
   const supabase = createClient()
+  const { showTestData } = useTestData()
 
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
@@ -36,12 +40,15 @@ export default function PaymentsPage() {
 
   useEffect(() => {
     fetchPayments()
-  }, [])
+  }, [showTestData])
 
   const fetchPayments = async () => {
     try {
+      // Get test member IDs for filtering
+      const testMemberIds = await getTestMemberIds()
+
       // Fetch payments with member details
-      const { data, error } = await supabase
+      let query = supabase
         .from('payments')
         .select(`
           *,
@@ -56,15 +63,23 @@ export default function PaymentsPage() {
         .order('payment_date', { ascending: false })
         .limit(100)
 
+      // Filter out test payments unless showTestData toggle is ON
+      if (!showTestData && testMemberIds.length > 0) {
+        query = query.not('member_id', 'in', `(${testMemberIds.join(',')})`)
+      }
+
+      const { data, error } = await query
+
       if (error) throw error
 
-      // Transform data to include member name
+      // Transform data to include member name and test flag
       const transformedPayments = data?.map((payment: any) => ({
         ...payment,
         member_name: payment.members?.member_class === 'Personal'
           ? `${payment.members.first_name} ${payment.members.last_name}`
           : payment.members?.business_name || 'Unknown',
         member_email: payment.members?.primary_email,
+        is_test_payment: testMemberIds.includes(payment.member_id),
       })) || []
 
       setPayments(transformedPayments)
@@ -263,9 +278,16 @@ export default function PaymentsPage() {
                           ${payment.amount.toFixed(2)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryBadgeColor(payment.category)}`}>
-                            {payment.category}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryBadgeColor(payment.category)}`}>
+                              {payment.category}
+                            </span>
+                            {payment.is_test_payment && (
+                              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                                🧪 TEST
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${getMethodBadgeColor(payment.payment_method)}`}>

@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
+import { useTestData } from '@/lib/context/TestDataContext'
+import { getTestMemberIds } from '@/lib/utils/testDataFiltering'
 
 interface Booking {
   id: string
@@ -21,11 +23,13 @@ interface Booking {
     first_name: string
     last_name: string
   }
+  is_test_booking?: boolean
 }
 
 export default function AdminBookingsPage() {
   const router = useRouter()
   const supabase = createClient()
+  const { showTestData } = useTestData()
 
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
@@ -34,11 +38,14 @@ export default function AdminBookingsPage() {
 
   useEffect(() => {
     fetchBookings()
-  }, [filter])
+  }, [filter, showTestData])
 
   const fetchBookings = async () => {
     try {
       setLoading(true)
+
+      // Get test member IDs for filtering
+      const testMemberIds = await getTestMemberIds()
 
       let query = supabase
         .from('service_bookings')
@@ -51,6 +58,11 @@ export default function AdminBookingsPage() {
           )
         `)
         .order('created_at', { ascending: false })
+
+      // Filter out test bookings unless showTestData toggle is ON
+      if (!showTestData && testMemberIds.length > 0) {
+        query = query.not('member_id', 'in', `(${testMemberIds.join(',')})`)
+      }
 
       if (filter === 'pending') {
         query = query.eq('status', 'Pending Approval')
@@ -65,7 +77,14 @@ export default function AdminBookingsPage() {
       const { data, error } = await query
 
       if (error) throw error
-      setBookings(data || [])
+
+      // Mark bookings as test bookings
+      const bookingsWithTestFlag = (data || []).map((booking) => ({
+        ...booking,
+        is_test_booking: booking.member_id && testMemberIds.includes(booking.member_id),
+      }))
+
+      setBookings(bookingsWithTestFlag)
     } catch (error) {
       console.error('Error fetching bookings:', error)
     } finally {
@@ -279,13 +298,20 @@ export default function AdminBookingsPage() {
                           ${booking.total_amount.toFixed(2)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                              booking.status
-                            )}`}
-                          >
-                            {booking.status}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                                booking.status
+                              )}`}
+                            >
+                              {booking.status}
+                            </span>
+                            {booking.is_test_booking && (
+                              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                                🧪 TEST
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(booking.created_at).toLocaleDateString()}
