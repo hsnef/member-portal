@@ -23,7 +23,7 @@ This guide provides step-by-step instructions for setting up the `dev-msp` and `
 
 On the project configuration page:
 
-1. **Project Name**: `dev-msp`
+1. **Project Name**: `dev-memberportal`
 2. **Framework Preset**: Select **Next.js** (should auto-detect)
 3. **Root Directory**: `.` (default - project root)
 4. **Build Command**: `npm run build` (default)
