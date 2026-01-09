@@ -21,6 +21,22 @@ Public users can:
 
 ---
 
+## Test Accounts Reference
+
+While public user testing doesn't require login, you may need these for verification:
+
+| Role | Email | MembershipID |
+|------|-------|--------------|
+| Manager | test.manager@example.com | 99991000 |
+| Staff | test.staff@example.com | 99992000 |
+| Lifetime Member | test.lifetime@example.com | 99993000 |
+| Annual Member | test.annual@example.com | 99994000 |
+| Community Member | test.community@example.com | 99995000 |
+
+Test accounts use prefix `9` and are marked with a purple "TEST" badge.
+
+---
+
 ## Test Cases
 
 ### TC-PUB-01: View Home Page
@@ -173,7 +189,7 @@ Public users can:
 
 ### TC-PUB-09: Verify Membership QR Code
 
-**Prerequisite:** Have a valid QR code token from a member's pass
+**Prerequisite:** Have a valid QR code from a test member's pass (e.g., test.lifetime@example.com)
 
 **Steps:**
 1. Scan a member's QR code with your phone camera
@@ -182,6 +198,7 @@ Public users can:
 **Expected Results:**
 - Member verification page displays
 - Shows: Member name, Membership level, Valid status
+- Test accounts show "TEST" badge
 - If invalid token: "Invalid or expired" message
 
 ---
@@ -230,10 +247,26 @@ Public users can:
 
 ---
 
+### TC-PUB-13: Register Existing Test Account
+
+**Steps:**
+1. Navigate to /register
+2. Enter test.lifetime@example.com (or another test account email)
+3. Create a password (e.g., "TestPassword123!")
+4. Submit registration
+
+**Expected Results:**
+- System finds existing member record with that email
+- Auth account created and linked to member record
+- Redirected to member dashboard
+- Member sees their test account data
+
+---
+
 ## Common Error Scenarios
 
 ### Error: "Email already registered"
-- **Cause:** Email already has an account
+- **Cause:** Email already has an auth account
 - **Solution:** Use login instead of registration, or use password reset
 
 ### Error: "Invalid email format"
@@ -247,6 +280,10 @@ Public users can:
 ### Error: "Required field missing"
 - **Cause:** A required field is empty
 - **Solution:** Fill in all fields marked with *
+
+### Error: "No member found with this email"
+- **Cause:** Trying to register at /register with email not in database
+- **Solution:** Use /join to submit a new membership application
 
 ---
 

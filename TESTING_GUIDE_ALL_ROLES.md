@@ -11,20 +11,48 @@ This document provides testing instructions for each user role in the HSNEF Memb
 3. [Member Testing](#member-testing)
 4. [Office Staff Testing](#office-staff-testing)
 5. [Office Manager Testing](#office-manager-testing)
-6. [Admin Testing](#admin-testing)
 
 ---
 
 ## Test Accounts Setup
 
-Before testing, ensure test accounts are created for each role:
+The portal includes pre-configured test accounts that are automatically excluded from reports and metrics. Test accounts use MembershipID prefix `9` (99991000-99995000) and are marked with a purple "TEST" badge in the UI.
 
-| Role | Suggested Email | MembershipID Format |
-|------|-----------------|---------------------|
-| Member | member.test@example.com | 20000100 (Annual) |
-| Office Staff | staff.test@example.com | 20000200 |
-| Office Manager | manager.test@example.com | 10000100 (Lifetime) |
-| Admin | admin.test@example.com | 10000200 (Lifetime) |
+### Available Test Accounts
+
+| Role | Email | MembershipID | Level |
+|------|-------|--------------|-------|
+| Office Manager | test.manager@example.com | 99991000 | Lifetime |
+| Office Staff | test.staff@example.com | 99992000 | Lifetime |
+| Member (Lifetime) | test.lifetime@example.com | 99993000 | Lifetime |
+| Member (Annual) | test.annual@example.com | 99994000 | Annual |
+| Member (Community) | test.community@example.com | 99995000 | Community |
+
+### Registering Test Accounts
+
+Test accounts exist in the database but need to be registered in Supabase Auth:
+
+1. Navigate to `/register`
+2. Enter the test account email (e.g., test.lifetime@example.com)
+3. Create a password (e.g., "TestPassword123!")
+4. The system links the auth account to the existing member record
+
+### Test Account Features
+
+- **Automatic Filtering:** Excluded from dashboard metrics, financial reports, and analytics
+- **Visual Indicator:** Purple "TEST" badge appears next to test accounts
+- **Clean Test Data:** Use `/admin/test-accounts` to reset all test transactions
+- **Member records persist** when cleaning data (no need to re-register)
+
+### Test Account Management Page
+
+Navigate to: `/admin/test-accounts`
+
+This page shows:
+- All test accounts and registration status
+- Password reset functionality
+- "Clean Test Data" button
+- Usage instructions
 
 ---
 
@@ -76,14 +104,15 @@ Before testing, ensure test accounts are created for each role:
 
 ## Member Testing
 
-**Login Required:** Use member test account
+**Login Required:** Use test.lifetime@example.com, test.annual@example.com, or test.community@example.com
 
 ### Test Case 7: View Dashboard
-1. Login as member
+1. Login as test.lifetime@example.com
 2. **Expected:** Dashboard displays with:
    - Membership status banner (level and expiry)
    - Digital membership pass with QR code
    - Quick action buttons
+   - Purple "TEST" badge visible
 
 ### Test Case 8: View/Print Membership Pass
 1. From dashboard, locate the membership pass
@@ -122,55 +151,63 @@ Before testing, ensure test accounts are created for each role:
 2. View booking list with status filters
 3. **Expected:** Bookings display with appropriate status badges
 
-### Test Case 13: Renew Membership
-1. Navigate to Member > Renew
-2. Select new membership level
-3. Enter payment details (use Stripe test card: 4242 4242 4242 4242)
-4. Submit payment
-5. **Expected:** Payment processed, membership updated
+### Test Case 13: Renew Membership (Annual Member)
+1. Login as test.annual@example.com
+2. Navigate to Member > Renew
+3. Select new membership level
+4. Enter payment details (use Stripe test card: 4242 4242 4242 4242)
+5. Submit payment
+6. **Expected:** Payment processed, membership updated
 
 ### Test Case 14: Accept Terms Update
-1. (Requires admin to update terms version first)
+1. (Requires manager to update terms version first)
 2. Login as member
 3. **Expected:** Terms acceptance modal appears
 4. Read and click "Accept Terms"
 5. **Expected:** Modal closes, access granted
 
+### Test Case 15: Pricing Verification
+1. Login as test.lifetime@example.com, create a service booking, note the price
+2. Logout, login as test.community@example.com
+3. Create the same service booking, note the price
+4. **Expected:** Community member sees higher (non-member) pricing
+
 ---
 
 ## Office Staff Testing
 
-**Login Required:** Use staff test account
+**Login Required:** Use test.staff@example.com
 
-### Test Case 15: Access Admin Panel
-1. Login as staff
+### Test Case 16: Access Admin Panel
+1. Login as test.staff@example.com
 2. Navigate to /admin
 3. **Expected:** Admin dashboard displays with staff-level menu
 
-### Test Case 16: View All Members
+### Test Case 17: View All Members
 1. Navigate to Admin > Members
 2. **Expected:** Member list displays with search/filter options
-3. Click on a member name
-4. **Expected:** Member detail page opens
+3. Test accounts show purple "TEST" badge
+4. Click on a member name
+5. **Expected:** Member detail page opens
 
-### Test Case 17: View Pending Applications
+### Test Case 18: View Pending Applications
 1. Navigate to Admin > Applications (Pending Registrations)
 2. **Expected:** List of pending membership applications
 3. Filter by status (Pending, Contacted, Approved, Rejected)
 4. **Expected:** List filters appropriately
 
-### Test Case 18: Record Manual Payment
+### Test Case 19: Record Manual Payment
 1. Navigate to Admin > Payments > New
-2. Select member
+2. Select a test member (e.g., test.annual@example.com)
 3. Enter payment details:
-   - Amount
-   - Payment method (Cash, Check, Zelle)
-   - Category
-   - Notes
+   - Amount: $100
+   - Payment method: Cash
+   - Category: Donation
+   - Notes: "Test donation"
 4. Submit
 5. **Expected:** Payment recorded, receipt generated
 
-### Test Case 19: Create Event
+### Test Case 20: Create Event
 1. Navigate to Admin > Events > New
 2. Fill in event details:
    - Name, Description, Date/Time
@@ -179,31 +216,31 @@ Before testing, ensure test accounts are created for each role:
 3. Publish event
 4. **Expected:** Event created and visible to members
 
-### Test Case 20: Scan Member QR Code
+### Test Case 21: Scan Member QR Code
 1. Navigate to Admin > Scan QR
 2. Allow camera access
-3. Scan a member's QR code
-4. **Expected:** Member info displays with verification status
+3. Scan a test member's QR code (e.g., from test.lifetime@example.com)
+4. **Expected:** Member info displays with verification status and "TEST" badge
 
 ---
 
 ## Office Manager Testing
 
-**Login Required:** Use manager test account
+**Login Required:** Use test.manager@example.com
 
-### Test Case 21: Approve Membership Application
+### Test Case 22: Approve Membership Application
 1. Navigate to Admin > Applications
 2. Click on a pending application
 3. Review application details
 4. Click "Approve"
-5. Enter/confirm MembershipID
+5. Enter/confirm MembershipID (system auto-generates)
 6. Click "Confirm Approval"
 7. **Expected:** 
    - Status changes to Approved
-   - MembershipID assigned
+   - MembershipID assigned (format: [1|2|3]XXXXX00)
    - Welcome email sent
 
-### Test Case 22: Reject Application
+### Test Case 23: Reject Application
 1. Navigate to Admin > Applications
 2. Click on a pending application
 3. Click "Reject"
@@ -211,7 +248,7 @@ Before testing, ensure test accounts are created for each role:
 5. Confirm rejection
 6. **Expected:** Status changes to Rejected
 
-### Test Case 23: Edit Payment (Within 90 Days)
+### Test Case 24: Edit Payment (Within 90 Days)
 1. Navigate to Admin > Payments
 2. Find a payment less than 90 days old
 3. Click "Edit"
@@ -219,44 +256,29 @@ Before testing, ensure test accounts are created for each role:
 5. Save changes
 6. **Expected:** Payment updated, audit log entry created
 
-### Test Case 24: View Audit Logs
+### Test Case 25: View Audit Logs
 1. Navigate to a member's profile
 2. Click "View Audit Log"
 3. **Expected:** List of changes to member record displays
 
-### Test Case 25: Manage Services
+### Test Case 26: Manage Services
 1. Navigate to Admin > Services
 2. Click "Add Service"
 3. Fill in service details (name, description, pricing)
 4. Save
 5. **Expected:** Service created and available for booking
 
-### Test Case 26: Manage Purohits (Priests)
+### Test Case 27: Manage Purohits (Priests)
 1. Navigate to Admin > Purohits
 2. Click "Add Purohit"
 3. Fill in details
 4. Save
 5. **Expected:** Purohit added to system
 
-### Test Case 27: Configure Portal Settings
+### Test Case 28: Configure Portal Settings
 1. Navigate to Admin > Portal Settings
 2. Toggle "Enable Traditional Login"
 3. **Expected:** Setting saved, login page updates accordingly
-
----
-
-## Admin Testing
-
-**Login Required:** Use admin test account
-
-### Test Case 28: Full Admin Panel Access
-1. Login as admin
-2. Navigate to /admin
-3. **Expected:** Full admin menu displays including:
-   - Dashboard, Members, Applications
-   - Payments, Receipts, Requests
-   - Events, Bookings, Services
-   - Purohits, Portal Settings, Settings
 
 ### Test Case 29: Configure Membership Pricing
 1. Navigate to Admin > Portal Settings
@@ -265,48 +287,31 @@ Before testing, ensure test accounts are created for each role:
 4. Save changes
 5. **Expected:** Prices update on /join page
 
-### Test Case 30: Assign User Roles
-1. Navigate to Admin > Members
-2. Select a member
-3. Edit member profile
-4. Assign role (Office Staff, Office Manager, or Admin)
-5. Save
-6. **Expected:** User has new role on next login
+### Test Case 30: Manage Test Accounts
+1. Navigate to Admin > Test Accounts (or Admin > Settings > Test Accounts)
+2. View all test accounts and their registration status
+3. Click "Clean Test Data"
+4. **Expected:** All test transactions removed, member records remain
 
-### Test Case 31: Import Members (Bulk)
-1. Navigate to Admin > Settings > Import Members
-2. Upload CSV file matching template format
-3. Review import preview
-4. Confirm import
-5. **Expected:** Members created with auto-generated MembershipIDs
-
-### Test Case 32: View Import History
+### Test Case 31: View Import History
 1. Navigate to Admin > Settings > Import History
 2. **Expected:** List of past imports with status and counts
 
-### Test Case 33: Manage Test Accounts
-1. Navigate to Admin > Settings > Test Accounts
-2. View/create/delete test accounts
-3. **Expected:** Test accounts managed without affecting production data
+### Test Case 32: Import Members (Bulk)
+1. Navigate to Admin > Settings > Import Members
+2. Download CSV template
+3. Fill with test data
+4. Upload CSV file
+5. Review import preview
+6. Confirm import
+7. **Expected:** Members created with auto-generated MembershipIDs
 
-### Test Case 34: View System Information
+### Test Case 33: View System Information
 1. Navigate to Admin > Settings
 2. **Expected:** System info displays:
    - Version number
    - Environment (Development/Production)
    - Database connection status
-
-### Test Case 35: Update Terms of Use
-1. Navigate to Admin > Portal Settings
-2. Create new terms version with updated content
-3. Set as active version
-4. **Expected:** All users prompted to accept new terms on next login
-
-### Test Case 36: Review Terms Bypasses
-1. (After a user triggers escape hatch)
-2. Check database or admin panel for bypass records
-3. **Expected:** Bypass entry shows user, error, and timestamp
-4. Mark bypass as resolved after contacting user
 
 ---
 
@@ -315,23 +320,23 @@ Before testing, ensure test accounts are created for each role:
 ### Scenario A: New Member Journey
 1. Guest visits /join
 2. Fills application form
-3. Office reviews and approves
+3. Office reviews and approves (login as test.manager@example.com)
 4. Member receives welcome email
 5. Member logs in and views dashboard
 6. Member prints membership pass
 
 ### Scenario B: Event Registration Flow
-1. Admin creates event
-2. Member logs in
+1. Staff creates event (login as test.staff@example.com)
+2. Member logs in (test.lifetime@example.com)
 3. Member browses events
 4. Member registers for event
 5. Staff views registration list
 6. Member cancels registration
 
 ### Scenario C: Service Booking Flow
-1. Member creates booking request
-2. Staff reviews booking
-3. Manager approves booking
+1. Member creates booking request (test.annual@example.com)
+2. Staff reviews booking (test.staff@example.com)
+3. Manager approves booking (test.manager@example.com)
 4. Member makes payment
 5. Service completed
 6. Booking marked complete
@@ -342,6 +347,13 @@ Before testing, ensure test accounts are created for each role:
 3. Receipt generated
 4. Payment appears in history
 5. Member downloads receipt
+
+### Scenario E: Pricing Verification
+1. Login as test.lifetime@example.com (member pricing)
+2. Create service booking, note price
+3. Login as test.community@example.com (community pricing)
+4. Create same service booking
+5. **Verify:** Community sees higher rates than member
 
 ---
 
@@ -356,10 +368,46 @@ Before testing, ensure test accounts are created for each role:
 - All dates: YYYY-MM-DD or MM/DD/YYYY depending on field
 
 ### MembershipID Rules
+
+**Production Accounts:**
 - Lifetime: Starts with 1 (e.g., 10000100)
 - Annual: Starts with 2 (e.g., 20000100)
 - Community: Starts with 3 (e.g., 30000100)
 - Always ends with 00
+
+**Test Accounts:**
+- All start with 9 (e.g., 99991000, 99992000, etc.)
+- Bypass level-prefix matching constraint
+- Clearly identifiable and filterable
+
+### Clean Test Data
+
+Before generating reports or demos:
+1. Navigate to `/admin/test-accounts`
+2. Click "Clean Test Data"
+3. Confirm the action
+4. All test payments, bookings, registrations removed
+5. Test member records remain for continued testing
+
+---
+
+## Quick Reference Card
+
+```
++----------------------------------------------------------+
+|               TEST ACCOUNTS QUICK REFERENCE               |
++----------------------------------------------------------+
+| Manager:     test.manager@example.com    (99991000)      |
+| Staff:       test.staff@example.com      (99992000)      |
+| Lifetime:    test.lifetime@example.com   (99993000)      |
+| Annual:      test.annual@example.com     (99994000)      |
+| Community:   test.community@example.com  (99995000)      |
++----------------------------------------------------------+
+| Management:  /admin/test-accounts                         |
+| Clean Data:  Click "Clean Test Data" button              |
+| Password:    Use "Reset Password" on management page     |
++----------------------------------------------------------+
+```
 
 ---
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
-import { formatLoginMethod, formatLocation, formatUserAgent } from '@/lib/login-audit-log/helpers'
+import { formatLoginMethod, formatLocation, formatUserAgent } from '@/lib/login-audit-log/utils'
 
 interface LoginLog {
   id: string

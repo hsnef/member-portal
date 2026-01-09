@@ -15,6 +15,9 @@ As Office Manager, you have all Staff features plus:
 - Manage purohits (priests)
 - Configure portal settings
 - Process booking approvals
+- Manage test accounts and clean test data
+
+**Note:** Office Manager is the highest role available in test accounts. For Admin-specific features, a real Admin account with database access is required.
 
 ---
 
@@ -23,9 +26,48 @@ As Office Manager, you have all Staff features plus:
 | Field | Value |
 |-------|-------|
 | Role | Office Manager |
-| Email | manager.test@example.com |
-| MembershipID | 10000100 |
+| Email | test.manager@example.com |
+| MembershipID | 99991000 |
 | Membership Level | Lifetime |
+
+### First-Time Setup
+
+If not yet registered:
+1. Navigate to `/register`
+2. Enter: test.manager@example.com
+3. Create password (e.g., "TestPassword123!")
+4. System links auth to existing member record
+
+### After Registration - Assign Role
+
+The Office Manager role must be assigned after registration:
+```sql
+-- Get the auth_user_id
+SELECT id, auth_user_id FROM members WHERE primary_email = 'test.manager@example.com';
+
+-- Assign role (replace USER_ID with actual auth_user_id)
+INSERT INTO user_roles (user_id, role) VALUES ('USER_ID', 'Office Manager');
+```
+
+Or have an existing admin assign the role via the admin panel.
+
+---
+
+## All Test Accounts
+
+| Account | Email | MembershipID | Level | Role |
+|---------|-------|--------------|-------|------|
+| Manager | test.manager@example.com | 99991000 | Lifetime | Office Manager |
+| Staff | test.staff@example.com | 99992000 | Lifetime | Office Staff |
+| Lifetime | test.lifetime@example.com | 99993000 | Lifetime | Member |
+| Annual | test.annual@example.com | 99994000 | Annual | Member |
+| Community | test.community@example.com | 99995000 | Community | Member |
+
+All test accounts:
+- Use MembershipID prefix `9` (99991000-99995000)
+- Show purple "TEST" badge in UI
+- Are excluded from reports and metrics
+- Can be cleaned without deleting member records
 
 ---
 
@@ -67,6 +109,8 @@ As Office Manager, you have all Staff features plus:
 - Be 8 digits
 - End with "00"
 - Start with correct prefix for membership level
+
+**Note:** Test accounts use prefix `9` (99991000-99995000) and bypass this validation.
 
 ---
 
@@ -112,7 +156,7 @@ As Office Manager, you have all Staff features plus:
 
 **Steps:**
 1. Navigate to Admin > Payments
-2. Find a payment from within the last 90 days
+2. Find a payment from within the last 90 days (use test account payment)
 3. Click "Edit" button
 4. Modify payment details:
    - Change amount
@@ -146,7 +190,7 @@ As Office Manager, you have all Staff features plus:
 
 **Steps:**
 1. Navigate to Admin > Members
-2. Click on a member to view details
+2. Click on test.lifetime@example.com to view details
 3. Click "Audit Log" or "View History" button
 4. Review the audit entries
 
@@ -269,7 +313,7 @@ As Office Manager, you have all Staff features plus:
 
 **Steps:**
 1. Navigate to Admin > Bookings
-2. Find a "Pending Approval" booking
+2. Find a "Pending Approval" booking (create one using test.annual@example.com first)
 3. Click to view details
 4. Review the request:
    - Service requested
@@ -387,7 +431,46 @@ As Office Manager, you have all Staff features plus:
 
 ---
 
-### TC-MGR-21: Create Member Manually
+### TC-MGR-21: Manage Test Accounts
+
+**Steps:**
+1. Navigate to Admin > Test Accounts (or /admin/test-accounts)
+2. View all 5 test accounts
+3. Check registration status for each
+4. Use "Reset Password" if needed
+
+**Expected Results:**
+- All test accounts listed:
+  - test.manager@example.com (99991000)
+  - test.staff@example.com (99992000)
+  - test.lifetime@example.com (99993000)
+  - test.annual@example.com (99994000)
+  - test.community@example.com (99995000)
+- Registration status shown
+- Password reset sends email
+
+---
+
+### TC-MGR-22: Clean Test Data
+
+**Steps:**
+1. Navigate to Admin > Test Accounts
+2. Click "Clean Test Data" button
+3. Confirm the action
+
+**Expected Results:**
+- All test account transactions removed:
+  - Payments
+  - Service bookings
+  - Event registrations
+  - Requests
+- Member records remain intact
+- Confirmation message displayed
+- Can continue testing immediately
+
+---
+
+### TC-MGR-23: Create Member Manually
 
 **Steps:**
 1. Navigate to Admin > Members
@@ -400,17 +483,17 @@ As Office Manager, you have all Staff features plus:
 
 **Expected Results:**
 - Member created
-- MembershipID auto-generated
+- MembershipID auto-generated (format: 2XXXXX00 for Annual)
 - Can send invitation to set up login
 - Member appears in directory
 
 ---
 
-### TC-MGR-22: Edit Member Profile
+### TC-MGR-24: Edit Member Profile
 
 **Steps:**
 1. Navigate to Admin > Members
-2. Find a member
+2. Find test.annual@example.com
 3. Click "Edit"
 4. Update phone number
 5. Save changes
@@ -422,7 +505,7 @@ As Office Manager, you have all Staff features plus:
 
 ---
 
-### TC-MGR-23: View Registration Statistics
+### TC-MGR-25: View Registration Statistics
 
 **Steps:**
 1. Navigate to Admin > Applications
@@ -437,35 +520,78 @@ As Office Manager, you have all Staff features plus:
 
 ---
 
+### TC-MGR-26: View Import History
+
+**Steps:**
+1. Navigate to Admin > Settings > Import History
+2. Review past imports
+
+**Expected Results:**
+- List of all imports displayed
+- Each shows: Date, File name, Count, Status
+- Can view details of each import
+
+---
+
+### TC-MGR-27: Import Members (Bulk)
+
+**Steps:**
+1. Navigate to Admin > Settings > Import Members
+2. Download CSV template
+3. Fill with test data (non-test account members)
+4. Upload CSV file
+5. Review import preview
+6. Confirm import
+
+**Expected Results:**
+- Preview shows parsed data
+- Validation errors highlighted
+- Members created with auto-generated MembershipIDs
+- Import recorded in history
+
+---
+
 ## Manager Workflow Scenarios
 
 ### Scenario A: New Member Approval Flow
 
-1. Application submitted via /join
-2. Manager receives notification (or checks pending list)
-3. Manager reviews application details
-4. Manager verifies information (call if needed)
-5. Manager approves and assigns MembershipID
-6. System sends welcome email with login instructions
-7. Member activates account and logs in
+1. Application submitted via /join (use new email)
+2. Login as test.manager@example.com
+3. Navigate to Applications
+4. Review application details
+5. Verify information (call if needed)
+6. Approve and assign MembershipID
+7. System sends welcome email with login instructions
+8. Member activates account and logs in
 
 ### Scenario B: Service Booking Approval
 
-1. Member requests puja service
-2. Manager reviews booking request
-3. Manager checks purohit availability
-4. Manager approves with specific date/purohit
-5. Member receives notification with amount
-6. Member pays online or at office
-7. Service marked complete after event
+1. Login as test.annual@example.com
+2. Create service booking request
+3. Logout, login as test.manager@example.com
+4. Navigate to Bookings
+5. Review and approve the booking
+6. Logout, login as test.annual@example.com
+7. Pay for the approved booking
+8. Manager marks service complete
 
 ### Scenario C: Payment Correction
 
 1. Staff recorded incorrect amount
-2. Manager locates payment (within 90 days)
-3. Manager edits payment with correct amount
-4. Audit log captures change with reason
-5. Updated receipt available if needed
+2. Login as test.manager@example.com
+3. Navigate to Payments
+4. Locate payment (within 90 days)
+5. Edit payment with correct amount
+6. Audit log captures change with reason
+7. Updated receipt available if needed
+
+### Scenario D: Clean Testing Environment
+
+1. Login as test.manager@example.com
+2. Navigate to /admin/test-accounts
+3. Click "Clean Test Data"
+4. All test transactions removed
+5. Ready for fresh testing scenarios
 
 ---
 
@@ -475,8 +601,7 @@ As Office Manager, you have all Staff features plus:
 - Delete member records permanently
 - Edit payments older than 90 days
 - Access system configuration beyond portal settings
-- Manage test accounts
-- Bulk import members
+- Full role management (can view but limited edits)
 
 ---
 
@@ -490,11 +615,39 @@ As a Manager, you have audit log access. Be aware that:
 
 ---
 
+## Quick Reference Card
+
+```
++----------------------------------------------------------+
+|            OFFICE MANAGER QUICK REFERENCE                 |
++----------------------------------------------------------+
+| Login:       test.manager@example.com                     |
+| MembershipID: 99991000                                    |
+| Role:        Office Manager                               |
++----------------------------------------------------------+
+| APPROVALS                                                 |
+| - Applications: Admin > Applications > Approve/Reject    |
+| - Bookings: Admin > Bookings > Approve/Reject            |
++----------------------------------------------------------+
+| SETTINGS                                                  |
+| - Portal Settings: Admin > Portal Settings               |
+| - Membership Pricing: Portal Settings > Pricing          |
+| - Services: Admin > Services                             |
+| - Purohits: Admin > Purohits                             |
++----------------------------------------------------------+
+| TEST ACCOUNTS                                             |
+| - Manage: /admin/test-accounts                           |
+| - Clean Data: Click "Clean Test Data" button             |
++----------------------------------------------------------+
+```
+
+---
+
 ## Reporting Issues
 
 When reporting bugs, include:
 1. Test case ID (e.g., TC-MGR-05)
-2. Your manager test account
+2. Test account: test.manager@example.com
 3. Steps to reproduce
 4. Expected vs actual behavior
 5. Screenshots if applicable

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
+import { getTestAuthUserIds, isTestIsolationMode } from '@/lib/utils/testDataFiltering'
 
 interface Event {
   id: string
@@ -43,13 +44,38 @@ export default function MemberEventsPage() {
     if (!member) return
 
     try {
+      // CRITICAL: Check if current user is a test account
+      const isTestUser = await isTestIsolationMode()
+      const testAuthUserIds = await getTestAuthUserIds()
+
       // Fetch published upcoming events
-      const { data: eventsData, error: eventsError } = await supabase
+      let query = supabase
         .from('events')
         .select('*')
         .eq('status', 'Published')
         .gte('event_date', new Date().toISOString().split('T')[0])
         .order('event_date', { ascending: true })
+
+      // ISOLATION LOGIC:
+      // - Test users: Show ONLY test-created events (sandbox)
+      // - Regular members: Show ONLY production events (hide test events)
+      if (isTestUser) {
+        // Test user: Show ONLY test events
+        if (testAuthUserIds.length > 0) {
+          query = query.in('created_by', testAuthUserIds)
+        } else {
+          // No test events exist, show nothing
+          setEvents([])
+          return
+        }
+      } else {
+        // Regular member: Filter out test-created events
+        if (testAuthUserIds.length > 0) {
+          query = query.not('created_by', 'in', `(${testAuthUserIds.join(',')})`)
+        }
+      }
+
+      const { data: eventsData, error: eventsError } = await query
 
       if (eventsError) throw eventsError
 

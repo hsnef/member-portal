@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getLoginAuditLogWithMembers, exportLoginAuditLogToCSV } from '@/lib/login-audit-log/helpers'
+import { getLoginAuditLogWithMembers } from '@/lib/login-audit-log/helpers'
+import { exportLoginAuditLogToCSV } from '@/lib/login-audit-log/utils'
 
 /**
  * GET /api/admin/login-activity/export

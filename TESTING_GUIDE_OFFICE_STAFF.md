@@ -22,16 +22,50 @@ As Office Staff, you have all Member features plus:
 | Field | Value |
 |-------|-------|
 | Role | Office Staff |
-| Email | staff.test@example.com |
-| MembershipID | 20000200 |
-| Membership Level | Annual |
+| Email | test.staff@example.com |
+| MembershipID | 99992000 |
+| Membership Level | Lifetime |
+
+### First-Time Setup
+
+If not yet registered:
+1. Navigate to `/register`
+2. Enter: test.staff@example.com
+3. Create password (e.g., "TestPassword123!")
+4. System links auth to existing member record
+
+### After Registration - Assign Role
+
+The Office Staff role must be assigned after registration:
+```sql
+-- Get the auth_user_id
+SELECT id, auth_user_id FROM members WHERE primary_email = 'test.staff@example.com';
+
+-- Assign role (replace USER_ID with actual auth_user_id)
+INSERT INTO user_roles (user_id, role) VALUES ('USER_ID', 'Office Staff');
+```
+
+Or ask an admin to assign the role via the admin panel.
+
+---
+
+## Other Test Accounts for Staff Testing
+
+| Account | Email | MembershipID | Purpose |
+|---------|-------|--------------|---------|
+| Manager | test.manager@example.com | 99991000 | For approval workflows |
+| Lifetime Member | test.lifetime@example.com | 99993000 | Test member interactions |
+| Annual Member | test.annual@example.com | 99994000 | Test renewals, payments |
+| Community Member | test.community@example.com | 99995000 | Test non-member pricing |
+
+All test accounts have purple "TEST" badge and are excluded from reports.
 
 ---
 
 ## Accessing Admin Panel
 
 **Steps:**
-1. Login with your staff credentials
+1. Login with test.staff@example.com
 2. From your member dashboard, click "Admin Portal" or navigate to /admin
 
 **Expected Results:**
@@ -52,11 +86,12 @@ As Office Staff, you have all Member features plus:
 
 **Expected Results:**
 - Dashboard displays summary statistics:
-  - Total members
+  - Total members (excludes test accounts)
   - Pending applications
   - Recent payments
   - Upcoming events
 - Quick action buttons available
+- Purple "TEST" badge on your account indicator
 
 ---
 
@@ -68,6 +103,7 @@ As Office Staff, you have all Member features plus:
 
 **Expected Results:**
 - All members displayed in table format
+- Test accounts show purple "TEST" badge
 - Columns include: Name, MembershipID, Level, Status, Email
 - Pagination works if many members
 - Sort by columns works
@@ -78,12 +114,13 @@ As Office Staff, you have all Member features plus:
 
 **Steps:**
 1. On Members page, use the search box
-2. Search by name (e.g., "Smith")
-3. Search by MembershipID (e.g., "20000100")
-4. Search by email
+2. Search by name (e.g., "Test Lifetime")
+3. Search by MembershipID (e.g., "99993000")
+4. Search by email (e.g., "test.lifetime@example.com")
 
 **Expected Results:**
 - Search returns matching members
+- Test accounts show "TEST" badge in results
 - Search is case-insensitive
 - Partial matches work
 - Clear search shows all members
@@ -109,17 +146,18 @@ As Office Staff, you have all Member features plus:
 ### TC-STF-05: View Member Details
 
 **Steps:**
-1. Click on a member name from the list
+1. Click on test.lifetime@example.com from the list
 2. Review the member detail page
 
 **Expected Results:**
 - Full member information displayed:
   - Personal/Business details
   - Contact information
-  - Membership information
+  - Membership information (99993000, Lifetime)
   - Family members (if applicable)
   - Payment history summary
   - Event registrations
+- Purple "TEST" badge visible
 - Cannot edit member details (staff restriction)
 
 ---
@@ -173,12 +211,12 @@ As Office Staff, you have all Member features plus:
 
 **Steps:**
 1. Navigate to Admin > Payments > New (or Record Payment)
-2. Search and select a member
+2. Search and select test.annual@example.com
 3. Fill in payment details:
    - Amount: $251.00
    - Payment Method: Cash
    - Category: Membership
-   - Notes: "2026 Annual Membership"
+   - Notes: "2026 Annual Membership - TEST"
 4. Click "Record Payment"
 
 **Expected Results:**
@@ -186,6 +224,7 @@ As Office Staff, you have all Member features plus:
 - Receipt generated
 - Payment appears in member's history
 - Confirmation message displayed
+- Payment marked as test data (excluded from reports)
 
 ---
 
@@ -193,13 +232,13 @@ As Office Staff, you have all Member features plus:
 
 **Steps:**
 1. Navigate to Admin > Payments > New
-2. Select a member
+2. Select test.lifetime@example.com
 3. Fill in:
    - Amount: $100.00
    - Payment Method: Check
    - Check Number: 1234
    - Category: Donation
-   - Notes: "Temple renovation fund"
+   - Notes: "Temple renovation fund - TEST"
 4. Click "Record Payment"
 
 **Expected Results:**
@@ -213,13 +252,13 @@ As Office Staff, you have all Member features plus:
 
 **Steps:**
 1. Navigate to Admin > Payments > New
-2. Select a member
+2. Select test.annual@example.com
 3. Fill in:
    - Amount: $50.00
    - Payment Method: Zelle
-   - Transaction ID: ABC123XYZ (from Zelle confirmation)
+   - Transaction ID: ABC123XYZ
    - Category: Event
-   - Notes: "Diwali celebration registration"
+   - Notes: "Diwali celebration registration - TEST"
 4. Click "Record Payment"
 
 **Expected Results:**
@@ -237,6 +276,7 @@ As Office Staff, you have all Member features plus:
 
 **Expected Results:**
 - Recent payments displayed
+- Test account payments may be filtered or marked
 - Columns: Date, Member, Amount, Method, Category, Status
 - Can filter by date range
 - Can filter by payment method
@@ -310,6 +350,7 @@ As Office Staff, you have all Member features plus:
 
 **Expected Results:**
 - List of registered members displayed
+- Test account registrations show "TEST" badge
 - Shows: Member name, MembershipID, Registration date
 - Total count matches event display
 - Can export list (if available)
@@ -321,7 +362,7 @@ As Office Staff, you have all Member features plus:
 **Steps:**
 1. Navigate to Admin > Bookings
 2. Click "New Booking"
-3. Search and select a member
+3. Search and select test.annual@example.com
 4. Select service type
 5. Fill in booking details:
    - Preferred date
@@ -345,6 +386,7 @@ As Office Staff, you have all Member features plus:
 
 **Expected Results:**
 - All bookings displayed
+- Test account bookings show "TEST" badge
 - Can filter by status
 - Can filter by service type
 - Can filter by date range
@@ -357,18 +399,18 @@ As Office Staff, you have all Member features plus:
 **Steps:**
 1. Navigate to Admin > Scan QR
 2. Allow camera access when prompted
-3. Point camera at a member's QR code
+3. Point camera at test.lifetime@example.com's QR code
 4. Observe the result
 
 **Expected Results:**
 - Camera activates
 - QR code scanned successfully
 - Member information displayed:
-  - Name
-  - MembershipID
-  - Membership level
-  - Status (Active/Expired)
-  - Photo (if available)
+  - Name: Test Lifetime Member
+  - MembershipID: 99993000
+  - Membership level: Lifetime
+  - Status: Active
+  - "TEST" badge visible
 - Verification timestamp recorded
 
 ---
@@ -378,7 +420,7 @@ As Office Staff, you have all Member features plus:
 **Steps:**
 1. On Scan QR page
 2. Click "Enter Code Manually"
-3. Type the token from the QR code
+3. Type the token from a member's QR code
 4. Click "Verify"
 
 **Expected Results:**
@@ -439,12 +481,25 @@ As Office Staff, you have all Member features plus:
 
 ---
 
+### TC-STF-25: View Test Accounts Page
+
+**Steps:**
+1. Navigate to Admin > Test Accounts (or /admin/test-accounts)
+
+**Expected Results:**
+- List of all 5 test accounts displayed
+- Registration status shown for each
+- "Clean Test Data" button available
+- Password reset functionality
+
+---
+
 ## Staff Workflow Scenarios
 
 ### Scenario A: Member Walks In to Pay
 
-1. Member arrives at office to pay membership fee
-2. Staff searches for member by name/ID
+1. Member (use test.annual@example.com) arrives at office
+2. Staff (test.staff@example.com) searches for member
 3. Staff verifies member identity
 4. Staff records cash/check payment
 5. Staff provides receipt (print or email)
@@ -454,18 +509,19 @@ As Office Staff, you have all Member features plus:
 
 1. Caller wants to join as member
 2. Staff explains membership options
-3. Staff can direct caller to /join
-4. Or staff can take information and create application
+3. Staff directs caller to /join
+4. Or staff notes application details
 5. Staff marks application status appropriately
 
 ### Scenario C: Event Day Check-In
 
-1. Member arrives at event
+1. Member (test.lifetime@example.com) arrives at event
 2. Staff opens QR scanner
 3. Member shows digital pass or printed pass
 4. Staff scans QR code
 5. Verification confirms member is registered
 6. Member admitted to event
+7. "TEST" badge appears (for test accounts)
 
 ---
 
@@ -478,6 +534,19 @@ As Office Staff, you have all Member features plus:
 - Change portal settings
 - Manage user roles
 - Delete records
+- Manage services or purohits
+
+---
+
+## Cleaning Test Data
+
+To reset test transactions for fresh testing:
+1. Login as test.manager@example.com (or ask manager)
+2. Navigate to /admin/test-accounts
+3. Click "Clean Test Data"
+4. Confirm the action
+5. All test payments, bookings, registrations removed
+6. Member records remain intact
 
 ---
 
@@ -485,7 +554,7 @@ As Office Staff, you have all Member features plus:
 
 When reporting bugs, include:
 1. Test case ID (e.g., TC-STF-09)
-2. Your staff test account
+2. Test account: test.staff@example.com
 3. Steps to reproduce
 4. Expected vs actual behavior
 5. Screenshots if applicable
