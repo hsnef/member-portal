@@ -185,7 +185,7 @@ export default function BookingPaymentPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: bookingData.total_amount,
+          amount: Math.round(bookingData.total_amount * 100), // Convert dollars to cents
           memberId: member?.id,
           category: 'Service',
           description: `Service Booking #${bookingData.id.slice(0, 8)}`,
