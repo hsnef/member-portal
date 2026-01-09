@@ -423,6 +423,18 @@ export default function MemberDetailPage() {
                   >
                     ✏️ Edit Member
                   </Link>
+                  <Link
+                    href={`/admin/members/${memberId}/audit-log`}
+                    className="block w-full text-left px-4 py-2 text-sm text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+                  >
+                    📋 View Audit Log
+                  </Link>
+                  <Link
+                    href={`/admin/members/${memberId}/login-activity`}
+                    className="block w-full text-left px-4 py-2 text-sm text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-md transition-colors"
+                  >
+                    🔐 View Login Activity
+                  </Link>
                   <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors">
                     📧 Send Registration Invite
                   </button>

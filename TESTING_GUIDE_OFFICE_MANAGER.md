@@ -1,0 +1,502 @@
+# HSNEF Member Portal - Office Manager Testing Guide
+
+This guide is for testing the portal as an Office Manager.
+
+---
+
+## Overview
+
+As Office Manager, you have all Staff features plus:
+- Approve and reject membership applications
+- Assign MembershipIDs to new members
+- Edit payments within 90 days
+- View audit logs for members
+- Manage services and pricing
+- Manage purohits (priests)
+- Configure portal settings
+- Process booking approvals
+
+---
+
+## Test Account
+
+| Field | Value |
+|-------|-------|
+| Role | Office Manager |
+| Email | manager.test@example.com |
+| MembershipID | 10000100 |
+| Membership Level | Lifetime |
+
+---
+
+## Test Cases
+
+### TC-MGR-01: Approve Membership Application
+
+**Steps:**
+1. Navigate to Admin > Applications (Pending Registrations)
+2. Find a "Pending" application
+3. Click on the application to view details
+4. Review all submitted information
+5. Click "Approve" button
+6. In the modal:
+   - Verify or edit the auto-generated MembershipID
+   - Add any approval notes (optional)
+7. Click "Confirm Approval"
+
+**Expected Results:**
+- Application status changes to "Approved"
+- MembershipID assigned (format: [1|2|3]XXXXX00)
+- Member record created in members table
+- Welcome email sent to new member
+- Approval recorded in audit log
+
+---
+
+### TC-MGR-02: Verify MembershipID Format
+
+**When approving applications, verify:**
+
+| Level | Prefix | Example |
+|-------|--------|---------|
+| Lifetime | 1 | 10000100, 10001200 |
+| Annual | 2 | 20000100, 20005600 |
+| Community | 3 | 30000100, 30002300 |
+
+**All IDs must:**
+- Be 8 digits
+- End with "00"
+- Start with correct prefix for membership level
+
+---
+
+### TC-MGR-03: Reject Membership Application
+
+**Steps:**
+1. Navigate to Admin > Applications
+2. Find a pending application
+3. Click to view details
+4. Click "Reject" button
+5. Enter rejection reason (required):
+   - Example: "Duplicate application - member already exists"
+   - Example: "Incomplete information provided"
+6. Click "Confirm Rejection"
+
+**Expected Results:**
+- Application status changes to "Rejected"
+- Rejection reason saved
+- Rejection email sent to applicant
+- No member record created
+
+---
+
+### TC-MGR-04: Approve Application with Custom MembershipID
+
+**Steps:**
+1. Navigate to Admin > Applications
+2. Select a pending application
+3. Click "Approve"
+4. In the modal, edit the MembershipID:
+   - Change last 4 digits (before the 00)
+   - Example: Change 20000100 to 20012300
+5. Confirm approval
+
+**Expected Results:**
+- Custom MembershipID assigned
+- ID validation ensures correct format
+- Member created with specified ID
+
+---
+
+### TC-MGR-05: Edit Recent Payment
+
+**Steps:**
+1. Navigate to Admin > Payments
+2. Find a payment from within the last 90 days
+3. Click "Edit" button
+4. Modify payment details:
+   - Change amount
+   - Update notes
+   - Correct category
+5. Click "Save Changes"
+
+**Expected Results:**
+- Payment updated successfully
+- Audit log entry created
+- Original values preserved in audit
+- Updated by and timestamp recorded
+
+---
+
+### TC-MGR-06: Cannot Edit Old Payment
+
+**Steps:**
+1. Navigate to Admin > Payments
+2. Find a payment older than 90 days
+3. Try to edit the payment
+
+**Expected Results:**
+- Edit button disabled or hidden
+- If clicked, error message: "Payments older than 90 days cannot be edited"
+- Must contact Admin for older corrections
+
+---
+
+### TC-MGR-07: View Member Audit Log
+
+**Steps:**
+1. Navigate to Admin > Members
+2. Click on a member to view details
+3. Click "Audit Log" or "View History" button
+4. Review the audit entries
+
+**Expected Results:**
+- Chronological list of changes displayed
+- Each entry shows:
+  - Date and time
+  - User who made the change
+  - Action type (create, update, delete)
+  - Fields changed
+  - Old and new values
+- Can filter by date range
+- Can filter by action type
+
+---
+
+### TC-MGR-08: Export Audit Log
+
+**Steps:**
+1. View a member's audit log
+2. Click "Export" button
+3. Select format (CSV or PDF)
+
+**Expected Results:**
+- File downloads with audit entries
+- All displayed entries included
+- Properly formatted for chosen format
+
+---
+
+### TC-MGR-09: Create New Service
+
+**Steps:**
+1. Navigate to Admin > Services
+2. Click "Add Service"
+3. Fill in service details:
+   - Service Name: "Satyanarayan Puja"
+   - Description: "Traditional puja ceremony"
+   - Base Price: $151.00
+   - Duration: 2 hours
+   - Category: Religious
+   - Status: Active
+4. Click "Save"
+
+**Expected Results:**
+- Service created successfully
+- Appears in service list
+- Available for booking
+
+---
+
+### TC-MGR-10: Edit Service
+
+**Steps:**
+1. Navigate to Admin > Services
+2. Click on a service
+3. Click "Edit"
+4. Update the price from $151 to $175
+5. Save changes
+
+**Expected Results:**
+- Service updated
+- New price applies to new bookings
+- Existing bookings unchanged
+
+---
+
+### TC-MGR-11: Deactivate Service
+
+**Steps:**
+1. Navigate to Admin > Services
+2. Click on a service
+3. Change status to "Inactive"
+4. Save
+
+**Expected Results:**
+- Service marked inactive
+- Not available for new bookings
+- Existing bookings unaffected
+- Still visible in admin panel
+
+---
+
+### TC-MGR-12: Add Purohit
+
+**Steps:**
+1. Navigate to Admin > Purohits
+2. Click "Add Purohit"
+3. Fill in details:
+   - Name: "Pandit Sharma"
+   - Phone: "904-555-1234"
+   - Email: "pandit@example.com"
+   - Specializations: "Vedic ceremonies, Pujas"
+   - Status: Active
+4. Save
+
+**Expected Results:**
+- Purohit added to system
+- Available for service assignments
+- Contact info accessible
+
+---
+
+### TC-MGR-13: Edit Purohit
+
+**Steps:**
+1. Navigate to Admin > Purohits
+2. Click on a purohit
+3. Click "Edit"
+4. Update contact information
+5. Save
+
+**Expected Results:**
+- Purohit information updated
+- Changes reflected immediately
+
+---
+
+### TC-MGR-14: Approve Service Booking
+
+**Steps:**
+1. Navigate to Admin > Bookings
+2. Find a "Pending Approval" booking
+3. Click to view details
+4. Review the request:
+   - Service requested
+   - Preferred dates
+   - Member information
+   - Special requests
+5. Click "Approve"
+6. Add approval notes (optional)
+7. Confirm total amount
+
+**Expected Results:**
+- Booking status changes to "Approved"
+- Member notified via email
+- "Pay Now" button appears for member
+- Approval notes saved
+
+---
+
+### TC-MGR-15: Reject Service Booking
+
+**Steps:**
+1. Navigate to Admin > Bookings
+2. Find a pending booking
+3. View details
+4. Click "Reject"
+5. Enter rejection reason:
+   - "Date not available"
+   - "Service not offered on this day"
+6. Confirm rejection
+
+**Expected Results:**
+- Booking status changes to "Rejected"
+- Member notified with reason
+- Booking removed from pending queue
+
+---
+
+### TC-MGR-16: Configure Portal Settings
+
+**Steps:**
+1. Navigate to Admin > Portal Settings
+2. Review available settings
+
+**Expected Results:**
+- Settings page loads
+- Grouped by category:
+  - Authentication Settings
+  - Registration Settings
+  - General Settings
+  - Membership Pricing
+
+---
+
+### TC-MGR-17: Toggle Traditional Login
+
+**Steps:**
+1. Navigate to Admin > Portal Settings
+2. Find "Enable Traditional Login" toggle
+3. Toggle it ON
+4. Wait for save confirmation
+5. Open /login in incognito window
+
+**Expected Results:**
+- Setting saved successfully
+- Login page now shows email/password option
+- Users can register with password
+
+---
+
+### TC-MGR-18: Toggle Member Approval Requirement
+
+**Steps:**
+1. Navigate to Admin > Portal Settings
+2. Find "Require Office Approval" toggle
+3. Toggle it ON
+4. Submit a test application at /join
+
+**Expected Results:**
+- Setting saved
+- New applications require manual approval
+- Applications show in pending queue
+
+---
+
+### TC-MGR-19: Update Membership Pricing
+
+**Steps:**
+1. Navigate to Admin > Portal Settings
+2. Scroll to "Membership Pricing" section
+3. Update Annual Membership:
+   - Price: 251 to 275
+   - Display Price: "$275/year"
+   - Description: Update as needed
+4. Save changes
+5. Check /join page
+
+**Expected Results:**
+- Pricing saved
+- /join page shows updated prices
+- New payments use new pricing
+
+---
+
+### TC-MGR-20: View Portal Settings Help
+
+**Steps:**
+1. On Portal Settings page
+2. Click help icon or "?" next to a setting
+3. Read the explanation
+
+**Expected Results:**
+- Clear explanation of what the setting does
+- Examples provided where helpful
+- Impact of change explained
+
+---
+
+### TC-MGR-21: Create Member Manually
+
+**Steps:**
+1. Navigate to Admin > Members
+2. Click "Add Member"
+3. Fill in all required fields:
+   - Membership Type: Personal
+   - Membership Level: Annual
+   - Name, Email, Phone, Address
+4. Click "Create Member"
+
+**Expected Results:**
+- Member created
+- MembershipID auto-generated
+- Can send invitation to set up login
+- Member appears in directory
+
+---
+
+### TC-MGR-22: Edit Member Profile
+
+**Steps:**
+1. Navigate to Admin > Members
+2. Find a member
+3. Click "Edit"
+4. Update phone number
+5. Save changes
+
+**Expected Results:**
+- Member profile updated
+- Audit log entry created
+- Member sees change on their end
+
+---
+
+### TC-MGR-23: View Registration Statistics
+
+**Steps:**
+1. Navigate to Admin > Applications
+2. View summary statistics at top
+
+**Expected Results:**
+- Counts displayed:
+  - Total pending
+  - Total approved this month
+  - Total rejected this month
+  - Average approval time
+
+---
+
+## Manager Workflow Scenarios
+
+### Scenario A: New Member Approval Flow
+
+1. Application submitted via /join
+2. Manager receives notification (or checks pending list)
+3. Manager reviews application details
+4. Manager verifies information (call if needed)
+5. Manager approves and assigns MembershipID
+6. System sends welcome email with login instructions
+7. Member activates account and logs in
+
+### Scenario B: Service Booking Approval
+
+1. Member requests puja service
+2. Manager reviews booking request
+3. Manager checks purohit availability
+4. Manager approves with specific date/purohit
+5. Member receives notification with amount
+6. Member pays online or at office
+7. Service marked complete after event
+
+### Scenario C: Payment Correction
+
+1. Staff recorded incorrect amount
+2. Manager locates payment (within 90 days)
+3. Manager edits payment with correct amount
+4. Audit log captures change with reason
+5. Updated receipt available if needed
+
+---
+
+## Things Manager CANNOT Do
+
+- Assign Admin roles to users
+- Delete member records permanently
+- Edit payments older than 90 days
+- Access system configuration beyond portal settings
+- Manage test accounts
+- Bulk import members
+
+---
+
+## Audit Trail Awareness
+
+As a Manager, you have audit log access. Be aware that:
+- All your actions are logged
+- Payment edits require justification
+- Approval/rejection reasons are permanent
+- Export functions track who exported what
+
+---
+
+## Reporting Issues
+
+When reporting bugs, include:
+1. Test case ID (e.g., TC-MGR-05)
+2. Your manager test account
+3. Steps to reproduce
+4. Expected vs actual behavior
+5. Screenshots if applicable
+
+**Contact:** info@hsnef.org

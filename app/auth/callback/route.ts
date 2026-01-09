@@ -59,6 +59,32 @@ export async function GET(request: Request) {
   }
 
   console.log('OAuth session established successfully')
+
+  // Track successful Google OAuth login
+  try {
+    const trackingResponse = await fetch(`${requestUrl.origin}/api/login-tracking`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-forwarded-for': request.headers.get('x-forwarded-for') || '',
+        'x-real-ip': request.headers.get('x-real-ip') || '',
+        'user-agent': request.headers.get('user-agent') || '',
+        'Cookie': request.headers.get('cookie') || '', // Pass cookies for auth
+      },
+      body: JSON.stringify({
+        loginMethod: 'google',
+        success: true,
+      }),
+    })
+
+    if (!trackingResponse.ok) {
+      console.warn('Failed to track login activity:', await trackingResponse.text())
+    }
+  } catch (trackingError) {
+    // Don't fail the login if tracking fails
+    console.warn('Login tracking error:', trackingError)
+  }
+
   // URL to redirect to after sign in process completes
   return NextResponse.redirect(new URL(redirect, requestUrl.origin))
 }

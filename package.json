@@ -25,6 +25,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.70.0",
+    "react-markdown": "^10.1.0",
     "resend": "^6.6.0",
     "stripe": "^17.7.0",
     "zod": "^3.25.76"

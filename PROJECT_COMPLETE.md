@@ -413,7 +413,7 @@ Comprehensive documentation created:
 
 ### Member Experience
 - Self-service portal
-- Digital membership pass
+- Membership pass
 - Online payments
 - Event registration
 - Payment history

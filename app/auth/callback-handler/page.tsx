@@ -53,6 +53,22 @@ export default function CallbackHandlerPage() {
 
           if (data.session) {
             console.log('Magic link session established successfully')
+
+            // Track successful magic link login
+            try {
+              await fetch('/api/login-tracking', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  loginMethod: 'magic_link',
+                  success: true,
+                }),
+              })
+            } catch (trackingError) {
+              // Don't fail the login if tracking fails
+              console.warn('Login tracking error:', trackingError)
+            }
+
             // Clear hash from URL
             window.history.replaceState(null, '', window.location.pathname + window.location.search)
             router.push(redirect)

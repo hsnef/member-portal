@@ -2,46 +2,133 @@
 
 ## Overview
 
-The HSNEF Member Portal uses a **hybrid authentication system** that supports multiple login methods while ensuring all users are linked to actual member records in the database.
+The HSNEF Member Portal uses a **flexible authentication and registration system** with configurable settings. Administrators can control authentication methods and member registration workflows through `/admin/portal-settings`.
+
+**Key Features:**
+- Multiple authentication methods (Magic Link, Google OAuth, Email/Password)
+- Public member self-registration at `/join`
+- Configurable approval workflow (auto-approve or office review)
+- All portal users linked to actual member records
+
+---
+
+## ⚙️ Portal Settings (Configurable)
+
+### **Enable Traditional Login** (Default: OFF)
+- Controls whether email/password registration is available
+- When OFF: Only Magic Link and Google OAuth available (simpler)
+- When ON: Users can register at `/register` with email/password
+- **Recommended:** OFF for simplest user experience
+
+### **Require Office Approval** (Default: OFF - Auto-Approve)
+- Controls member application workflow at `/join`
+- When OFF: Applications create member records immediately (auto-approve)
+- When ON: Applications go to pending queue for office review
+- **Recommended:** OFF for open membership, ON for controlled onboarding
+
+**Change settings at:** `/admin/portal-settings`
 
 ---
 
 ## 🔐 Authentication Methods
 
-### 1. **Email/Password Registration (NEW)**
-- Traditional registration with email and password
-- Available at: `/register`
-- Best for: Test accounts and members who prefer traditional login
-
-### 2. **Google OAuth**
-- "Sign in with Google" button
-- One-click authentication
-- Best for: Members with Google accounts
-
-### 3. **Magic Link (Passwordless)**
+### 1. **Magic Link (Passwordless)** ⭐ PRIMARY
 - Email-based passwordless login
 - Click link in email to sign in
-- Best for: Quick access, no password to remember
+- No password to remember
+- Most secure option
+- **Best for:** Everyone - simplest and most secure
+
+### 2. **Google OAuth** ⭐ PRIMARY
+- "Sign in with Google" button
+- One-click authentication
+- Uses existing Google account
+- **Best for:** Members with Google accounts
+
+### 3. **Email/Password Registration** (Optional - Default OFF)
+- Traditional registration with email and password
+- Available at: `/register` (only if enabled in settings)
+- Requires minimum 8 character password
+- **Best for:** Users who specifically prefer passwords
+- **Note:** Disabled by default, enable in `/admin/portal-settings` if needed
 
 ---
 
 ## 📋 Complete Registration Flow
 
-### **For New Users (First Time Registration)**
+### **Two Types of Registration:**
+
+#### **1. Member Registration** (`/join`) - Becoming a Member
+- For prospects who are NOT yet HSNEF members
+- Public-facing application form
+- Collects member information (name, contact, address, etc.)
+- Creates member record (immediately or after approval based on settings)
+
+#### **2. Portal Access Registration** (`/register` or `/login`) - Portal Login Setup
+- For existing members who need portal access
+- Links authentication to existing member record
+- Uses Magic Link, Google OAuth, or Email/Password (if enabled)
+- **Requirement:** Must have member record first
+
+---
+
+### **Path 1: New Member Self-Registration (Recommended for Public)**
+
+This is the primary path for new people who want to join HSNEF.
+
+#### **Step 1: Visit /join and Apply**
+
+**URL:** `https://yourdomain.com/join`
+
+Prospect fills out comprehensive application:
+- Member type (Personal/Family or Business/Corporate)
+- Membership level (Community, Annual, Lifetime)
+- Personal information (name, DOB, nakshatra, gotra)
+- Spouse/partner information (optional)
+- Contact details (email, phone)
+- Address
+- How they heard about HSNEF
+
+#### **Step 2A: Auto-Approval Path** (Default - Require Approval = OFF)
+
+1. Application submitted
+2. ✅ Member record created immediately
+3. Membership ID generated (e.g., 29876500)
+4. Success message: "Congratulations! Your Membership ID is 29876500"
+5. Prospect is now a member!
+6. Can immediately go to `/login` to set up portal access
+
+#### **Step 2B: Office Review Path** (Require Approval = ON)
+
+1. Application submitted
+2. Application saved to `pending_member_registrations`
+3. Status: "Pending"
+4. Message: "We'll review within 2-3 business days"
+5. Office staff reviews at `/admin/pending-registrations`
+6. Office approves → Member record created
+7. Office sends welcome email with instructions
+8. New member can now go to `/login` to set up portal access
+
+---
+
+### **Path 2: Existing Member - Portal Access Setup**
+
+This path is for members who already have a member record but need portal login.
 
 #### **Step 1: Member Record Must Exist**
 
 Before anyone can register for portal access, they must have a member record in the database with their email address.
 
 **How member records are created:**
+- ⭐ **Public self-registration** via `/join` (recommended)
 - Manual entry by office staff via `/admin/members`
 - CSV import via `/admin/members/import`
 - Direct database insertion
 
 **Required fields:**
-- `primary_email` - Must match the email used for registration
-- `membership_id` - Unique 8-digit ID
-- Basic contact information
+- `primary_email` - Must match the email used for portal registration
+- `membership_id` - Unique 8-digit ID (auto-generated or manually assigned)
+- Basic contact information (name, member class, level)
 
 #### **Step 2: User Registers**
 

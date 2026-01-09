@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth/AuthContext'
 import type { UserRole } from '@/types/database'
+import TermsAcceptanceModal from '@/components/TermsAcceptanceModal'
 
 interface MenuItem {
   name: string
@@ -87,6 +88,18 @@ const UserAddIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const LoginActivityIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+)
+
+const AuditLogIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+  </svg>
+)
+
 // Menu Items Configuration
 const menuItems: MenuItem[] = [
   {
@@ -156,6 +169,18 @@ const menuItems: MenuItem[] = [
     allowedRoles: ['Office Staff', 'Office Manager', 'Admin'],
   },
   {
+    name: 'Login Activity',
+    href: '/admin/login-activity',
+    icon: LoginActivityIcon,
+    allowedRoles: ['Office Manager', 'Admin'],
+  },
+  {
+    name: 'Audit Logs',
+    href: '/admin/audit-logs',
+    icon: AuditLogIcon,
+    allowedRoles: ['Office Staff', 'Office Manager', 'Admin'],
+  },
+  {
     name: 'Settings',
     href: '/admin/settings',
     icon: CogIcon,
@@ -174,7 +199,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   )
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-100">
+    <>
+      {/* Terms Acceptance Modal - shows if user hasn't accepted current terms */}
+      <TermsAcceptanceModal />
+
+      <div className="flex-1 flex flex-col bg-gray-100">
       {/* Mobile sidebar */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
@@ -295,6 +324,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</div>
         </main>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

@@ -521,7 +521,7 @@ See `.env.example` for complete list and setup instructions.
    - `/dashboard` - Member overview
    - `/dashboard/profile` - Edit profile
    - `/dashboard/family` - Manage family members
-   - `/dashboard/pass` - Digital membership pass with QR
+   - `/dashboard/pass` - Membership pass with QR
 
 3. **Payment Pages**
    - `/renew` - Annual membership renewal

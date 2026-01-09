@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { isTraditionalLoginEnabled } from '@/lib/utils/portalSettings'
 
 function LoginForm() {
   const searchParams = useSearchParams()
@@ -11,10 +12,11 @@ function LoginForm() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [showTraditionalLogin, setShowTraditionalLogin] = useState(false)
 
   // Initialize Supabase client
   const supabase = createClient()
-  
+
   // Check for error in URL params (from callback)
   useEffect(() => {
     const errorParam = searchParams.get('error')
@@ -22,6 +24,15 @@ function LoginForm() {
       setMessage({ type: 'error', text: decodeURIComponent(errorParam) })
     }
   }, [searchParams])
+
+  // Check if traditional login is enabled
+  useEffect(() => {
+    async function checkTraditionalLogin() {
+      const enabled = await isTraditionalLoginEnabled()
+      setShowTraditionalLogin(enabled)
+    }
+    checkTraditionalLogin()
+  }, [])
 
   // Handle Google OAuth sign-in
   const handleGoogleSignIn = async (e?: React.MouseEvent) => {
@@ -68,6 +79,22 @@ function LoginForm() {
       if (error) {
         console.error('OAuth error:', error)
         setMessage({ type: 'error', text: error.message })
+
+        // Track failed Google OAuth login
+        try {
+          await fetch('/api/login-tracking', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              loginMethod: 'google',
+              success: false,
+              failureReason: error.message,
+            }),
+          })
+        } catch (trackingError) {
+          console.warn('Login tracking error:', trackingError)
+        }
+
         setLoading(false)
       } else if (data?.url) {
         console.log('Redirecting to:', data.url)
@@ -111,10 +138,25 @@ function LoginForm() {
 
       if (error) {
         setMessage({ type: 'error', text: error.message })
+
+        // Track failed magic link login
+        try {
+          await fetch('/api/login-tracking', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              loginMethod: 'magic_link',
+              success: false,
+              failureReason: error.message,
+            }),
+          })
+        } catch (trackingError) {
+          console.warn('Login tracking error:', trackingError)
+        }
       } else {
         setMessage({
           type: 'success',
-          text: 'Check your email for the magic link to sign in!',
+          text: 'Check your email for the login link!',
         })
         setEmail('')
       }
@@ -140,8 +182,19 @@ function LoginForm() {
             HSNEF Membership Portal
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Sign in to access your account
+            Sign in to access your member account
           </p>
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-xs text-blue-800 font-medium">
+              <span className="block mb-1">Not a member yet?</span>
+              <a
+                href="/join"
+                className="text-[#FF9933] hover:text-[#FF8800] font-semibold underline"
+              >
+                Apply for membership here →
+              </a>
+            </p>
+          </div>
         </div>
 
         {/* Login Form */}
@@ -202,7 +255,7 @@ function LoginForm() {
             </div>
           </div>
 
-          {/* Magic Link Form */}
+          {/* Email Login Form */}
           <form onSubmit={handleMagicLink} className="space-y-4" suppressHydrationWarning>
             <div suppressHydrationWarning>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -254,7 +307,7 @@ function LoginForm() {
                   <span>Sending...</span>
                 </div>
               ) : (
-                'Send Magic Link'
+                'Email Me a Link to Login'
               )}
             </button>
           </form>
@@ -266,12 +319,22 @@ function LoginForm() {
             </p>
           </div>
 
-          {/* Link to Register */}
-          <div className="text-center text-sm mt-4">
-            <span className="text-gray-600">Don't have an account? </span>
-            <a href="/register" className="text-[#FF9933] hover:text-[#FF8800] font-medium">
-              Create one here
-            </a>
+          {/* Link to Register - Only show if traditional login is enabled */}
+          {showTraditionalLogin && (
+            <div className="text-center text-sm mt-4 pt-4 border-t border-gray-200">
+              <span className="text-gray-600">Existing member without portal access? </span>
+              <a href="/register" className="text-[#FF9933] hover:text-[#FF8800] font-medium">
+                Create portal account
+              </a>
+            </div>
+          )}
+
+          {/* Help for members */}
+          <div className="text-center text-sm mt-4 pt-4 border-t border-gray-200">
+            <p className="text-gray-600 mb-2">Already a member?</p>
+            <p className="text-xs text-gray-500">
+              Use <strong>Email Login Link</strong> or <strong>Google Sign-In</strong> above to access your portal.
+            </p>
           </div>
         </div>
 

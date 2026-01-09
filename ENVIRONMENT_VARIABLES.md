@@ -41,7 +41,7 @@ Use Stripe test keys for dev, live keys for production (or same test keys for bo
 | Variable | Description | Example | Required |
 |----------|-------------|---------|----------|
 | `RESEND_API_KEY` | Resend API key | `re_xxxxx...` | Yes* |
-| `EMAIL_FROM` | Sender email address | `noreply@members.hsnef.org` | Yes |
+| `EMAIL_FROM` | Sender email address | `noreply@portal.hsnef.org` | Yes |
 | `EMAIL_FROM_NAME` | Sender name | `HSNEF Membership Portal` | Yes |
 | `EMAIL_REPLY_TO` | Reply-to email address | `info@hsnef.org` | Yes |
 
@@ -62,7 +62,7 @@ If using SMTP instead of Resend:
 | `SMTP_SECURE` | Use TLS/SSL | `false` | Yes* |
 | `SMTP_USER` | SMTP username | `noreply@hsnef.org` | Optional |
 | `SMTP_PASSWORD` | SMTP password | `your-app-password` | Optional |
-| `EMAIL_FROM` | Sender email address | `noreply@members.hsnef.org` | Yes |
+| `EMAIL_FROM` | Sender email address | `noreply@portal.hsnef.org` | Yes |
 | `EMAIL_FROM_NAME` | Sender name | `HSNEF Membership Portal` | Yes |
 | `EMAIL_REPLY_TO` | Reply-to email address | `info@hsnef.org` | Yes |
 

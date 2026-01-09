@@ -262,7 +262,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 
 # Application URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-# Production: https://members.hsnef.org
+# Production: https://portal.hsnef.org
 
 # Resend for emails (already configured)
 RESEND_API_KEY=re_your-resend-api-key
