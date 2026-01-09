@@ -7,54 +7,95 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
 import { parseAddress, parsePhone, isValidEmail, parseDate } from '@/lib/utils/addressParser'
+import {
+  validateMemberNumberFormat,
+  isMemberNumberUnique,
+  generateMemberNumber,
+  parseMailingAddress,
+  isRowEmpty,
+} from '@/lib/utils/memberImportValidation'
 
+// New 42-column CSV structure
 interface CSVRow {
-  'First Name': string
-  'Last Name': string
-  'Email': string
-  'Phone': string
-  'Address': string
-  'Member Since': string
-  'Membership Level': string
-  'Member Class': string
-  'Is Founding Member': string
-  'Gothram': string
-  'Nakshatra': string
-  'Business Name'?: string
-  'EIN'?: string
-  'Secondary First Name'?: string
-  'Secondary Last Name'?: string
-  'Secondary Email'?: string
-  'Secondary Phone'?: string
+  Member_Number: string
+  Member_Class: string
+  Member_Type: string
+  Business_Name: string
+  Business_EIN: string
+  Member_Profile_Name: string
+  Member_First_Name: string
+  Member_Last_Name: string
+  Primary_Member_Email_Address: string
+  Primary_Phone_Number_1: string
+  Primary_Phone_Number_2: string
+  Member_Nakshatra: string
+  Family_Gotra: string
+  Secondary_First_Name: string
+  Secondary_Last_Name: string
+  Secondary_Nakshatra: string
+  Secondary_Email: string
+  Secondary_Phone_Number: string
+  Child_1_First_Name: string
+  Child_1_Last_Name: string
+  Child_1_Nakshatra: string
+  Child_1_Email: string
+  Child_2_First_Name: string
+  Child_2_Last_Name: string
+  Child_2_Nakshatra: string
+  Child_2_Email: string
+  Child_3_First_Name: string
+  Child_3_Last_Name: string
+  Child_3_Nakshatra: string
+  Child_3_Email: string
+  Child_4_First_Name: string
+  Child_4_Last_Name: string
+  Child_4_Nakshatra: string
+  Child_4_Email: string
+  Address_1: string
+  Address_2: string
+  City: string
+  State: string
+  Zip: string
+  Country: string
+  Mailing_Address: string
+  Member_Since: string
+}
+
+interface FamilyMemberData {
+  relationship: 'Primary' | 'Secondary' | 'Child'
+  first_name: string
+  last_name: string
+  email?: string
+  phone?: string
+  nakshatra?: string
+  child_order?: number
 }
 
 interface ParsedMember {
   // Original data
   original: CSVRow
-  // Parsed data
-  first_name: string
-  last_name: string
-  primary_email: string
-  primary_phone: string
+  // Member data
+  membership_id: string // Member_Number (auto-generated if blank)
+  member_class: 'Personal' | 'Business'
+  current_level: 'Community' | 'Annual' | 'Lifetime'
+  business_name?: string
+  business_ein?: string
+  member_profile_name: string
+  member_since: string | null
+  family_gotra: string
+  // Address
   address_line_1: string
+  address_line_2: string
   city: string
   state: string
   zip: string
-  member_since: string | null
-  current_level: 'Community' | 'Annual' | 'Lifetime'
-  member_class: 'Personal' | 'Business'
-  is_founding_member: boolean
-  family_gothram: string
-  nakshatra: string
-  business_name?: string
-  business_ein?: string
-  secondary_first_name?: string
-  secondary_last_name?: string
-  secondary_email?: string
-  secondary_phone?: string
+  country: string
+  // Family members
+  family_members: FamilyMemberData[]
   // Validation
   isValid: boolean
   errors: string[]
+  memberNumberGenerated: boolean
 }
 
 export default function ImportMembersPage() {
@@ -84,7 +125,10 @@ export default function ImportMembersPage() {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        const parsed = results.data.map((row: any) => parseCSVRow(row as CSVRow))
+        // Filter out truly empty rows (where all values are blank)
+        const filteredData = results.data.filter((row: any) => !isRowEmpty(row))
+
+        const parsed = filteredData.map((row: any) => parseCSVRow(row as CSVRow))
         setParsedMembers(parsed)
       },
       error: (error) => {
@@ -95,76 +139,206 @@ export default function ImportMembersPage() {
 
   const parseCSVRow = (row: CSVRow): ParsedMember => {
     const errors: string[] = []
+    let memberNumberGenerated = false
 
-    // Parse address
-    const address = parseAddress(row['Address'] || '')
+    // 1. VALIDATE REQUIRED FIELDS (only First_Name and Last_Name are required)
+    const firstName = row.Member_First_Name?.trim() || ''
+    const lastName = row.Member_Last_Name?.trim() || ''
 
-    // Validate email
-    const email = row['Email']?.trim() || ''
-    if (!isValidEmail(email)) {
-      errors.push('Invalid email format')
+    if (!firstName) {
+      errors.push('Member_First_Name is required')
+    }
+    if (!lastName) {
+      errors.push('Member_Last_Name is required')
     }
 
-    // Parse member level
-    let memberLevel: 'Community' | 'Annual' | 'Lifetime' = 'Community'
-    const levelStr = row['Membership Level']?.trim().toLowerCase() || 'community'
-    if (levelStr.includes('lifetime')) {
-      memberLevel = 'Lifetime'
-    } else if (levelStr.includes('annual')) {
-      memberLevel = 'Annual'
-    }
-
-    // Parse member class
+    // 2. PARSE MEMBER CLASS (default to Personal)
     let memberClass: 'Personal' | 'Business' = 'Personal'
-    const classStr = row['Member Class']?.trim().toLowerCase() || 'personal'
+    const classStr = row.Member_Class?.trim().toLowerCase() || 'personal'
     if (classStr.includes('business')) {
       memberClass = 'Business'
     }
 
-    // Validate required fields
-    if (!row['First Name'] && !row['Business Name']) {
-      errors.push('Missing name (First Name or Business Name required)')
+    // 3. PARSE MEMBER TYPE/LEVEL (default to Community)
+    let memberLevel: 'Community' | 'Annual' | 'Lifetime' = 'Community'
+    const typeStr = row.Member_Type?.trim().toLowerCase() || 'community'
+    if (typeStr.includes('lifetime')) {
+      memberLevel = 'Lifetime'
+    } else if (typeStr.includes('annual')) {
+      memberLevel = 'Annual'
     }
 
-    if (memberClass === 'Personal' && !row['First Name']) {
-      errors.push('First Name required for Personal members')
+    // 4. VALIDATE/GENERATE MEMBER_NUMBER
+    let memberNumber = row.Member_Number?.trim() || ''
+
+    if (memberNumber) {
+      // Validate existing Member_Number
+      const validation = validateMemberNumberFormat(memberNumber, memberClass, row.Member_Type)
+      if (!validation.isValid) {
+        errors.push(`Member_Number: ${validation.error}`)
+      }
+      // Note: Uniqueness will be checked during import (async operation)
+    } else {
+      // Will be auto-generated during import
+      memberNumberGenerated = true
     }
 
-    if (memberClass === 'Business' && !row['Business Name']) {
-      errors.push('Business Name required for Business members')
+    // 5. PARSE BUSINESS FIELDS
+    let businessName = row.Business_Name?.trim() || ''
+    const businessEIN = row.Business_EIN?.trim() || ''
+
+    // If Business class and no Business_Name, default to First_Name + Last_Name
+    if (memberClass === 'Business' && !businessName && firstName && lastName) {
+      businessName = `${firstName} ${lastName}`.trim()
     }
 
-    // Parse founding member
-    const isFoundingStr = row['Is Founding Member']?.trim().toLowerCase() || 'no'
-    const isFoundingMember = ['yes', 'true', '1', 'y'].includes(isFoundingStr)
+    // 6. PARSE MEMBER_PROFILE_NAME (defaults to First_Name + Last_Name if blank)
+    let memberProfileName = row.Member_Profile_Name?.trim() || ''
+    if (!memberProfileName && firstName && lastName) {
+      memberProfileName = `${firstName} ${lastName}`.trim()
+    }
 
-    // Parse member since date
-    const memberSince = parseDate(row['Member Since'] || '')
+    // 7. PARSE ADDRESS - use individual fields first, fallback to Mailing_Address
+    let addressLine1 = row.Address_1?.trim() || ''
+    let addressLine2 = row.Address_2?.trim() || ''
+    let city = row.City?.trim() || ''
+    let state = row.State?.trim() || ''
+    let zip = row.Zip?.trim() || ''
+    let country = row.Country?.trim() || ''
+
+    // If all address fields are empty, try parsing Mailing_Address
+    if (!addressLine1 && !city && !state && !zip && row.Mailing_Address?.trim()) {
+      const parsed = parseMailingAddress(row.Mailing_Address)
+      addressLine1 = parsed.address_line_1
+      addressLine2 = parsed.address_line_2
+      city = parsed.city
+      state = parsed.state
+      zip = parsed.zip
+      country = parsed.country
+    }
+
+    // 8. PARSE MEMBER_SINCE DATE
+    const memberSince = parseDate(row.Member_Since || '')
+
+    // 9. BUILD FAMILY MEMBERS ARRAY
+    const familyMembers: FamilyMemberData[] = []
+
+    // Primary member (from main columns)
+    const primaryEmail = row.Primary_Member_Email_Address?.trim() || ''
+    const primaryPhone1 = parsePhone(row.Primary_Phone_Number_1 || '')
+    const primaryPhone2 = parsePhone(row.Primary_Phone_Number_2 || '')
+    const memberNakshatra = row.Member_Nakshatra?.trim() || ''
+
+    // Only validate primary email if provided
+    if (primaryEmail && !isValidEmail(primaryEmail)) {
+      errors.push('Invalid Primary_Member_Email_Address format')
+    }
+
+    if (firstName && lastName) {
+      familyMembers.push({
+        relationship: 'Primary',
+        first_name: firstName,
+        last_name: lastName,
+        email: primaryEmail || undefined,
+        phone: primaryPhone1 || primaryPhone2 || undefined,
+        nakshatra: memberNakshatra || undefined,
+      })
+    }
+
+    // Secondary member
+    const secondaryFirstName = row.Secondary_First_Name?.trim() || ''
+    const secondaryLastName = row.Secondary_Last_Name?.trim() || ''
+    const secondaryEmail = row.Secondary_Email?.trim() || ''
+    const secondaryPhone = parsePhone(row.Secondary_Phone_Number || '')
+    const secondaryNakshatra = row.Secondary_Nakshatra?.trim() || ''
+
+    // Validate secondary email if provided
+    if (secondaryEmail && !isValidEmail(secondaryEmail)) {
+      errors.push('Invalid Secondary_Email format')
+    }
+
+    if (secondaryFirstName && secondaryLastName) {
+      familyMembers.push({
+        relationship: 'Secondary',
+        first_name: secondaryFirstName,
+        last_name: secondaryLastName,
+        email: secondaryEmail || undefined,
+        phone: secondaryPhone || undefined,
+        nakshatra: secondaryNakshatra || undefined,
+      })
+    }
+
+    // Children (4 children supported)
+    const children = [
+      {
+        firstName: row.Child_1_First_Name?.trim() || '',
+        lastName: row.Child_1_Last_Name?.trim() || '',
+        nakshatra: row.Child_1_Nakshatra?.trim() || '',
+        email: row.Child_1_Email?.trim() || '',
+        order: 1,
+      },
+      {
+        firstName: row.Child_2_First_Name?.trim() || '',
+        lastName: row.Child_2_Last_Name?.trim() || '',
+        nakshatra: row.Child_2_Nakshatra?.trim() || '',
+        email: row.Child_2_Email?.trim() || '',
+        order: 2,
+      },
+      {
+        firstName: row.Child_3_First_Name?.trim() || '',
+        lastName: row.Child_3_Last_Name?.trim() || '',
+        nakshatra: row.Child_3_Nakshatra?.trim() || '',
+        email: row.Child_3_Email?.trim() || '',
+        order: 3,
+      },
+      {
+        firstName: row.Child_4_First_Name?.trim() || '',
+        lastName: row.Child_4_Last_Name?.trim() || '',
+        nakshatra: row.Child_4_Nakshatra?.trim() || '',
+        email: row.Child_4_Email?.trim() || '',
+        order: 4,
+      },
+    ]
+
+    for (const child of children) {
+      // Only add child if they have both first and last name
+      if (child.firstName && child.lastName) {
+        // Validate child email if provided (children can share parent emails)
+        if (child.email && !isValidEmail(child.email)) {
+          errors.push(`Invalid Child_${child.order}_Email format`)
+        }
+
+        familyMembers.push({
+          relationship: 'Child',
+          first_name: child.firstName,
+          last_name: child.lastName,
+          email: child.email || undefined,
+          nakshatra: child.nakshatra || undefined,
+          child_order: child.order,
+        })
+      }
+    }
 
     const parsed: ParsedMember = {
       original: row,
-      first_name: row['First Name']?.trim() || '',
-      last_name: row['Last Name']?.trim() || '',
-      primary_email: email,
-      primary_phone: parsePhone(row['Phone'] || ''),
-      address_line_1: address.address_line_1,
-      city: address.city,
-      state: address.state,
-      zip: address.zip,
-      member_since: memberSince,
-      current_level: memberLevel,
+      membership_id: memberNumber, // May be empty if auto-generated
       member_class: memberClass,
-      is_founding_member: isFoundingMember,
-      family_gothram: row['Gothram']?.trim() || '',
-      nakshatra: row['Nakshatra']?.trim() || '',
-      business_name: row['Business Name']?.trim() || '',
-      business_ein: row['EIN']?.trim() || '',
-      secondary_first_name: row['Secondary First Name']?.trim() || '',
-      secondary_last_name: row['Secondary Last Name']?.trim() || '',
-      secondary_email: row['Secondary Email']?.trim() || '',
-      secondary_phone: parsePhone(row['Secondary Phone'] || ''),
+      current_level: memberLevel,
+      business_name: businessName || undefined,
+      business_ein: businessEIN || undefined,
+      member_profile_name: memberProfileName,
+      member_since: memberSince,
+      family_gotra: row.Family_Gotra?.trim() || '',
+      address_line_1: addressLine1,
+      address_line_2: addressLine2,
+      city: city,
+      state: state,
+      zip: zip,
+      country: country,
+      family_members: familyMembers,
       isValid: errors.length === 0,
       errors,
+      memberNumberGenerated,
     }
 
     return parsed
@@ -236,47 +410,93 @@ export default function ImportMembersPage() {
       // Step 2: Import members with batch_id
       for (const member of validMembers) {
         try {
-          const { error } = await supabase.from('members').insert({
-            first_name: member.first_name || null,
-            last_name: member.last_name || null,
-            primary_email: member.primary_email,
-            primary_phone: member.primary_phone || null,
-            address_line_1: member.address_line_1 || null,
-            city: member.city || null,
-            state: member.state || null,
-            zip: member.zip || null,
-            member_since: member.member_since || null,
-            current_level: member.current_level,
-            member_class: member.member_class,
-            is_founding_member: member.is_founding_member,
-            family_gothram: member.family_gothram || null,
-            nakshatra: member.nakshatra || null,
-            business_name: member.business_name || null,
-            business_ein: member.business_ein || null,
-            secondary_first_name: member.secondary_first_name || null,
-            secondary_last_name: member.secondary_last_name || null,
-            secondary_email: member.secondary_email || null,
-            secondary_phone: member.secondary_phone || null,
-            import_batch_id: batchData.id,
-          })
+          // Generate or validate Member_Number
+          let finalMemberNumber = member.membership_id
 
-          if (error) {
-            results.failed++
-            results.errors.push(
-              `${member.primary_email}: ${error.message}`
-            )
-          } else {
-            results.success++
+          if (member.memberNumberGenerated) {
+            // Auto-generate Member_Number
+            finalMemberNumber = await generateMemberNumber(member.member_class, member.current_level)
+          } else if (finalMemberNumber) {
+            // Check uniqueness of provided Member_Number
+            const isUnique = await isMemberNumberUnique(finalMemberNumber)
+            if (!isUnique) {
+              results.failed++
+              results.errors.push(
+                `Row with Member_Number ${finalMemberNumber}: Member_Number already exists in database`
+              )
+              continue // Skip this member
+            }
           }
+
+          // Get primary member's email for display name
+          const primaryMember = member.family_members.find((fm) => fm.relationship === 'Primary')
+          const displayEmail = primaryMember?.email || 'No email'
+
+          // Insert member record
+          const { data: insertedMember, error: memberError } = await supabase
+            .from('members')
+            .insert({
+              membership_id: finalMemberNumber || null,
+              member_class: member.member_class,
+              current_level: member.current_level,
+              business_name: member.business_name || null,
+              business_ein: member.business_ein || null,
+              member_profile_name: member.member_profile_name || null,
+              member_since: member.member_since || null,
+              family_gotra: member.family_gotra || null,
+              address_line_1: member.address_line_1 || null,
+              address_line_2: member.address_line_2 || null,
+              city: member.city || null,
+              state: member.state || null,
+              zip: member.zip || null,
+              country: member.country || null,
+              import_batch_id: batchData.id,
+            })
+            .select()
+            .single()
+
+          if (memberError) {
+            results.failed++
+            results.errors.push(`${displayEmail}: ${memberError.message}`)
+            continue
+          }
+
+          // Step 3: Insert family members
+          if (member.family_members.length > 0) {
+            const familyMemberInserts = member.family_members.map((fm) => ({
+              member_id: insertedMember.id,
+              relationship: fm.relationship,
+              first_name: fm.first_name,
+              last_name: fm.last_name,
+              email: fm.email || null,
+              phone: fm.phone || null,
+              nakshatra: fm.nakshatra || null,
+              child_order: fm.child_order || null,
+            }))
+
+            const { error: familyError } = await supabase
+              .from('family_members')
+              .insert(familyMemberInserts)
+
+            if (familyError) {
+              // Log error but don't fail the whole import
+              console.error(`Failed to insert family members for ${displayEmail}:`, familyError)
+              results.errors.push(
+                `${displayEmail}: Member imported but family members failed: ${familyError.message}`
+              )
+            }
+          }
+
+          results.success++
         } catch (error: any) {
           results.failed++
-          results.errors.push(
-            `${member.primary_email}: ${error.message || 'Unknown error'}`
-          )
+          const primaryMember = member.family_members.find((fm) => fm.relationship === 'Primary')
+          const displayEmail = primaryMember?.email || 'Unknown'
+          results.errors.push(`${displayEmail}: ${error.message || 'Unknown error'}`)
         }
       }
 
-      // Step 3: Update batch with final counts
+      // Step 4: Update batch with final counts
       await supabase
         .from('import_batches')
         .update({
@@ -329,11 +549,13 @@ export default function ImportMembersPage() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h3 className="text-sm font-semibold text-blue-900 mb-2">CSV Format Instructions</h3>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Required columns: First Name (or Business Name), Email, Membership Level, Member Class</li>
-              <li>• Address format: "Street, City, State ZipCode" (will be auto-parsed)</li>
-              <li>• Membership Level: Community, Annual, or Lifetime</li>
-              <li>• Member Class: Personal or Business</li>
-              <li>• Is Founding Member: Yes/No</li>
+              <li>• <strong>Required columns:</strong> Member_First_Name, Member_Last_Name</li>
+              <li>• <strong>Member_Number:</strong> Leave blank to auto-generate, or provide 8-digit format XXYYZZZZ</li>
+              <li>• <strong>Member_Type:</strong> Community, Annual, or Lifetime (defaults to Community)</li>
+              <li>• <strong>Member_Class:</strong> Personal or Business (defaults to Personal)</li>
+              <li>• <strong>Address:</strong> Provide individual fields (Address_1, City, State, Zip) OR use Mailing_Address (will be auto-parsed)</li>
+              <li>• <strong>Family Members:</strong> Include Primary, Secondary, and up to 4 children with their details</li>
+              <li>• <strong>Business_Name:</strong> For Business class, defaults to First_Name + Last_Name if blank</li>
             </ul>
           </div>
 
@@ -386,13 +608,12 @@ export default function ImportMembersPage() {
                     <thead className="bg-gray-50 sticky top-0">
                       <tr>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Address</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">City</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">State</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Zip</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Level</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Member #</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Profile Name</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Class</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Family</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">City/State</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Errors</th>
                       </tr>
                     </thead>
@@ -407,15 +628,15 @@ export default function ImportMembersPage() {
                             )}
                           </td>
                           <td className="px-3 py-2 text-sm text-gray-900">
-                            {member.member_class === 'Personal'
-                              ? `${member.first_name} ${member.last_name}`
-                              : member.business_name}
+                            {member.membership_id || (
+                              <span className="text-gray-400 text-xs">Auto-gen</span>
+                            )}
                           </td>
-                          <td className="px-3 py-2 text-sm text-gray-900">{member.primary_email}</td>
-                          <td className="px-3 py-2 text-sm text-gray-600">{member.address_line_1}</td>
-                          <td className="px-3 py-2 text-sm text-gray-600">{member.city}</td>
-                          <td className="px-3 py-2 text-sm text-gray-600">{member.state}</td>
-                          <td className="px-3 py-2 text-sm text-gray-600">{member.zip}</td>
+                          <td className="px-3 py-2 text-sm text-gray-900">
+                            {member.member_profile_name || (
+                              member.business_name ? member.business_name : 'N/A'
+                            )}
+                          </td>
                           <td className="px-3 py-2 text-sm">
                             <span className={`px-2 py-1 text-xs rounded-full ${
                               member.current_level === 'Lifetime' ? 'bg-amber-100 text-amber-800' :
@@ -425,7 +646,28 @@ export default function ImportMembersPage() {
                               {member.current_level}
                             </span>
                           </td>
-                          <td className="px-3 py-2 text-sm text-red-600">
+                          <td className="px-3 py-2 text-sm">
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              member.member_class === 'Business' ? 'bg-purple-100 text-purple-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {member.member_class}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 text-sm text-gray-600">
+                            {member.family_members.length} member{member.family_members.length !== 1 ? 's' : ''}
+                            {member.family_members.length > 0 && (
+                              <div className="text-xs text-gray-500">
+                                {member.family_members.filter(fm => fm.relationship === 'Primary').length > 0 && 'P'}
+                                {member.family_members.filter(fm => fm.relationship === 'Secondary').length > 0 && '+S'}
+                                {member.family_members.filter(fm => fm.relationship === 'Child').length > 0 && ` +${member.family_members.filter(fm => fm.relationship === 'Child').length}C`}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-sm text-gray-600">
+                            {member.city && member.state ? `${member.city}, ${member.state}` : member.city || member.state || 'N/A'}
+                          </td>
+                          <td className="px-3 py-2 text-sm text-red-600 max-w-xs">
                             {member.errors.join(', ')}
                           </td>
                         </tr>
