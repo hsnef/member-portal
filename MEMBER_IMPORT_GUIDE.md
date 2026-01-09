@@ -4,7 +4,29 @@
 
 ## Overview
 
-The member import system allows you to bulk import member data from CSV files with full rollback capabilities. Every import is tracked, and you can revert (delete) any import batch with one click.
+The member import system allows you to bulk import member data from CSV files with full rollback capabilities. The new enhanced import system supports:
+
+- ✅ **Auto-generated Member Numbers** with format validation
+- ✅ **Family Member Management** - Primary, Secondary, and up to 4 children per membership
+- ✅ **Business Member Support** with EIN tracking
+- ✅ **International Phone Numbers** with country code support
+- ✅ **Smart Address Parsing** from Mailing_Address format
+- ✅ **Full Rollback Capability** - revert any import with one click
+
+---
+
+## 📥 Download CSV Template
+
+Download the ready-to-use CSV template with examples:
+- **Location:** `public/member-import-template.csv`
+- **Direct Link:** [member-import-template.csv](/member-import-template.csv)
+
+The template includes 5 example rows showing:
+1. Personal Lifetime member with 2 children
+2. Personal Annual member with pre-filled Member_Number
+3. Business member
+4. International member with UK phone numbers
+5. Family with 4 children (maximum supported)
 
 ---
 
@@ -16,6 +38,7 @@ Every import can be **completely reverted** (deleted) from the Import History pa
 
 **What happens when you revert:**
 - All members from that specific import batch are **permanently deleted**
+- All family members associated with those memberships are deleted
 - Other members (manual or from other imports) are **not affected**
 - The import record is marked as "Reverted" for audit trail
 - **This action cannot be undone** - data is permanently removed
@@ -29,53 +52,240 @@ Every import can be **completely reverted** (deleted) from the Import History pa
 
 ---
 
+## 📋 CSV Column Reference
+
+### Required Columns (Only 2!)
+
+| Column | Required | Description |
+|--------|----------|-------------|
+| `Member_First_Name` | **YES** | First name of primary member |
+| `Member_Last_Name` | **YES** | Last name of primary member |
+
+**All other columns are optional!**
+
+### Member Information Columns
+
+| Column | Format | Description |
+|--------|--------|-------------|
+| `Member_Number` | 8 digits: XXYYZZZZ | Leave blank to auto-generate, or provide in format XXYYZZZZ |
+| `Member_Class` | Personal \| Business | Defaults to "Personal" |
+| `Member_Type` | Community \| Annual \| Lifetime | Defaults to "Community" |
+| `Member_Profile_Name` | Text | Display name for member profile (auto-generated from First_Name + Last_Name if blank) |
+| `Member_Since` | Date (YYYY-MM-DD) | Membership start date |
+| `Family_Gotra` | Text | Family gotra/gothram |
+
+### Business Member Columns
+
+| Column | Format | Description |
+|--------|--------|-------------|
+| `Business_Name` | Text | Business name (auto-defaults to First_Name + Last_Name if blank for Business class) |
+| `Business_EIN` | Text | Employer Identification Number |
+
+### Primary Member Contact Columns
+
+| Column | Format | Description |
+|--------|--------|-------------|
+| `Primary_Member_Email_Address` | email@domain.com | Primary member's email address |
+| `Primary_Phone_Number_1` | Phone | Primary phone (will be normalized with country code) |
+| `Primary_Phone_Number_2` | Phone | Alternate phone (will be normalized with country code) |
+| `Member_Nakshatra` | Text | Primary member's nakshatra |
+
+### Secondary Member Columns
+
+| Column | Format | Description |
+|--------|--------|-------------|
+| `Secondary_First_Name` | Text | Secondary member first name |
+| `Secondary_Last_Name` | Text | Secondary member last name |
+| `Secondary_Email` | email@domain.com | Secondary member email |
+| `Secondary_Phone_Number` | Phone | Secondary member phone |
+| `Secondary_Nakshatra` | Text | Secondary member nakshatra |
+
+### Children Columns (Repeat for Child_1, Child_2, Child_3, Child_4)
+
+| Column | Format | Description |
+|--------|--------|-------------|
+| `Child_1_First_Name` | Text | Child 1 first name |
+| `Child_1_Last_Name` | Text | Child 1 last name |
+| `Child_1_Email` | email@domain.com | Child 1 email (can be same as parent email) |
+| `Child_1_Nakshatra` | Text | Child 1 nakshatra |
+
+*Repeat for Child_2, Child_3, Child_4*
+
+### Address Columns (Two Options)
+
+**Option 1: Individual Fields**
+| Column | Format | Description |
+|--------|--------|-------------|
+| `Address_1` | Text | Street address line 1 |
+| `Address_2` | Text | Street address line 2 (Apt, Suite, etc.) |
+| `City` | Text | City |
+| `State` | Text | State/Province |
+| `Zip` | Text | ZIP/Postal code |
+| `Country` | Text | Country |
+
+**Option 2: Mailing_Address Field**
+| Column | Format | Description |
+|--------|--------|-------------|
+| `Mailing_Address` | Full address string | "Street, City, State Zip, Country" - will be auto-parsed |
+
+**Smart Parsing Logic:**
+- If individual address fields (Address_1, City, State, Zip) are provided, use those
+- If all address fields are empty, parse Mailing_Address into components
+- Example Mailing_Address: `"123 Main St, Jacksonville, FL 32256, USA"`
+
+---
+
+## 🔢 Member_Number Format
+
+### Auto-Generation (Recommended)
+
+Leave `Member_Number` blank and the system will auto-generate:
+- Format: `XXYYZZZZ` (8 digits)
+- XX = Member_Class prefix (11=Personal, 21=Business)
+- YY = Member_Type prefix (00=Community, 01=Annual, 02=Lifetime)
+- ZZZZ = Sequential number (auto-incremented)
+
+**Examples:**
+- `11010001` = Personal, Annual, #0001
+- `21020015` = Business, Lifetime, #0015
+
+### Manual Entry
+
+If you provide a Member_Number, the system will:
+1. ✅ Validate it's exactly 8 digits
+2. ✅ Validate class prefix matches Member_Class
+3. ✅ Validate type prefix matches Member_Type
+4. ✅ Check for duplicates in database
+5. ❌ Reject if invalid or duplicate
+
+**Validation Rules:**
+- Must be exactly 8 digits
+- First 2 digits: 11 (Personal) or 21 (Business)
+- Next 2 digits: 00 (Community), 01 (Annual), 02 (Lifetime)
+- Must match Member_Class and Member_Type columns
+
+---
+
+## 📞 Phone Number Handling
+
+### International Support
+
+The system automatically normalizes phone numbers:
+
+**Auto-Detection:**
+- If starts with `+`, keeps the country code as-is
+- If starts with `1` and has 11 digits, adds `+` prefix
+- Otherwise, defaults to US `+1` country code
+
+**Examples:**
+| Input | Normalized Output |
+|-------|-------------------|
+| `904-555-1234` | `+19045551234` |
+| `(904) 555-1234` | `+19045551234` |
+| `+44 20 1234 5678` | `+442012345678` |
+| `+91 98765 43210` | `+919876543210` |
+| `19045551234` | `+19045551234` |
+
+**All non-digit characters (except leading +) are removed automatically**
+
+---
+
+## 👨‍👩‍👧‍👦 Family Members
+
+### How It Works
+
+Each membership imports:
+- **1 Primary Member** - From Member_First_Name, Member_Last_Name columns
+- **1 Secondary Member** (optional) - From Secondary_First_Name, Secondary_Last_Name
+- **Up to 4 Children** (optional) - From Child_1 through Child_4 columns
+
+**What's Created:**
+1. Main `members` record (the membership)
+2. Separate `family_members` records for each person
+   - Primary member entry
+   - Secondary member entry (if provided)
+   - Child entries (if provided)
+
+### Searching by Family Members
+
+You can search for members by:
+- Primary member name
+- Secondary member name
+- Children names
+- Any family member email
+
+All family data is stored relationally and fully searchable!
+
+---
+
+## 🏢 Business Members
+
+### Business-Specific Fields
+
+| Field | Required? | Description |
+|-------|-----------|-------------|
+| `Member_Class` | Set to "Business" | Identifies this as a business membership |
+| `Business_Name` | Recommended | Business name (auto-defaults to First_Name + Last_Name if blank) |
+| `Business_EIN` | Optional | Employer Identification Number |
+
+### Auto-Defaulting Logic
+
+If `Member_Class` = "Business" and `Business_Name` is blank:
+- System automatically sets `Business_Name` = `Member_First_Name` + `Member_Last_Name`
+- Useful when business owner's name is the business name
+
+**Example:**
+```csv
+Member_Class,Business_Name,Member_First_Name,Member_Last_Name
+Business,,Kumar,Tech Solutions
+```
+↓ **Auto-defaults to:**
+```
+Business_Name: "Kumar Tech Solutions"
+```
+
+---
+
 ## 📋 Import Process Step-by-Step
 
 ### Step 1: Prepare Your CSV File
 
-**Required Columns:**
-- `First Name` (required for Personal members)
-- `Email` (required)
-- `Membership Level` (Community, Annual, or Lifetime)
-- `Member Class` (Personal or Business)
+**Download the Template:**
+1. Go to `/public/member-import-template.csv`
+2. Open in Excel, Google Sheets, or text editor
+3. Study the example rows
+4. Replace with your actual member data
 
-**Optional Columns:**
-- `Last Name`
-- `Phone`
-- `Address` (format: "Street, City, State ZipCode")
-- `Member Since` (date)
-- `Is Founding Member` (Yes/No)
-- `Gothram`
-- `Nakshatra`
-- `Business Name` (required for Business members)
-- `EIN`
-- `Secondary First Name`
-- `Secondary Last Name`
-- `Secondary Email`
-- `Secondary Phone`
-
-**Example CSV:**
-```csv
-First Name,Last Name,Email,Phone,Address,Member Since,Membership Level,Member Class,Is Founding Member,Gothram,Nakshatra
-John,Doe,john.doe@example.com,904-555-0123,"123 Main St, Jacksonville, FL 32256",2020-01-15,Lifetime,Personal,Yes,Bharadwaja,Rohini
-```
+**CSV Tips:**
+- Keep the header row exactly as-is (column names matter!)
+- Delete the example rows before importing
+- Use UTF-8 encoding for special characters
+- Save as `.csv` format
 
 ### Step 2: Upload and Preview
 
 1. Go to **Dashboard → Members → Import CSV** (`/admin/members/import`)
 2. Click **"Choose File"** and select your CSV
-3. System automatically parses and validates the file
+3. System automatically:
+   - Filters out empty rows
+   - Validates all data
+   - Parses addresses and phone numbers
+   - Generates Member_Numbers if needed
 4. **Review the preview table:**
    - ✅ Green checkmark = Valid row (will be imported)
    - ✗ Red X = Invalid row (will be skipped)
    - Red background = Row has validation errors
    - Errors column shows what needs fixing
 
-**Preview shows:**
-- Status (✓ valid or ✗ invalid)
-- Parsed name, email, address
-- Membership level
-- Any validation errors
+**Preview Columns:**
+- **Status** - ✓ valid or ✗ invalid
+- **Member #** - Generated or provided number (shows "Auto-gen" if blank)
+- **Profile Name** - Member_Profile_Name or Business_Name
+- **Type** - Membership level badge
+- **Class** - Personal or Business badge
+- **Family** - Count of family members (e.g., "3 members: P+S+1C")
+- **City/State** - Parsed location
+- **Errors** - Validation error messages
 
 ### Step 3: Review Validation Results
 
@@ -84,14 +294,18 @@ John,Doe,john.doe@example.com,904-555-0123,"123 Main St, Jacksonville, FL 32256"
 - **✗ X Invalid** - Number of rows with errors (will be skipped)
 
 **Common validation errors:**
-- Invalid email format
-- Missing required fields (First Name, Email)
-- Missing Business Name for Business members
+- `Member_First_Name is required`
+- `Member_Last_Name is required`
+- `Invalid Primary_Member_Email_Address format`
+- `Member_Number: Invalid format` (must be 8 digits)
+- `Member_Number: Already exists in database`
+- `Member_Number: Doesn't match Member_Class`
 
 **What happens to invalid rows:**
 - They are **skipped automatically**
 - Not imported into the database
 - Listed in the errors section after import
+- You can fix the CSV and re-import
 
 ### Step 4: Confirm and Import
 
@@ -99,7 +313,11 @@ John,Doe,john.doe@example.com,904-555-0123,"123 Main St, Jacksonville, FL 32256"
 2. Confirmation dialog: "Import X valid members? (Y will be skipped due to errors)"
 3. Click **OK** to proceed
 4. System creates a unique **Batch ID** (e.g., `IMP-20260109-A3F2`)
-5. Imports valid members one by one
+5. For each valid row:
+   - Generates Member_Number if blank
+   - Checks Member_Number uniqueness
+   - Creates member record
+   - Creates family_members records
 6. Shows real-time progress
 
 ### Step 5: Review Import Results
@@ -114,8 +332,11 @@ John,Doe,john.doe@example.com,904-555-0123,"123 Main St, Jacksonville, FL 32256"
 
 **If there are errors:**
 - Detailed error list shown
-- Format: "email@example.com: error message"
-- Common errors: duplicate emails, database constraints
+- Format: "member_email@example.com: error message"
+- Common errors:
+  - Duplicate Member_Number during batch
+  - Database constraint violations
+  - Family member insertion failures
 
 **Next Steps:**
 - Click **"View Import History"** to see the batch
@@ -132,6 +353,7 @@ John,Doe,john.doe@example.com,904-555-0123,"123 Main St, Jacksonville, FL 32256"
 - Data has errors that need fixing
 - Need to re-import with corrections
 - Testing the import process
+- Member_Numbers were auto-generated incorrectly
 
 ### How to Revert:
 
@@ -157,6 +379,7 @@ John,Doe,john.doe@example.com,904-555-0123,"123 Main St, Jacksonville, FL 32256"
 
 5. **Deletion happens instantly**
    - All members from that batch are deleted
+   - All family_members are deleted (CASCADE)
    - Batch status changes to "Reverted"
    - Shows who reverted and when
 
@@ -167,48 +390,84 @@ John,Doe,john.doe@example.com,904-555-0123,"123 Main St, Jacksonville, FL 32256"
 
 ---
 
-## 📊 Import History Page
+## 🔍 Common Issues & Solutions
 
-### What You See:
+### Issue: "Member_First_Name is required" or "Member_Last_Name is required"
 
-**Batch Information:**
-- **Batch ID** - Unique identifier (e.g., IMP-20260109-A3F2)
-- **File Name** - Original CSV filename
-- **Imported By** - Staff member who ran the import
-- **Date** - When import was run
-- **Records** - Success/failed counts
-- **Status** - Completed or Reverted
+**Solution:**
+- These are the only 2 required fields
+- Check CSV has values in these columns
+- Remove completely empty rows
+- Ensure no accidental spaces instead of names
 
-**Status Indicators:**
-- 🟢 **Completed** - Import successful, members in database
-- 🔴 **Reverted** - Import was rolled back, members deleted
+### Issue: "Invalid Primary_Member_Email_Address format"
 
-**For Reverted Batches:**
-- Shows who reverted
-- Shows when reverted
-- "Revert" button is disabled (can't revert twice)
+**Solution:**
+- Check email format: `name@domain.com`
+- Remove spaces before/after email
+- Fix typos (`.cm` → `.com`)
+- Emails are optional - can be blank
 
----
+### Issue: "Member_Number: Invalid format"
 
-## ⚠️ Important Warnings
+**Solution:**
+- Must be exactly 8 digits: `XXYYZZZZ`
+- First 2 digits must be `11` (Personal) or `21` (Business)
+- Next 2 digits must be `00`, `01`, or `02`
+- Leave blank to auto-generate (recommended)
 
-### What Revert DOES:
-- ✅ Deletes ALL members from that specific import batch
-- ✅ Permanent deletion - cannot be recovered
-- ✅ Only affects members from that batch
+### Issue: "Member_Number: Already exists in database"
 
-### What Revert DOES NOT Do:
-- ❌ Does NOT delete manually added members
-- ❌ Does NOT delete members from other imports
-- ❌ Does NOT delete test accounts
-- ❌ Does NOT affect payments, bookings, or other data
+**Solution:**
+- Member_Numbers must be unique
+- Check if member already imported
+- Leave Member_Number blank to auto-generate new one
+- Or provide a different unique number
 
-### Critical Notes:
-1. **Revert is permanent** - There's no "undo" button
-2. **Make backups** - If you're unsure, export member list first
-3. **Test with small files first** - Import 5-10 records to test
-4. **Cannot revert twice** - Once reverted, batch status is final
-5. **Related data** - If members have payments/bookings, consider carefully
+### Issue: "Member_Number: Doesn't match Member_Class"
+
+**Solution:**
+- Personal members must start with `11`
+- Business members must start with `21`
+- Fix Member_Class or Member_Number
+- Or leave Member_Number blank to auto-generate
+
+### Issue: Members imported but can't find them
+
+**Solution:**
+1. Check import results - were they successful?
+2. Search by Member_Number in members list
+3. Check family member names (might be searching wrong name)
+4. Verify import batch in Import History shows success count
+
+### Issue: Phone numbers look weird
+
+**Solution:**
+- All phones normalized with country code (e.g., `+19045551234`)
+- This is correct - enables international support
+- Display formatting can be added in UI later
+
+### Issue: Address not parsing from Mailing_Address
+
+**Solution:**
+- Check format: "Street, City, State Zip, Country"
+- Example: "123 Main St, Jacksonville, FL 32256, USA"
+- Commas are important!
+- Or use individual Address_1, City, State, Zip columns instead
+
+### Issue: 999 empty rows imported
+
+**Solution:**
+- This is fixed! Empty rows are now automatically filtered
+- CSV files with trailing empty rows are handled correctly
+- Only rows with actual data are imported
+
+### Issue: Business_Name is blank for Business member
+
+**Solution:**
+- If blank, system auto-defaults to First_Name + Last_Name
+- To avoid this, provide explicit Business_Name in CSV
+- Example: Leave blank for "Kumar Tech" → auto-fills "Kumar Tech"
 
 ---
 
@@ -217,19 +476,21 @@ John,Doe,john.doe@example.com,904-555-0123,"123 Main St, Jacksonville, FL 32256"
 ### Safe Testing Process:
 
 **1. Test with Small File First**
-- Create a CSV with 3-5 test members
-- Use test.import@example.com type emails
+- Copy 3-5 rows from template
+- Use test emails like `test1@example.com`
+- Leave Member_Number blank to test auto-generation
 - Import and verify everything looks good
 
 **2. Review Imported Data**
 - Go to Members list
-- Check that data parsed correctly
+- Check that Member_Numbers were generated correctly
+- Search for family member names
 - Verify addresses, phones, levels are correct
 
 **3. Practice Reverting**
 - Go to Import History
 - Revert the test import
-- Verify members are deleted
+- Verify members AND family members are deleted
 - Confirms rollback works!
 
 **4. Import Real Data**
@@ -240,7 +501,8 @@ John,Doe,john.doe@example.com,904-555-0123,"123 Main St, Jacksonville, FL 32256"
 **5. Verify Real Import**
 - Check member count is correct
 - Spot-check a few member records
-- Verify membership levels are assigned correctly
+- Check family members are linked correctly
+- Verify Member_Numbers follow correct format
 
 **6. Keep Batch ID**
 - Save the Batch ID somewhere safe
@@ -251,88 +513,49 @@ John,Doe,john.doe@example.com,904-555-0123,"123 Main St, Jacksonville, FL 32256"
 ## 📝 Best Practices
 
 ### Before Import:
-- ✅ Clean your CSV data (remove duplicates, fix emails)
+
+- ✅ Download and use the provided CSV template
+- ✅ Keep all 42 column headers (even if some are blank)
+- ✅ Leave Member_Number blank for auto-generation (recommended)
+- ✅ Use individual address fields OR Mailing_Address (not both)
+- ✅ Provide at least Member_First_Name and Member_Last_Name
 - ✅ Test with a small file first (5-10 records)
 - ✅ Backup existing member list (export to CSV)
-- ✅ Make sure addresses follow format: "Street, City, State ZIP"
-- ✅ Verify email addresses are valid
-- ✅ Check membership levels are spelled correctly
 
 ### During Import:
-- ✅ Review the preview carefully
-- ✅ Check validation errors before proceeding
+
+- ✅ Review the preview table carefully
+- ✅ Check Member_Number shows "Auto-gen" if left blank
+- ✅ Verify family member count is correct (e.g., "3 members: P+S+1C")
 - ✅ Fix errors in CSV and re-upload if many invalid rows
 - ✅ Note the Batch ID after import completes
 - ✅ Review import results before navigating away
 
 ### After Import:
+
 - ✅ Spot-check imported members in Members list
-- ✅ Verify counts match expected (minus invalid rows)
-- ✅ Check that membership levels are correct
+- ✅ Search for family member names to verify they're searchable
+- ✅ Check Member_Numbers follow format XXYYZZZZ
+- ✅ Verify membership types are correct
 - ✅ Review import history page to confirm batch exists
 - ✅ Keep a record of Batch ID for future reference
 
 ### If Something Goes Wrong:
+
 - ✅ Don't panic - you can revert!
 - ✅ Go to Import History immediately
-- ✅ Click "Revert" to delete the import
-- ✅ Fix your CSV file
+- ✅ Click "Revert" to delete the entire batch
+- ✅ Fix your CSV file (check validation errors)
 - ✅ Import again with corrected data
 
 ---
 
-## 🔍 Common Issues & Solutions
-
-### Issue: "Invalid email format" errors
-**Solution:**
-- Check emails have proper format: name@domain.com
-- Remove spaces before/after emails
-- Fix typos (e.g., .cm instead of .com)
-
-### Issue: "Missing name" errors
-**Solution:**
-- For Personal members: Provide First Name
-- For Business members: Provide Business Name
-- Check Member Class column is correct
-
-### Issue: Members not appearing after import
-**Solution:**
-1. Check import results - were they successful?
-2. Check Members list with search/filters
-3. Verify import batch in Import History shows success count
-4. Check test data toggle (if testing) - see TEST_ACCOUNTS_GUIDE.md
-
-### Issue: Wrong membership levels assigned
-**Solution:**
-1. Revert the import immediately
-2. Fix "Membership Level" column in CSV
-3. Use: Community, Annual, or Lifetime (case-insensitive)
-4. Re-import corrected file
-
-### Issue: Addresses not parsing correctly
-**Solution:**
-1. Use format: "Street Address, City, State ZipCode"
-2. Example: "123 Main Street, Jacksonville, FL 32256"
-3. System auto-parses into separate fields
-4. If still issues, revert and fix CSV
-
-### Issue: Duplicate members
-**Solution:**
-- System rejects duplicate emails (unique constraint)
-- These will show as "failed" in import results
-- Check errors list for "duplicate key" messages
-- Remove duplicates from CSV before importing
-
-### Issue: Can't revert an import
-**Solution:**
-- Check batch status - already reverted?
-- Only "Completed" imports can be reverted
-- "Reverted" imports cannot be reverted again
-- If urgent, contact database admin
-
----
-
 ## 🎯 Quick Reference
+
+### Template Location:
+```
+public/member-import-template.csv
+```
 
 ### Import Location:
 ```
@@ -348,36 +571,32 @@ OR
 /admin/members/import-history
 ```
 
-### CSV Format:
-```csv
-First Name,Last Name,Email,Phone,Address,Member Since,Membership Level,Member Class,Is Founding Member,Gothram,Nakshatra
-John,Doe,john@example.com,904-555-0123,"123 Main St, Jacksonville, FL 32256",2020-01-15,Lifetime,Personal,Yes,Bharadwaja,Rohini
+### Member_Number Format:
+```
+XXYYZZZZ (8 digits)
+XX: 11=Personal, 21=Business
+YY: 00=Community, 01=Annual, 02=Lifetime
+ZZZZ: Sequential (auto-generated)
+
+Examples:
+11010001 = Personal, Annual, #0001
+21020015 = Business, Lifetime, #0015
+```
+
+### Family Members:
+```
+Primary: Member_First_Name + Member_Last_Name
+Secondary: Secondary_First_Name + Secondary_Last_Name
+Children: Child_1 through Child_4 (up to 4)
 ```
 
 ### Revert Process:
 ```
 1. Import History → Find batch → Click "Revert"
 2. Confirm deletion (PERMANENT!)
-3. Members deleted instantly
+3. Members + family members deleted instantly
 4. Batch marked as "Reverted"
 ```
-
----
-
-## 📞 Support
-
-If you encounter issues:
-1. Check Import History for batch status
-2. Review import results for specific errors
-3. Try reverting and re-importing with fixes
-4. Check this guide for common issues
-5. Verify CSV format matches requirements
-
-**Emergency Rollback:**
-- Go to Import History immediately
-- Click "Revert" next to the import
-- Confirm deletion
-- All imported members will be removed
 
 ---
 
@@ -386,22 +605,29 @@ If you encounter issues:
 **Don't worry!** The import system has full rollback capability:
 
 1. ✅ **Every import is tracked** with unique Batch ID
-2. ✅ **One-click revert** from Import History page
-3. ✅ **Permanent deletion** of import batch (not other data)
-4. ✅ **Full audit trail** of who imported/reverted and when
-5. ✅ **Preview before import** so you see what will happen
-6. ✅ **Validation** catches errors before import
-7. ✅ **Test-friendly** - import test data, verify, then revert
+2. ✅ **Auto-generated Member_Numbers** with format validation
+3. ✅ **Family member support** - unlimited searchable family data
+4. ✅ **Smart address parsing** from Mailing_Address format
+5. ✅ **International phone support** with auto-normalization
+6. ✅ **One-click revert** from Import History page
+7. ✅ **Preview before import** so you see what will happen
+8. ✅ **Validation** catches errors before import
+9. ✅ **Empty row filtering** prevents junk data
+10. ✅ **Full audit trail** of who imported/reverted and when
 
 **You can confidently import knowing you can always revert if needed!**
 
 ---
 
 **First-time import checklist:**
+- [ ] Download CSV template from `public/member-import-template.csv`
+- [ ] Study the 5 example rows
 - [ ] Test with 3-5 test members first
-- [ ] Verify test import looks good
+- [ ] Verify test import looks good (check family members!)
+- [ ] Check Member_Numbers were auto-generated correctly
 - [ ] Practice reverting the test import
 - [ ] Import real data
 - [ ] Spot-check a few imported members
+- [ ] Search for family member names
 - [ ] Save the Batch ID for your records
 - [ ] Celebrate - you did it! 🎉
