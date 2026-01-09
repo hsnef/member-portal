@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
  * Client-side callback handler for magic links
  * Magic links use hash fragments (#access_token=...) which are only accessible client-side
  */
-export default function CallbackHandlerPage() {
+function CallbackHandler() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
@@ -131,4 +131,20 @@ export default function CallbackHandlerPage() {
   }
 
   return null
+}
+
+// Wrap in Suspense for useSearchParams
+export default function CallbackHandlerPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <CallbackHandler />
+    </Suspense>
+  )
 }
