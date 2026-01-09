@@ -6,21 +6,33 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
 import type { Member, MembershipLevel } from '@/types/database'
+import { useTestData } from '@/lib/context/TestDataContext'
+import { getTestMemberIds } from '@/lib/utils/testDataFiltering'
 
 export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [levelFilter, setLevelFilter] = useState<MembershipLevel | 'All'>('All')
+  const { showTestData } = useTestData()
 
   const supabase = createClient()
 
   const fetchMembers = async () => {
     try {
       setLoading(true)
+
+      // Get test member IDs for filtering
+      const testMemberIds = await getTestMemberIds()
+
       let query = supabase.from('members').select('*').order('created_at', { ascending: false })
 
-      // Apply filters
+      // Filter out test members unless showTestData toggle is ON
+      if (!showTestData && testMemberIds.length > 0) {
+        query = query.not('id', 'in', `(${testMemberIds.join(',')})`)
+      }
+
+      // Apply level filter
       if (levelFilter !== 'All') {
         query = query.eq('current_level', levelFilter)
       }
@@ -30,7 +42,12 @@ export default function MembersPage() {
       if (error) {
         console.error('Error fetching members:', error)
       } else {
-        setMembers(data || [])
+        // Mark test members for badge display
+        const membersWithTestFlag = (data || []).map((member) => ({
+          ...member,
+          is_test_member: testMemberIds.includes(member.id),
+        }))
+        setMembers(membersWithTestFlag)
       }
     } catch (error) {
       console.error('Error in fetchMembers:', error)
@@ -42,7 +59,7 @@ export default function MembersPage() {
   useEffect(() => {
     fetchMembers()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [levelFilter])
+  }, [levelFilter, showTestData])
 
   // Filter members by search term
   const filteredMembers = members.filter((member) => {
@@ -230,14 +247,23 @@ export default function MembersPage() {
                           {member.membership_id}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {member.member_class === 'Personal'
-                              ? `${member.first_name || ''} ${member.last_name || ''}`
-                              : member.business_name}
+                          <div className="flex items-center gap-2">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {member.member_class === 'Personal'
+                                  ? `${member.first_name || ''} ${member.last_name || ''}`
+                                  : member.business_name}
+                              </div>
+                              {member.profile_name && (
+                                <div className="text-sm text-gray-500">{member.profile_name}</div>
+                              )}
+                            </div>
+                            {member.is_test_member && (
+                              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 whitespace-nowrap">
+                                🧪 TEST
+                              </span>
+                            )}
                           </div>
-                          {member.profile_name && (
-                            <div className="text-sm text-gray-500">{member.profile_name}</div>
-                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {member.member_class}
