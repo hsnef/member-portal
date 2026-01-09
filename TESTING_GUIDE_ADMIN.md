@@ -17,16 +17,47 @@ As Admin, you have complete system access including:
 - Terms of use management
 - Database/system health monitoring
 
+**Important:** There is no pre-configured Admin test account. The highest role available in test accounts is Office Manager (test.manager@example.com). For Admin-level testing, you need:
+1. A real Admin account, OR
+2. Database access to assign Admin role to a test account
+
 ---
 
-## Test Account
+## Creating an Admin Test Account
 
-| Field | Value |
-|-------|-------|
-| Role | Admin |
-| Email | admin.test@example.com |
-| MembershipID | 10000200 |
-| Membership Level | Lifetime |
+### Option 1: Promote Test Manager to Admin
+
+```sql
+-- Get the auth_user_id for test.manager
+SELECT id, auth_user_id FROM members WHERE primary_email = 'test.manager@example.com';
+
+-- Add Admin role (replace USER_ID with actual auth_user_id)
+INSERT INTO user_roles (user_id, role) VALUES ('USER_ID', 'Admin');
+```
+
+### Option 2: Use Existing Admin Account
+
+If you have a production Admin account, use that for Admin-specific testing.
+
+---
+
+## Test Accounts Reference
+
+| Account | Email | MembershipID | Level | Role |
+|---------|-------|--------------|-------|------|
+| Manager | test.manager@example.com | 99991000 | Lifetime | Office Manager |
+| Staff | test.staff@example.com | 99992000 | Lifetime | Office Staff |
+| Lifetime | test.lifetime@example.com | 99993000 | Lifetime | Member |
+| Annual | test.annual@example.com | 99994000 | Annual | Member |
+| Community | test.community@example.com | 99995000 | Community | Member |
+
+### Test Account Features
+
+- **MembershipID Prefix 9:** All test accounts use 9999xxxx format
+- **Purple "TEST" Badge:** Visible throughout the UI
+- **Auto-Excluded:** From reports, metrics, and analytics
+- **Clean Data Option:** Remove all test transactions at /admin/test-accounts
+- **Member Records Persist:** Cleaning doesn't delete the accounts
 
 ---
 
@@ -53,6 +84,7 @@ As Admin, you have complete system access including:
   - Purohits
   - Portal Settings
   - Settings (System)
+  - Test Accounts
 
 ---
 
@@ -83,7 +115,7 @@ As Admin, you have complete system access including:
 
 **Steps:**
 1. Navigate to Admin > Members
-2. Select a member
+2. Select test.lifetime@example.com
 3. Click "Edit" or "Manage Roles"
 4. Assign a new role:
    - Select "Office Staff"
@@ -143,78 +175,81 @@ As Admin, you have complete system access including:
 
 ---
 
-### TC-ADM-07: Access Test Accounts
+### TC-ADM-07: Manage Test Accounts Page
 
 **Steps:**
-1. Navigate to Admin > Settings
-2. Click "Test Accounts"
-3. Review the test accounts page
+1. Navigate to Admin > Test Accounts (or /admin/test-accounts)
+2. Review the test accounts management page
 
 **Expected Results:**
-- List of test accounts displayed
-- Each shows: Email, Role, MembershipID
-- Options to create, edit, delete test accounts
-- Test accounts clearly marked
+- All 5 test accounts displayed:
+  - test.manager@example.com (99991000) - Office Manager
+  - test.staff@example.com (99992000) - Office Staff
+  - test.lifetime@example.com (99993000) - Member
+  - test.annual@example.com (99994000) - Member
+  - test.community@example.com (99995000) - Member
+- Registration status shown for each
+- "Reset Password" button for each account
+- "Clean Test Data" button available
+- Usage instructions displayed
 
 ---
 
-### TC-ADM-08: Create Test Account
+### TC-ADM-08: Reset Test Account Password
 
 **Steps:**
 1. On Test Accounts page
-2. Click "Create Test Account"
-3. Fill in:
-   - Email: tester1@test.hsnef.org
-   - Password: TestPassword123!
-   - Name: Test User One
-   - Role: Member
-   - Membership Level: Annual
-4. Click "Create"
+2. Click "Reset Password" for test.annual@example.com
+3. Check email inbox for reset link
+4. Complete password reset
 
 **Expected Results:**
-- Test account created
-- Marked as test account in database
-- Can login immediately
-- Won't interfere with production data
+- Password reset email sent
+- Link opens password reset form
+- New password works for login
 
 ---
 
-### TC-ADM-09: Delete Test Account
+### TC-ADM-09: Clean Test Data
 
 **Steps:**
-1. Find a test account
-2. Click "Delete"
-3. Confirm deletion
+1. Navigate to /admin/test-accounts
+2. Click "Clean Test Data"
+3. Confirm the action
 
 **Expected Results:**
-- Test account removed
-- All associated data deleted
-- Cannot login with deleted account
+- All test account transactions removed:
+  - Payments by test accounts
+  - Service bookings by test accounts
+  - Event registrations by test accounts
+  - Requests by test accounts
+- Member records remain intact (99991000-99995000)
+- Confirmation message displayed
+- Can continue testing immediately
 
 ---
 
 ### TC-ADM-10: Bulk Member Import
 
 **Steps:**
-1. Navigate to Admin > Settings
-2. Click "Member Import"
-3. Download the CSV template
-4. Fill in member data:
+1. Navigate to Admin > Settings > Member Import
+2. Download the CSV template
+3. Fill in member data:
    ```csv
    first_name,last_name,email,phone,address,city,state,zip,membership_level
    John,Doe,john@example.com,904-555-0001,123 Main St,Jacksonville,FL,32256,Annual
    Jane,Smith,jane@example.com,904-555-0002,456 Oak Ave,Jacksonville,FL,32257,Lifetime
    ```
-5. Upload the CSV file
-6. Review the import preview
-7. Click "Import Members"
+4. Upload the CSV file
+5. Review the import preview
+6. Click "Import Members"
 
 **Expected Results:**
 - Preview shows parsed data
 - Validation errors highlighted
 - Import progress displayed
 - Summary shows: Imported, Skipped, Errors
-- MembershipIDs auto-generated
+- MembershipIDs auto-generated (1XXXXX00 for Lifetime, 2XXXXX00 for Annual)
 
 ---
 
@@ -245,7 +280,7 @@ As Admin, you have complete system access including:
 - List of all imports displayed
 - Each shows: Date, File name, Count, Status
 - Can view details of each import
-- Can download original file
+- Can download original file (if available)
 
 ---
 
@@ -260,7 +295,7 @@ As Admin, you have complete system access including:
 
 **Expected Results:**
 - Admin can edit any payment regardless of age
-- No 90-day restriction
+- No 90-day restriction (unlike Office Manager)
 - Audit log captures change
 - Reason for change recorded
 
@@ -269,7 +304,7 @@ As Admin, you have complete system access including:
 ### TC-ADM-14: Delete Payment Record
 
 **Steps:**
-1. Find a payment record
+1. Find a payment record (use test account payment)
 2. Click "Delete" (if available)
 3. Enter reason for deletion
 4. Confirm
@@ -360,7 +395,7 @@ As Admin, you have complete system access including:
 ### TC-ADM-18: Review Terms Bypasses
 
 **Steps:**
-1. Check for terms bypass records
+1. Check for terms bypass records (after users trigger escape hatch)
 2. Navigate to bypass review section
 3. Review each bypass:
    - User who bypassed
@@ -381,10 +416,9 @@ As Admin, you have complete system access including:
 ### TC-ADM-19: View All Audit Logs
 
 **Steps:**
-1. Navigate to Admin > Audit Logs (if direct access)
-2. Or access via member profiles
-3. Search across all audit logs
-4. Filter by:
+1. Navigate to member profiles or dedicated audit section
+2. Search across all audit logs
+3. Filter by:
    - Date range
    - User
    - Action type
@@ -432,7 +466,7 @@ As Admin, you have complete system access including:
 
 **Steps:**
 1. Navigate to Admin > Members
-2. Select any member
+2. Select test.annual@example.com
 3. Edit all fields including:
    - Membership level change
    - MembershipID correction
@@ -450,7 +484,7 @@ As Admin, you have complete system access including:
 ### TC-ADM-23: Designate Founding Member
 
 **Steps:**
-1. Find a Lifetime member
+1. Find a Lifetime member (test.lifetime@example.com)
 2. Edit their profile
 3. Check "Founding Member" box
 4. Save
@@ -462,20 +496,21 @@ As Admin, you have complete system access including:
 
 ---
 
-### TC-ADM-24: Generate Reports
+### TC-ADM-24: Create Additional Test Account
 
 **Steps:**
-1. Navigate to reporting section (if available)
-2. Generate:
-   - Membership summary report
-   - Financial summary report
-   - Event attendance report
-3. Export as CSV or PDF
+1. Navigate to Admin > Members > Add Member
+2. Create new member with:
+   - Email: test.newmember@example.com
+   - Set `is_test_account = true` (may need SQL)
+   - Use MembershipID in 9999xxxx range
+3. Save
 
 **Expected Results:**
-- Reports generate correctly
-- Data accurate and current
-- Export in chosen format
+- New test account created
+- Uses prefix 9 for MembershipID
+- Shows "TEST" badge
+- Excluded from reports
 
 ---
 
@@ -509,9 +544,36 @@ As Admin, you have complete system access including:
 
 1. Board approves new membership rates
 2. Admin navigates to Portal Settings
-3. Updates all pricing tiers
+3. Updates all pricing tiers:
+   - Community: $0
+   - Annual: $275
+   - Lifetime: $1,051
 4. Verifies /join page shows new prices
 5. Announces changes to members
+
+### Scenario E: Reset Testing Environment
+
+1. Navigate to /admin/test-accounts
+2. Click "Clean Test Data"
+3. All test transactions removed
+4. Test accounts (99991000-99995000) remain
+5. Ready for fresh demo or testing
+
+---
+
+## Test Account Management Best Practices
+
+### DO:
+- Use test accounts for all development and testing
+- Clean test data before important reports or demos
+- Use test accounts for training new staff
+- Verify pricing differences between member types
+
+### DON'T:
+- Mix real and test data in production testing
+- Use test accounts for real transactions
+- Delete test account member records (just clean data)
+- Share test account passwords in production
 
 ---
 
@@ -527,25 +589,49 @@ As Admin, you are responsible for:
 
 ---
 
-## Best Practices
+## Quick Reference Card
 
-1. **Least Privilege**: Only assign roles that users need
-2. **Audit Review**: Regularly check audit logs for anomalies
-3. **Backup Awareness**: Understand backup/recovery procedures
-4. **Test in Dev**: Test major changes in development first
-5. **Document Changes**: Note reasons for unusual actions
-6. **Two-Person Rule**: For critical changes, have another admin verify
+```
++----------------------------------------------------------+
+|                 ADMIN QUICK REFERENCE                     |
++----------------------------------------------------------+
+| TEST ACCOUNTS (Prefix 9)                                  |
+| - Manager:   test.manager@example.com   (99991000)       |
+| - Staff:     test.staff@example.com     (99992000)       |
+| - Lifetime:  test.lifetime@example.com  (99993000)       |
+| - Annual:    test.annual@example.com    (99994000)       |
+| - Community: test.community@example.com (99995000)       |
++----------------------------------------------------------+
+| KEY PAGES                                                 |
+| - Test Accounts: /admin/test-accounts                    |
+| - Clean Data: Test Accounts > "Clean Test Data"          |
+| - Portal Settings: /admin/portal-settings                |
+| - System Settings: /admin/settings                       |
+| - Member Import: /admin/members/import                   |
++----------------------------------------------------------+
+| MEMBERSHIPID FORMAT                                       |
+| - Lifetime: 1XXXXX00  (e.g., 10000100)                   |
+| - Annual:   2XXXXX00  (e.g., 20000100)                   |
+| - Community: 3XXXXX00 (e.g., 30000100)                   |
+| - Test:     9XXXXX00  (e.g., 99991000)                   |
++----------------------------------------------------------+
+```
 
 ---
 
 ## Troubleshooting
 
 ### User Cannot Login
-1. Check if account exists
-2. Verify email address correct
-3. Check if account is locked
+1. Check if account exists in members table
+2. Verify email address is correct
+3. Check if auth account is linked (auth_user_id not null)
 4. Try password reset
-5. Check auth provider status
+5. Check Supabase auth logs
+
+### Test Data Appearing in Reports
+1. Verify `is_test_account = true` for the member
+2. Check that report queries filter `is_test_account = false`
+3. Clean test data if needed
 
 ### Payment Not Showing
 1. Check payment date range filter
@@ -554,9 +640,9 @@ As Admin, you are responsible for:
 4. Review audit log for changes
 
 ### Import Failing
-1. Validate CSV format
+1. Validate CSV format matches template
 2. Check for special characters
-3. Verify all required columns
+3. Verify all required columns present
 4. Check for duplicate emails
 5. Review detailed error messages
 
@@ -566,25 +652,10 @@ As Admin, you are responsible for:
 
 When reporting bugs, include:
 1. Test case ID (e.g., TC-ADM-10)
-2. Admin test account used
+2. Admin account used
 3. Complete steps to reproduce
 4. Expected vs actual behavior
 5. Error messages and screenshots
 6. Browser console errors if applicable
 
 **Contact:** info@hsnef.org
-
----
-
-## Quick Reference Card
-
-| Action | Location |
-|--------|----------|
-| Add User Role | Members > [Member] > Edit > Roles |
-| Import Members | Settings > Member Import |
-| Test Accounts | Settings > Test Accounts |
-| Portal Config | Portal Settings |
-| Update Terms | Portal Settings > Terms |
-| View All Audits | Member profiles or Audit Logs |
-| System Info | Settings |
-| Edit Any Payment | Payments > [Payment] > Edit |

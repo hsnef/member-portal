@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { formatActionType, formatCreationSource, formatFieldName } from '@/lib/audit-log/helpers'
+import { formatActionType, formatCreationSource, formatFieldName } from '@/lib/audit-log/utils'
 import type { MemberAuditLog } from '@/types/database'
 
 interface AuditLogTimelineProps {

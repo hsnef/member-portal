@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth/AuthContext'
 import type { UserRole } from '@/types/database'
 import TermsAcceptanceModal from '@/components/TermsAcceptanceModal'
+import { TestDataToggle } from '@/components/admin/TestDataToggle'
 
 interface MenuItem {
   name: string
@@ -295,6 +296,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
             {/* User menu */}
             <div className="flex items-center gap-4">
+              {/* Test Data Toggle - Only visible to staff */}
+              <TestDataToggle />
+
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium text-gray-700">
                   {member?.profile_name || member?.first_name || user?.email}

@@ -18,14 +18,29 @@ As a Member, you can:
 
 ---
 
-## Test Account
+## Test Accounts
 
-| Field | Value |
-|-------|-------|
-| Role | Member |
-| Email | member.test@example.com |
-| MembershipID | 20000100 |
-| Membership Level | Annual |
+Use these pre-configured test accounts for member testing:
+
+| Account | Email | MembershipID | Level | Purpose |
+|---------|-------|--------------|-------|---------|
+| Lifetime | test.lifetime@example.com | 99993000 | Lifetime | Test member pricing, no expiry |
+| Annual | test.annual@example.com | 99994000 | Annual | Test renewal flow, expiry handling |
+| Community | test.community@example.com | 99995000 | Community | Test non-member pricing |
+
+### First-Time Setup
+
+If the test account shows "Not Registered":
+1. Navigate to `/register`
+2. Enter the test account email
+3. Create a password (e.g., "TestPassword123!")
+4. The system links to the existing member record
+
+### Test Account Features
+
+- **Purple "TEST" Badge:** Visible on dashboard and in admin views
+- **Auto-Excluded:** From reports, metrics, and analytics
+- **Clean Data Option:** Staff can reset all test transactions at `/admin/test-accounts`
 
 ---
 
@@ -35,15 +50,15 @@ As a Member, you can:
 
 **Steps:**
 1. Navigate to /login
-2. Login with your member credentials
+2. Login with test.lifetime@example.com
 3. Observe the dashboard
 
 **Expected Results:**
 - Dashboard loads with personalized greeting
+- Purple "TEST" badge visible
 - Membership status banner shows:
-  - Your membership level (Community/Annual/Lifetime)
-  - Expiration date (for Annual members)
-  - "Expiring in X days" warning if applicable
+  - Membership level (Lifetime)
+  - No expiration (Lifetime members)
 - Digital membership pass is visible
 - Quick action buttons are displayed
 
@@ -58,9 +73,9 @@ As a Member, you can:
 **Expected Results:**
 - Pass displays:
   - Your name
-  - Membership ID (8 digits)
+  - Membership ID (99993000 for test.lifetime)
   - Membership level
-  - Valid until date
+  - Valid until date (or "Lifetime" for no expiry)
   - QR code
   - Family members (if applicable)
 - Pass styled appropriately for membership level:
@@ -93,7 +108,7 @@ As a Member, you can:
 **Expected Results:**
 - PNG image downloads
 - QR code is clear and scannable
-- File named appropriately (e.g., "membership-qr-20000100.png")
+- File named appropriately (e.g., "membership-qr-99993000.png")
 
 ---
 
@@ -130,7 +145,7 @@ As a Member, you can:
 
 ### TC-MEM-07: Manage Family Members
 
-**Prerequisite:** Personal membership only
+**Prerequisite:** Personal membership only (test.lifetime or test.annual)
 
 **Steps:**
 1. Click "Manage Family" from dashboard
@@ -333,14 +348,14 @@ As a Member, you can:
 
 ---
 
-### TC-MEM-19: Renew Membership
+### TC-MEM-19: Renew Membership (Annual Member)
 
-**Prerequisites:** Annual membership that can be renewed
+**Prerequisites:** Login as test.annual@example.com
 
 **Steps:**
 1. Click "Renew" from dashboard or navigate to /member/renew
-2. Select new membership level
-3. Enter payment details
+2. Select new membership level (Annual or Lifetime)
+3. Enter payment details (Stripe test card)
 4. Click "Renew Membership"
 
 **Expected Results:**
@@ -354,17 +369,17 @@ As a Member, you can:
 ### TC-MEM-20: Upgrade to Lifetime
 
 **Steps:**
-1. Navigate to /member/renew
-2. Select "Lifetime" membership
-3. Confirm the $1,001 one-time payment
-4. Enter payment details
-5. Complete payment
+1. Login as test.annual@example.com
+2. Navigate to /member/renew
+3. Select "Lifetime" membership
+4. Confirm the $1,001 one-time payment
+5. Enter payment details
+6. Complete payment
 
 **Expected Results:**
 - Payment processed
 - Membership changed to Lifetime
-- No expiration date
-- MembershipID prefix updated (starts with 1)
+- No expiration date shown
 - Confirmation email sent
 
 ---
@@ -388,7 +403,7 @@ As a Member, you can:
 
 ### TC-MEM-22: Accept Updated Terms
 
-**Prerequisites:** Admin has updated terms since your last acceptance
+**Prerequisites:** Manager has updated terms since your last acceptance
 
 **Steps:**
 1. Login to the portal
@@ -419,18 +434,21 @@ As a Member, you can:
 
 ---
 
-### TC-MEM-24: View Activity History
+### TC-MEM-24: Pricing Comparison (Member vs Community)
 
 **Steps:**
-1. From dashboard, navigate to activity tracking
-2. Review your activity log
+1. Login as test.lifetime@example.com
+2. Navigate to Bookings > New Booking
+3. Select a service, note the price
+4. Logout
+5. Login as test.community@example.com
+6. Navigate to Bookings > New Booking
+7. Select the same service, note the price
 
 **Expected Results:**
-- List of activities including:
-  - Event registrations
-  - Payments made
-  - Profile changes
-  - Service bookings
+- test.lifetime (Lifetime member): Lower member pricing
+- test.community (Community): Higher non-member pricing
+- Price difference clearly visible
 
 ---
 
@@ -450,19 +468,23 @@ As a Member, you can:
 ## Edge Cases
 
 ### EC-MEM-01: Expired Annual Membership
+- Login as test.annual@example.com (if expired in test data)
 - Dashboard shows "Membership Expired"
 - Renewal prominently displayed
 - Limited access until renewed
 
-### EC-MEM-02: Community Member Upgrade
-- Cannot register for member-only events
+### EC-MEM-02: Community Member Limitations
+- Login as test.community@example.com
+- Higher pricing on services
+- May not have full membership pass
 - Upgrade prompts displayed
-- Can browse events but not register for exclusive ones
 
-### EC-MEM-03: Business Membership
-- "Manage Family" not available
-- Business contact information shown
-- Business name on membership pass
+### EC-MEM-03: Test Account Visibility
+- All test transactions excluded from:
+  - Dashboard metrics
+  - Financial reports
+  - Member counts
+- Staff can see test accounts with "TEST" badge
 
 ---
 
@@ -477,11 +499,22 @@ As a Member, you can:
 
 ---
 
+## Clean Test Data
+
+After testing, staff can clean all test transactions:
+1. Login as test.manager@example.com
+2. Navigate to /admin/test-accounts
+3. Click "Clean Test Data"
+4. All test payments, bookings, registrations removed
+5. Member records remain for future testing
+
+---
+
 ## Reporting Issues
 
 When reporting bugs, include:
 1. Test case ID (e.g., TC-MEM-05)
-2. Your test account details
+2. Test account used (e.g., test.lifetime@example.com)
 3. Steps to reproduce
 4. Expected vs actual behavior
 5. Screenshots if applicable

@@ -30,57 +30,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Fetch member and roles for the authenticated user
   const fetchMemberAndRoles = async (userId: string) => {
     try {
-      console.log('[AuthContext] fetchMemberAndRoles starting for userId:', userId)
+      // Fetch member record and roles in parallel for better performance
+      const [memberResult, rolesResult] = await Promise.all([
+        supabase
+          .from('members')
+          .select('*')
+          .eq('auth_user_id', userId)
+          .single(),
+        supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId)
+      ])
 
-      // Fetch member record
-      console.log('[AuthContext] Starting member query...')
-      const memberQuery = supabase
-        .from('members')
-        .select('*')
-        .eq('auth_user_id', userId)
-        .single()
-
-      const memberTimeout = setTimeout(() => {
-        console.error('[AuthContext] Member query timeout after 5s')
-      }, 5000)
-
-      const { data: memberData, error: memberError } = await memberQuery
-      clearTimeout(memberTimeout)
-
-      console.log('[AuthContext] Member query completed:', { hasData: !!memberData, error: memberError })
-
-      if (memberError) {
-        console.error('[AuthContext] Error fetching member:', memberError)
+      // Handle member result
+      if (memberResult.error) {
+        console.error('[AuthContext] Error fetching member:', memberResult.error)
         setMember(null)
       } else {
-        console.log('[AuthContext] Member found:', memberData?.membership_id)
-        setMember(memberData)
+        setMember(memberResult.data)
       }
 
-      // Fetch user roles
-      console.log('[AuthContext] Starting roles query...')
-      const rolesQuery = supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-
-      const rolesTimeout = setTimeout(() => {
-        console.error('[AuthContext] Roles query timeout after 5s')
-      }, 5000)
-
-      const { data: rolesData, error: rolesError } = await rolesQuery
-      clearTimeout(rolesTimeout)
-
-      console.log('[AuthContext] Roles query completed:', { count: rolesData?.length, error: rolesError })
-
-      if (rolesError) {
-        console.error('[AuthContext] Error fetching roles:', rolesError)
+      // Handle roles result
+      if (rolesResult.error) {
+        console.error('[AuthContext] Error fetching roles:', rolesResult.error)
         setRoles([])
       } else {
-        console.log('[AuthContext] Roles found:', rolesData.map((r: { role: UserRole }) => r.role))
-        setRoles(rolesData.map((r: { role: UserRole }) => r.role))
+        setRoles(rolesResult.data.map((r: { role: UserRole }) => r.role))
       }
-      console.log('[AuthContext] fetchMemberAndRoles completed')
     } catch (error) {
       console.error('[AuthContext] Error in fetchMemberAndRoles:', error)
       setMember(null)
@@ -90,25 +67,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize auth state
   useEffect(() => {
-    console.log('[AuthContext] Initializing auth state...')
-
-    // Add timeout to detect slow getSession (warning only)
-    const warningTimeoutId = setTimeout(() => {
-      console.warn('[AuthContext] getSession() taking longer than expected (5s)...')
-    }, 5000)
-
     // Add final timeout to prevent infinite loading
     const finalTimeoutId = setTimeout(() => {
-      console.error('[AuthContext] getSession() timeout after 15s - forcing loading to false')
+      console.error('[AuthContext] Auth timeout after 15s - forcing loading to false')
       setLoading(false)
     }, 15000)
 
     // Get initial session
     supabase.auth.getSession()
       .then(async ({ data: { session }, error }) => {
-        clearTimeout(warningTimeoutId)
         clearTimeout(finalTimeoutId)
-        console.log('[AuthContext] Got session response:', { hasSession: !!session, error })
 
         if (error) {
           console.error('[AuthContext] Session error:', error)
@@ -117,17 +85,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return
         }
 
-        console.log('[AuthContext] Got session:', session ? 'User logged in' : 'No user')
         setUser(session?.user ?? null)
         if (session?.user) {
-          console.log('[AuthContext] Fetching member and roles for user:', session.user.id)
           await fetchMemberAndRoles(session.user.id)
         }
-        console.log('[AuthContext] Setting loading to false')
         setLoading(false)
       })
       .catch((err) => {
-        clearTimeout(warningTimeoutId)
         clearTimeout(finalTimeoutId)
         console.error('[AuthContext] getSession() error:', err)
         setUser(null)

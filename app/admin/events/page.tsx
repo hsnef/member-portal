@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
+import { useTestData } from '@/lib/context/TestDataContext'
+import { getTestAuthUserIds } from '@/lib/utils/testDataFiltering'
 
 interface Event {
   id: string
@@ -21,11 +23,14 @@ interface Event {
   registration_deadline: string
   status: 'Draft' | 'Published' | 'Cancelled' | 'Completed'
   registration_count?: number
+  created_by?: string | null
+  is_test_event?: boolean
 }
 
 export default function EventsPage() {
   const router = useRouter()
   const supabase = createClient()
+  const { showTestData } = useTestData()
 
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
@@ -34,11 +39,13 @@ export default function EventsPage() {
 
   useEffect(() => {
     fetchEvents()
-  }, [])
+  }, [showTestData])
 
   const fetchEvents = async () => {
     try {
       // Fetch events with registration counts
+      // Note: Currently shows all events including test-created ones
+      // Future enhancement: Add toggle to filter test-created events
       const { data: eventsData, error: eventsError } = await supabase
         .from('events')
         .select('*')
