@@ -43,32 +43,44 @@ export default function EventsPage() {
 
   const fetchEvents = async () => {
     try {
-      // Fetch events with registration counts
-      // Note: Currently shows all events including test-created ones
-      // Future enhancement: Add toggle to filter test-created events
-      const { data: eventsData, error: eventsError } = await supabase
+      // Get test user IDs for filtering
+      const testAuthUserIds = await getTestAuthUserIds()
+
+      // Fetch events - filter based on toggle state
+      let query = supabase
         .from('events')
         .select('*')
         .order('event_date', { ascending: true })
 
+      // Filter out test events unless showTestData toggle is ON
+      if (!showTestData && testAuthUserIds.length > 0) {
+        query = query.not('created_by', 'in', `(${testAuthUserIds.join(',')})`)
+      }
+
+      const { data: eventsData, error: eventsError } = await query
+
       if (eventsError) throw eventsError
 
-      // Get registration counts for each event
-      const eventsWithCounts = await Promise.all(
+      // Get registration counts and mark test events
+      const eventsWithDetails = await Promise.all(
         (eventsData || []).map(async (event) => {
           const { count } = await supabase
             .from('event_registrations')
             .select('*', { count: 'exact', head: true })
             .eq('event_id', event.id)
 
+          // Check if this is a test-created event
+          const isTestEvent = event.created_by && testAuthUserIds.includes(event.created_by)
+
           return {
             ...event,
             registration_count: count || 0,
+            is_test_event: isTestEvent,
           }
         })
       )
 
-      setEvents(eventsWithCounts)
+      setEvents(eventsWithDetails)
     } catch (error) {
       console.error('Error fetching events:', error)
     } finally {
@@ -223,6 +235,11 @@ export default function EventsPage() {
                           {isEventFull(event) && (
                             <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
                               FULL
+                            </span>
+                          )}
+                          {event.is_test_event && (
+                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                              🧪 TEST
                             </span>
                           )}
                         </div>
