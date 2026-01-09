@@ -11,21 +11,35 @@ interface PendingRegistration {
   requested_level: string
   first_name: string | null
   last_name: string | null
+  date_of_birth: string | null
+  nakshatra: string | null
+  family_gotra: string | null
+  secondary_first_name: string | null
+  secondary_last_name: string | null
+  secondary_date_of_birth: string | null
+  secondary_nakshatra: string | null
   business_name: string | null
+  business_ein: string | null
+  business_type: string | null
   primary_email: string
   primary_phone: string | null
+  secondary_email: string | null
+  secondary_phone: string | null
   address_line_1: string | null
+  address_line_2: string | null
   city: string | null
   state: string | null
   zip: string | null
-  status: string
-  submitted_at: string
+  country: string | null
   how_did_you_hear: string | null
   notes: string | null
-  secondary_first_name: string | null
-  secondary_last_name: string | null
-  family_gotra: string | null
-  nakshatra: string | null
+  status: string
+  submitted_at: string
+  reviewed_by: string | null
+  reviewed_at: string | null
+  review_notes: string | null
+  created_member_id: string | null
+  assigned_membership_id: string | null
 }
 
 export default function PendingRegistrationsPage() {
@@ -77,29 +91,67 @@ export default function PendingRegistrationsPage() {
     try {
       setProcessing(true)
 
-      // 1. Create member record
-      const { data: memberData, error: memberError } = await supabase
+      // 1. Create member record - transfer all available fields from pending registration
+      const memberInsertData: {
+        membership_id: string
+        member_class: string
+        current_level: string
+        first_name: string | null
+        last_name: string | null
+        primary_email: string
+        primary_phone: string | null
+        address_line_1: string | null
+        address_line_2?: string | null
+        city: string | null
+        state: string | null
+        zip: string | null
+        country?: string | null
+        nakshatra: string | null
+        family_gotra: string | null
+        secondary_first_name?: string | null
+        secondary_last_name?: string | null
+        secondary_email?: string | null
+        secondary_phone?: string | null
+        secondary_nakshatra?: string | null
+        business_name?: string | null
+        business_ein?: string | null
+      } = {
+        membership_id: membershipId,
+        member_class: selectedRegistration.member_class,
+        current_level: selectedRegistration.requested_level,
+        first_name: selectedRegistration.first_name,
+        last_name: selectedRegistration.last_name,
+        primary_email: selectedRegistration.primary_email,
+        primary_phone: selectedRegistration.primary_phone || null,
+        address_line_1: selectedRegistration.address_line_1 || null,
+        city: selectedRegistration.city || null,
+        state: selectedRegistration.state || null,
+        zip: selectedRegistration.zip || null,
+        nakshatra: selectedRegistration.nakshatra || null,
+        family_gotra: selectedRegistration.family_gotra || null,
+        secondary_first_name: selectedRegistration.secondary_first_name || null,
+        secondary_last_name: selectedRegistration.secondary_last_name || null,
+        // Transfer all additional fields that exist in members table
+        address_line_2: selectedRegistration.address_line_2 || null,
+        secondary_email: selectedRegistration.secondary_email || null,
+        secondary_phone: selectedRegistration.secondary_phone || null,
+        secondary_nakshatra: selectedRegistration.secondary_nakshatra || null,
+        country: selectedRegistration.country || null,
+      }
+
+      // Add business-specific fields if business member
+      if (selectedRegistration.member_class === 'Business') {
+        memberInsertData.business_name = selectedRegistration.business_name
+        memberInsertData.business_ein = selectedRegistration.business_ein || null
+      }
+
+      const memberResult: { data: { id: string } | null; error: any } = await (supabase
         .from('members')
-        .insert({
-          membership_id: membershipId,
-          member_class: selectedRegistration.member_class,
-          current_level: selectedRegistration.requested_level,
-          first_name: selectedRegistration.first_name,
-          last_name: selectedRegistration.last_name,
-          business_name: selectedRegistration.business_name,
-          primary_email: selectedRegistration.primary_email,
-          primary_phone: selectedRegistration.primary_phone,
-          address_line_1: selectedRegistration.address_line_1,
-          city: selectedRegistration.city,
-          state: selectedRegistration.state,
-          zip: selectedRegistration.zip,
-          secondary_first_name: selectedRegistration.secondary_first_name,
-          secondary_last_name: selectedRegistration.secondary_last_name,
-          family_gotra: selectedRegistration.family_gotra,
-          nakshatra: selectedRegistration.nakshatra,
-        })
+        .insert(memberInsertData as any)
         .select()
-        .single()
+        .single() as any)
+      
+      const { data: memberData, error: memberError } = memberResult
 
       if (memberError) {
         console.error('Error creating member:', memberError)
@@ -111,14 +163,16 @@ export default function PendingRegistrationsPage() {
       // 2. Update pending registration status
       const { data: userData } = await supabase.auth.getUser()
 
+      // @ts-ignore - TypeScript type inference issue with pending_member_registrations table
       const { error: updateError } = await supabase
         .from('pending_member_registrations')
+        // @ts-ignore - TypeScript type inference issue
         .update({
           status: 'Approved',
-          reviewed_by: userData?.user?.id,
+          reviewed_by: userData?.user?.id || null,
           reviewed_at: new Date().toISOString(),
-          review_notes: reviewNotes,
-          created_member_id: memberData.id,
+          review_notes: reviewNotes || null,
+          created_member_id: memberData?.id || null,
           assigned_membership_id: membershipId,
         })
         .eq('id', selectedRegistration.id)
@@ -155,8 +209,10 @@ export default function PendingRegistrationsPage() {
     try {
       const { data: userData } = await supabase.auth.getUser()
 
+      // @ts-ignore - TypeScript type inference issue with pending_member_registrations table
       const { error } = await supabase
         .from('pending_member_registrations')
+        // @ts-ignore - TypeScript type inference issue
         .update({
           status: 'Rejected',
           reviewed_by: userData?.user?.id,
@@ -182,8 +238,10 @@ export default function PendingRegistrationsPage() {
     try {
       const { data: userData } = await supabase.auth.getUser()
 
+      // @ts-ignore - TypeScript type inference issue with pending_member_registrations table
       const { error } = await supabase
         .from('pending_member_registrations')
+        // @ts-ignore - TypeScript type inference issue
         .update({
           status: 'Contacted',
           reviewed_by: userData?.user?.id,
@@ -416,17 +474,29 @@ export default function PendingRegistrationsPage() {
                         <p>
                           Name: {selectedRegistration.first_name} {selectedRegistration.last_name}
                         </p>
-                        {selectedRegistration.family_gotra && (
-                          <p>Gotra: {selectedRegistration.family_gotra}</p>
+                        {selectedRegistration.date_of_birth && (
+                          <p>Date of Birth: {new Date(selectedRegistration.date_of_birth).toLocaleDateString()}</p>
                         )}
                         {selectedRegistration.nakshatra && (
                           <p>Nakshatra: {selectedRegistration.nakshatra}</p>
                         )}
+                        {selectedRegistration.family_gotra && (
+                          <p>Gotra: {selectedRegistration.family_gotra}</p>
+                        )}
                         {selectedRegistration.secondary_first_name && (
-                          <p>
-                            Spouse: {selectedRegistration.secondary_first_name}{' '}
-                            {selectedRegistration.secondary_last_name}
-                          </p>
+                          <div className="mt-2 pt-2 border-t">
+                            <p className="font-medium">Spouse/Partner:</p>
+                            <p>
+                              Name: {selectedRegistration.secondary_first_name}{' '}
+                              {selectedRegistration.secondary_last_name}
+                            </p>
+                            {selectedRegistration.secondary_date_of_birth && (
+                              <p>Date of Birth: {new Date(selectedRegistration.secondary_date_of_birth).toLocaleDateString()}</p>
+                            )}
+                            {selectedRegistration.secondary_nakshatra && (
+                              <p>Nakshatra: {selectedRegistration.secondary_nakshatra}</p>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -435,8 +505,14 @@ export default function PendingRegistrationsPage() {
                   {selectedRegistration.member_class === 'Business' && (
                     <div>
                       <h3 className="font-semibold text-gray-700">Business Details</h3>
-                      <div className="mt-2 text-sm">
+                      <div className="mt-2 text-sm space-y-1">
                         <p>Business Name: {selectedRegistration.business_name}</p>
+                        {selectedRegistration.business_ein && (
+                          <p>EIN (Tax ID): {selectedRegistration.business_ein}</p>
+                        )}
+                        {selectedRegistration.business_type && (
+                          <p>Business Type: {selectedRegistration.business_type}</p>
+                        )}
                       </div>
                     </div>
                   )}

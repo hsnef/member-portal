@@ -1,9 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { isTraditionalLoginEnabled } from '@/lib/utils/portalSettings'
+import {
+  getActiveTerms,
+  recordTermsAcceptance,
+  type TermsContent,
+} from '@/lib/utils/termsService'
+import TermsCheckbox from '@/components/TermsCheckbox'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -14,6 +21,28 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [traditionalLoginEnabled, setTraditionalLoginEnabled] = useState<boolean | null>(null)
+  const [activeTerms, setActiveTerms] = useState<TermsContent | null>(null)
+  const [termsAccepted, setTermsAccepted] = useState(false)
+
+  // Check if traditional login is enabled and load terms
+  useEffect(() => {
+    async function checkSetting() {
+      const enabled = await isTraditionalLoginEnabled()
+      setTraditionalLoginEnabled(enabled)
+      if (!enabled) {
+        setTimeout(() => {
+          router.push('/login?message=traditional_disabled')
+        }, 3000)
+      }
+    }
+    async function loadTerms() {
+      const terms = await getActiveTerms()
+      setActiveTerms(terms)
+    }
+    checkSetting()
+    loadTerms()
+  }, [router])
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,6 +61,11 @@ export default function RegisterPage() {
 
     if (password !== confirmPassword) {
       setMessage({ type: 'error', text: 'Passwords do not match' })
+      return
+    }
+
+    if (!termsAccepted) {
+      setMessage({ type: 'error', text: 'You must accept the Terms of Use to continue' })
       return
     }
 
@@ -99,6 +133,31 @@ export default function RegisterPage() {
         return
       }
 
+      // Record terms acceptance
+      if (activeTerms && authData.user) {
+        await recordTermsAcceptance({
+          termsVersion: activeTerms.version,
+          termsContentId: activeTerms.id,
+          memberId: memberData.id,
+          acceptanceMethod: 'registration',
+        })
+      }
+
+      // Track successful registration login
+      try {
+        await fetch('/api/login-tracking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            loginMethod: 'registration',
+            success: true,
+          }),
+        })
+      } catch (trackingError) {
+        // Don't fail the registration if tracking fails
+        console.warn('Login tracking error:', trackingError)
+      }
+
       // Success!
       setMessage({
         type: 'success',
@@ -123,6 +182,75 @@ export default function RegisterPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Show loading while checking setting
+  if (traditionalLoginEnabled === null) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show message if traditional login is disabled
+  if (traditionalLoginEnabled === false) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <div className="mx-auto h-16 w-16 bg-gradient-to-br from-[#FF9933] to-[#800000] rounded-full flex items-center justify-center">
+              <span className="text-2xl font-bold text-white">H</span>
+            </div>
+            <h2 className="mt-6 text-3xl font-bold text-gray-900">Traditional Registration Disabled</h2>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-xl p-8 space-y-6">
+            <div className="p-4 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-200">
+              <p className="text-sm font-medium mb-2">Email/password registration is currently disabled.</p>
+              <p className="text-sm">
+                Please use one of the following options to access your account:
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 border border-gray-200 rounded-md">
+                <h3 className="font-semibold text-gray-900 mb-2">Already a Member?</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Use Magic Link or Google Sign-In at the login page
+                </p>
+                <Link
+                  href="/login"
+                  className="inline-block px-4 py-2 bg-gradient-to-r from-[#FF9933] to-[#800000] text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
+                >
+                  Go to Login
+                </Link>
+              </div>
+
+              <div className="p-4 border border-gray-200 rounded-md">
+                <h3 className="font-semibold text-gray-900 mb-2">Not a Member Yet?</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Apply for HSNEF membership
+                </p>
+                <Link
+                  href="/join"
+                  className="inline-block px-4 py-2 bg-gradient-to-r from-[#FF9933] to-[#800000] text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
+                >
+                  Apply for Membership
+                </Link>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-500 text-center">
+              Redirecting to login page in 3 seconds...
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -219,10 +347,19 @@ export default function RegisterPage() {
               />
             </div>
 
+            {/* Terms Acceptance */}
+            <div>
+              <TermsCheckbox
+                checked={termsAccepted}
+                onChange={setTermsAccepted}
+                required={true}
+              />
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !termsAccepted}
               className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#FF9933] to-[#800000] hover:from-[#FF8800] hover:to-[#700000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9933] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loading ? (
@@ -267,12 +404,12 @@ export default function RegisterPage() {
           <div className="text-center text-xs text-gray-500 mt-4">
             <p>
               Not a member yet?{' '}
-              <a
-                href="mailto:info@hsnef.org"
-                className="text-[#FF9933] hover:text-[#FF8800] font-medium"
+              <Link
+                href="/join"
+                className="text-[#FF9933] hover:text-[#FF8800] font-medium underline"
               >
-                Contact us to join
-              </a>
+                Apply for membership
+              </Link>
             </p>
           </div>
         </div>

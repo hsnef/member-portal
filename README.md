@@ -4,9 +4,9 @@ Production-ready membership management portal for the Hindu Society of North Eas
 
 ## Overview
 
-This portal manages membership lifecycle (Community, Annual, Lifetime), handles payments via Stripe, issues digital membership passes with QR codes, tracks service usage, and provides administrative tools for staff and office managers.
+This portal manages membership lifecycle (Community, Annual, Lifetime), handles payments via Stripe, issues membership passes with QR codes, tracks service usage, and provides administrative tools for staff and office managers.
 
-**Subdomain:** members.hsnef.org
+**Subdomain:** portal.hsnef.org
 **Main Website:** [hsnef.org](https://hsnef.org)
 
 ## Tech Stack
@@ -174,7 +174,7 @@ npm install
 
 1. Create account at [resend.com](https://resend.com)
 
-2. Verify domain: `members.hsnef.org`
+2. Verify domain: `portal.hsnef.org`
 
 3. Add DNS records as instructed
 
@@ -336,7 +336,7 @@ Set all environment variables in Vercel dashboard:
 
 ### Custom Domain
 
-1. Add domain in Vercel: `members.hsnef.org`
+1. Add domain in Vercel: `portal.hsnef.org`
 2. Update DNS records as instructed
 3. Configure Cloudflare (if using) to proxy through
 
@@ -437,7 +437,7 @@ Proprietary - Hindu Society of North East Florida
 
 2. **Member Dashboard**
    - Profile management
-   - Digital membership pass with QR code
+   - Membership pass with QR code
    - Family management
    - Payment history
 

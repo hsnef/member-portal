@@ -320,6 +320,45 @@ export interface MemberAuditLog {
   changed_at: string;
 }
 
+export interface PendingMemberRegistration {
+  id: string;
+  member_class: MemberClass;
+  requested_level: MembershipLevel;
+  first_name: string | null;
+  last_name: string | null;
+  date_of_birth: string | null;
+  nakshatra: Nakshatra | null;
+  family_gotra: string | null;
+  secondary_first_name: string | null;
+  secondary_last_name: string | null;
+  secondary_date_of_birth: string | null;
+  secondary_nakshatra: Nakshatra | null;
+  business_name: string | null;
+  business_ein: string | null;
+  business_type: string | null;
+  primary_email: string;
+  primary_phone: string | null;
+  secondary_email: string | null;
+  secondary_phone: string | null;
+  address_line_1: string | null;
+  address_line_2: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+  country: string | null;
+  how_did_you_hear: string | null;
+  notes: string | null;
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Contacted';
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  review_notes: string | null;
+  created_member_id: string | null;
+  assigned_membership_id: string | null;
+  submitted_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Database schema type for Supabase client
 export interface Database {
   public: {
@@ -474,6 +513,16 @@ export interface Database {
           changed_at?: string;
         };
         Update: Partial<MemberAuditLog>;
+      };
+      pending_member_registrations: {
+        Row: PendingMemberRegistration;
+        Insert: Omit<PendingMemberRegistration, 'id' | 'submitted_at' | 'created_at' | 'updated_at'> & {
+          id?: string;
+          submitted_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<PendingMemberRegistration>;
       };
     };
     Views: {};

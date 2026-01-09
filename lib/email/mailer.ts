@@ -20,7 +20,7 @@ function getResendClient(): Resend {
 // Default from address
 const DEFAULT_FROM = {
   name: process.env.EMAIL_FROM_NAME || 'HSNEF Membership Portal',
-  address: process.env.EMAIL_FROM || 'noreply@members.hsnef.org',
+  address: process.env.EMAIL_FROM || 'noreply@portal.hsnef.org',
 }
 
 // Email options interface

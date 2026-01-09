@@ -10,7 +10,7 @@ Focus on correctness of the domain model, membership lifecycle, RBAC, audit logg
 This membership portal is a supplement to the main HSNEF website (hsnef.org) and focuses purely on membership and membership services. For all core informational content about HSNEF (Bylaws, office bearers, priests, deities, temple hours, static pages, etc.), the portal MUST link back to the main website and MUST NOT duplicate or maintain separate copies of that information.
 
 1. High-Level Goal
-Create a secure member portal running on a subdomain (e.g., members.hsnef.org) that:
+Create a secure member portal running on a subdomain (e.g., portal.hsnef.org) that:
 
 Manages membership lifecycle (Community, Annual, Lifetime)
 
@@ -18,7 +18,7 @@ Centralizes members/family data and MembershipID
 
 Handles payments (Stripe + offline methods)
 
-Issues digital membership passes with QR codes
+Issues membership passes with QR codes
 
 Tracks service/event usage and donations
 
@@ -254,7 +254,7 @@ Members can manage their own family list (add/edit/remove, per business rules).
 
 Admin/Office roles can edit family data, with audit logs.
 
-2.4 Digital Membership Pass & QR Codes
+2.4 Membership Pass & QR Codes
 Pass Generation
 
 Generate a digital pass for each active membership.
@@ -294,7 +294,7 @@ The system may auto‑log a visit/check‑in as an activity.
 Office-facing QR scan
 
 - The system MUST provide a dedicated staff-only “Scan QR / Check-in” screen accessible to Office Staff, Office Manager, and Admin roles.  
-- This screen MUST allow scanning a member’s digital membership pass (QR code) using any of the following devices used by staff:
+- This screen MUST allow scanning a member's membership pass (QR code) using any of the following devices used by staff:
   - An office desktop or laptop with a webcam (browser-based scanning), or  
   - An optional USB QR scanner that emulates keyboard input into a focused text field, or  
   - A mobile device (Android or iPhone) using its built-in camera via a mobile-friendly web UI.  

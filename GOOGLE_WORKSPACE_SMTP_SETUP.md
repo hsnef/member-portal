@@ -91,7 +91,7 @@ SMTP_USER=noreply@hsnef.org
 SMTP_PASSWORD=your-16-char-app-password
 
 # From Address
-EMAIL_FROM=noreply@members.hsnef.org
+EMAIL_FROM=noreply@portal.hsnef.org
 EMAIL_FROM_NAME=HSNEF Membership Portal
 EMAIL_REPLY_TO=info@hsnef.org
 ```
@@ -107,7 +107,7 @@ SMTP_SECURE=false
 # No SMTP_USER or SMTP_PASSWORD needed
 
 # From Address
-EMAIL_FROM=noreply@members.hsnef.org
+EMAIL_FROM=noreply@portal.hsnef.org
 EMAIL_FROM_NAME=HSNEF Membership Portal
 EMAIL_REPLY_TO=info@hsnef.org
 ```

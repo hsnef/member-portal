@@ -9,6 +9,17 @@ export default function SettingsPage() {
 
   const settingsCategories = [
     {
+      title: 'Portal Settings',
+      description: 'Configure authentication, registration, and portal-wide settings',
+      icon: (
+        <svg className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+      ),
+      href: '/admin/portal-settings',
+      roles: ['Admin', 'Office Manager'],
+    },
+    {
       title: 'Test Accounts',
       description: 'Manage test accounts for testing functionality without affecting real data',
       icon: (
@@ -74,6 +85,17 @@ export default function SettingsPage() {
       href: '/admin/events',
       roles: ['Admin', 'Office Manager', 'Office Staff'],
     },
+    {
+      title: 'Member Audit Logs',
+      description: 'View complete history of member record changes',
+      icon: (
+        <svg className="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      href: '/admin/audit-logs',
+      roles: ['Admin', 'Office Manager', 'Office Staff'],
+    },
   ]
 
   return (
@@ -137,12 +159,6 @@ export default function SettingsPage() {
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Coming Soon</h2>
             <div className="space-y-3 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Member Audit Log - Track all changes to member records</span>
-              </div>
               <div className="flex items-center gap-2">
                 <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />

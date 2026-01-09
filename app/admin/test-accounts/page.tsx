@@ -29,14 +29,54 @@ export default function TestAccountsPage() {
   const fetchTestAccounts = async () => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
+
+      // Fetch test accounts from members table
+      const { data: members, error: membersError } = await supabase
         .from('members')
-        .select('id, membership_id, first_name, last_name, primary_email, current_level, roles, auth_user_id')
+        .select('id, membership_id, first_name, last_name, primary_email, current_level, auth_user_id')
         .eq('is_test_account', true)
         .order('membership_id')
 
-      if (error) throw error
-      setTestAccounts(data || [])
+      if (membersError) throw membersError
+
+      if (!members || members.length === 0) {
+        setTestAccounts([])
+        return
+      }
+
+      // Get auth user IDs for members who are registered
+      const authUserIds = members
+        .filter(m => m.auth_user_id)
+        .map(m => m.auth_user_id)
+
+      // Fetch roles for all registered test accounts
+      let rolesMap: Record<string, string[]> = {}
+      if (authUserIds.length > 0) {
+        const { data: rolesData, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('user_id, role')
+          .in('user_id', authUserIds)
+
+        if (!rolesError && rolesData) {
+          // Group roles by user_id
+          rolesData.forEach(({ user_id, role }) => {
+            if (!rolesMap[user_id]) {
+              rolesMap[user_id] = []
+            }
+            rolesMap[user_id].push(role)
+          })
+        }
+      }
+
+      // Combine members with their roles
+      const accountsWithRoles = members.map(member => ({
+        ...member,
+        roles: member.auth_user_id && rolesMap[member.auth_user_id]
+          ? rolesMap[member.auth_user_id]
+          : ['Member']
+      }))
+
+      setTestAccounts(accountsWithRoles)
     } catch (error) {
       console.error('Error fetching test accounts:', error)
       alert('Failed to load test accounts')

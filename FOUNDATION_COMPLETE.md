@@ -346,7 +346,7 @@ The foundation is complete, but these features need implementation:
 - [ ] Member dashboard (`/dashboard`)
 - [ ] Profile management (`/dashboard/profile`)
 - [ ] Family management (`/dashboard/family`)
-- [ ] Digital membership pass (`/dashboard/pass`)
+- [ ] Membership pass (`/dashboard/pass`)
 
 ### 🔴 Priority 2: Payment Integration
 

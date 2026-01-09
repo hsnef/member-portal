@@ -34,12 +34,12 @@ Complete guide to configure Resend for the HSNEF Membership Portal.
 
 ### 2. Add and Verify Your Domain
 
-**You need to verify `members.hsnef.org` to send from `noreply@members.hsnef.org`**
+**You need to verify `portal.hsnef.org` to send from `noreply@portal.hsnef.org`**
 
 1. **Add Domain in Resend**
    - Go to [resend.com/domains](https://resend.com/domains)
    - Click **Add Domain**
-   - Enter: `members.hsnef.org`
+   - Enter: `portal.hsnef.org`
    - Click **Add**
 
 2. **Add DNS Records**
@@ -49,21 +49,21 @@ Complete guide to configure Resend for the HSNEF Membership Portal.
    **SPF Record:**
    ```
    Type: TXT
-   Name: members.hsnef.org (or @)
+   Name: portal.hsnef.org (or @)
    Value: v=spf1 include:_spf.resend.com ~all
    ```
 
    **DKIM Record 1:**
    ```
    Type: TXT
-   Name: resend._domainkey.members.hsnef.org
+   Name: resend._domainkey.portal.hsnef.org
    Value: [Resend provides this - copy from dashboard]
    ```
 
    **DKIM Record 2:**
    ```
    Type: TXT
-   Name: resend2._domainkey.members.hsnef.org
+   Name: resend2._domainkey.portal.hsnef.org
    Value: [Resend provides this - copy from dashboard]
    ```
 
@@ -110,7 +110,7 @@ Add to your `.env.local`:
 RESEND_API_KEY=re_your_actual_api_key_here
 
 # Email Addresses
-EMAIL_FROM=noreply@members.hsnef.org
+EMAIL_FROM=noreply@portal.hsnef.org
 EMAIL_FROM_NAME=HSNEF Membership Portal
 EMAIL_REPLY_TO=info@hsnef.org
 ```
@@ -166,10 +166,10 @@ After deploying to Vercel:
 
 ```bash
 # Check SPF
-nslookup -type=TXT members.hsnef.org
+nslookup -type=TXT portal.hsnef.org
 
 # Check DKIM
-nslookup -type=TXT resend._domainkey.members.hsnef.org
+nslookup -type=TXT resend._domainkey.portal.hsnef.org
 ```
 
 ---
@@ -197,7 +197,7 @@ nslookup -type=TXT resend._domainkey.members.hsnef.org
 - Ensure domain is verified in Resend
 - Add all 3 DNS records (SPF + 2 DKIM)
 - Wait 24-48 hours for email reputation to build
-- Send from `noreply@members.hsnef.org` (verified domain)
+- Send from `noreply@portal.hsnef.org` (verified domain)
 
 ### Error: "Daily sending limit exceeded"
 
@@ -236,7 +236,7 @@ nslookup -type=TXT resend._domainkey.members.hsnef.org
    - Rotate keys every 6 months
 
 2. **Use Domain Email**
-   - Always send from `@members.hsnef.org`
+   - Always send from `@portal.hsnef.org`
    - Never use personal Gmail/Yahoo addresses
 
 3. **Monitor Usage**

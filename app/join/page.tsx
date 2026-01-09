@@ -1,14 +1,49 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import {
+  isMemberApprovalRequired,
+  getMembershipPricing,
+  type MembershipPricing,
+} from '@/lib/utils/portalSettings'
+import {
+  getActiveTerms,
+  recordTermsAcceptanceForMember,
+  type TermsContent,
+} from '@/lib/utils/termsService'
+import TermsCheckbox from '@/components/TermsCheckbox'
 
 type MemberClass = 'Personal' | 'Business'
 type MembershipLevel = 'Community' | 'Annual' | 'Lifetime'
 
 export default function JoinPage() {
   const supabase = createClient()
+  const [approvalRequired, setApprovalRequired] = useState<boolean | null>(null)
+  const [activeTerms, setActiveTerms] = useState<TermsContent | null>(null)
+  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [pricing, setPricing] = useState<MembershipPricing | null>(null)
+
+  // Check if approval is required, load active terms, and load pricing
+  // Load all settings in parallel for better performance
+  useEffect(() => {
+    async function loadInitialData() {
+      try {
+        const [required, terms, membershipPricing] = await Promise.all([
+          isMemberApprovalRequired(),
+          getActiveTerms(),
+          getMembershipPricing(),
+        ])
+        setApprovalRequired(required)
+        setActiveTerms(terms)
+        setPricing(membershipPricing)
+      } catch (error) {
+        console.error('Error loading initial data:', error)
+      }
+    }
+    loadInitialData()
+  }, [])
 
   // Form state
   const [memberClass, setMemberClass] = useState<MemberClass>('Personal')
@@ -73,59 +108,153 @@ export default function JoinPage() {
       return
     }
 
+    if (!termsAccepted) {
+      setMessage({ type: 'error', text: 'You must accept the Terms of Use to continue' })
+      return
+    }
+
     try {
       setLoading(true)
 
-      const { error } = await supabase.from('pending_member_registrations').insert({
-        member_class: memberClass,
-        requested_level: requestedLevel,
+      // Check if auto-approval is enabled (approval NOT required)
+      const isAutoApproval = approvalRequired === false
 
-        // Personal
-        first_name: memberClass === 'Personal' ? firstName : null,
-        last_name: memberClass === 'Personal' ? lastName : null,
-        date_of_birth: dateOfBirth || null,
-        nakshatra: nakshatra || null,
-        family_gotra: familyGotra || null,
+      if (isAutoApproval) {
+        // AUTO-APPROVAL MODE: Create member directly
 
-        // Spouse
-        secondary_first_name: includeSpouse ? secondaryFirstName : null,
-        secondary_last_name: includeSpouse ? secondaryLastName : null,
-        secondary_date_of_birth: includeSpouse ? secondaryDateOfBirth : null,
-        secondary_nakshatra: includeSpouse ? secondaryNakshatra : null,
+        // Generate membership ID based on level
+        const prefix = requestedLevel === 'Lifetime' ? '1' : requestedLevel === 'Annual' ? '2' : '3'
+        const randomNum = Math.floor(Math.random() * 100000).toString().padStart(5, '0')
+        const membershipId = `${prefix}${randomNum}00`
 
-        // Business
-        business_name: memberClass === 'Business' ? businessName : null,
-        business_ein: memberClass === 'Business' ? businessEin : null,
-        business_type: memberClass === 'Business' ? businessType : null,
+        // Create member record directly
+        const { data: memberData, error: memberError } = await supabase.from('members').insert({
+          membership_id: membershipId,
+          member_class: memberClass,
+          current_level: requestedLevel,
 
-        // Contact
-        primary_email: primaryEmail,
-        primary_phone: primaryPhone || null,
-        secondary_email: secondaryEmail || null,
-        secondary_phone: secondaryPhone || null,
+          // Personal
+          first_name: memberClass === 'Personal' ? firstName : null,
+          last_name: memberClass === 'Personal' ? lastName : null,
+          date_of_birth: dateOfBirth || null,
+          nakshatra: nakshatra || null,
+          family_gotra: familyGotra || null,
 
-        // Address
-        address_line_1: addressLine1 || null,
-        address_line_2: addressLine2 || null,
-        city: city || null,
-        state: state || null,
-        zip: zip || null,
+          // Spouse
+          secondary_first_name: includeSpouse ? secondaryFirstName : null,
+          secondary_last_name: includeSpouse ? secondaryLastName : null,
+          secondary_date_of_birth: includeSpouse ? secondaryDateOfBirth : null,
+          secondary_nakshatra: includeSpouse ? secondaryNakshatra : null,
 
-        // Additional
-        how_did_you_hear: howDidYouHear || null,
-        notes: notes || null,
-      })
+          // Business
+          business_name: memberClass === 'Business' ? businessName : null,
+          business_ein: memberClass === 'Business' ? businessEin : null,
+          business_type: memberClass === 'Business' ? businessType : null,
 
-      if (error) {
-        console.error('Submission error:', error)
-        setMessage({ type: 'error', text: error.message })
-        return
+          // Contact
+          primary_email: primaryEmail,
+          primary_phone: primaryPhone || null,
+          secondary_email: secondaryEmail || null,
+          secondary_phone: secondaryPhone || null,
+
+          // Address
+          address_line_1: addressLine1 || null,
+          address_line_2: addressLine2 || null,
+          city: city || null,
+          state: state || null,
+          zip: zip || null,
+
+          // Additional
+          how_did_you_hear: howDidYouHear || null,
+        })
+        .select()
+        .single()
+
+        if (memberError) {
+          console.error('Member creation error:', memberError)
+          setMessage({ type: 'error', text: memberError.message })
+          return
+        }
+
+        // Record terms acceptance
+        if (memberData && activeTerms) {
+          await recordTermsAcceptanceForMember({
+            memberId: memberData.id,
+            termsVersion: activeTerms.version,
+            termsContentId: activeTerms.id,
+            acceptanceMethod: 'registration',
+          })
+        }
+
+        setMessage({
+          type: 'success',
+          text: `Congratulations! Your membership has been approved. Your Membership ID is ${membershipId}. You can now login using the "Email Me a Link to Login" button.`,
+        })
+      } else {
+        // APPROVAL REQUIRED MODE: Submit to pending registrations
+
+        // Note: We record terms acceptance flag here
+        // Actual acceptance record with member_id will be created when office approves
+        const termsAcceptanceData = activeTerms ? {
+          terms_version: activeTerms.version,
+          terms_content_id: activeTerms.id,
+          terms_accepted: true,
+        } : {}
+
+        const { error } = await supabase.from('pending_member_registrations').insert({
+          member_class: memberClass,
+          requested_level: requestedLevel,
+
+          // Personal
+          first_name: memberClass === 'Personal' ? firstName : null,
+          last_name: memberClass === 'Personal' ? lastName : null,
+          date_of_birth: dateOfBirth || null,
+          nakshatra: nakshatra || null,
+          family_gotra: familyGotra || null,
+
+          // Spouse
+          secondary_first_name: includeSpouse ? secondaryFirstName : null,
+          secondary_last_name: includeSpouse ? secondaryLastName : null,
+          secondary_date_of_birth: includeSpouse ? secondaryDateOfBirth : null,
+          secondary_nakshatra: includeSpouse ? secondaryNakshatra : null,
+
+          // Business
+          business_name: memberClass === 'Business' ? businessName : null,
+          business_ein: memberClass === 'Business' ? businessEin : null,
+          business_type: memberClass === 'Business' ? businessType : null,
+
+          // Contact
+          primary_email: primaryEmail,
+          primary_phone: primaryPhone || null,
+          secondary_email: secondaryEmail || null,
+          secondary_phone: secondaryPhone || null,
+
+          // Address
+          address_line_1: addressLine1 || null,
+          address_line_2: addressLine2 || null,
+          city: city || null,
+          state: state || null,
+          zip: zip || null,
+
+          // Additional
+          how_did_you_hear: howDidYouHear || null,
+          notes: notes || null,
+
+          // Store terms acceptance info (will be used when creating member)
+          ...termsAcceptanceData,
+        })
+
+        if (error) {
+          console.error('Submission error:', error)
+          setMessage({ type: 'error', text: error.message })
+          return
+        }
+
+        setMessage({
+          type: 'success',
+          text: 'Application submitted successfully! Our team will review your application and contact you within 2-3 business days.',
+        })
       }
-
-      setMessage({
-        type: 'success',
-        text: 'Application submitted successfully! Our team will review your application and contact you within 2-3 business days.',
-      })
 
       // Reset form
       setFirstName('')
@@ -148,30 +277,37 @@ export default function JoinPage() {
     }
   }
 
-  const membershipInfo = {
-    Community: {
-      price: 'Free',
-      benefits: ['Access to temple events', 'Community newsletter', 'Event notifications'],
-    },
-    Annual: {
-      price: '$101/year',
-      benefits: [
-        'All Community benefits',
-        'Member-only events',
-        'Discounted service rates',
-        'Priority booking',
-      ],
-    },
-    Lifetime: {
-      price: '$1,008 (one-time)',
-      benefits: [
-        'All Annual benefits',
-        'Lifetime membership card',
-        'No annual renewal',
-        'Special recognition',
-      ],
-    },
-  }
+  // Get membership info from pricing settings
+  const membershipInfo = pricing
+    ? {
+        Community: {
+          price: pricing.community.displayPrice,
+          benefits: ['Access to temple events', 'Community newsletter', 'Event notifications'],
+        },
+        Annual: {
+          price: pricing.annual.displayPrice,
+          benefits: [
+            'All Community benefits',
+            'Member-only events',
+            'Discounted service rates',
+            'Priority booking',
+          ],
+        },
+        Lifetime: {
+          price: pricing.lifetime.displayPrice,
+          benefits: [
+            'All Annual benefits',
+            'Lifetime membership card',
+            'No annual renewal',
+            'Special recognition',
+          ],
+        },
+      }
+    : {
+        Community: { price: 'Free', benefits: [] },
+        Annual: { price: 'Loading...', benefits: [] },
+        Lifetime: { price: 'Loading...', benefits: [] },
+      }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
@@ -267,9 +403,15 @@ export default function JoinPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
                   disabled={loading}
                 >
-                  <option value="Community">Community (Free)</option>
-                  <option value="Annual">Annual ($101/year)</option>
-                  <option value="Lifetime">Lifetime ($1,008 one-time)</option>
+                  <option value="Community">
+                    Community ({pricing?.community.displayPrice || 'Free'})
+                  </option>
+                  <option value="Annual">
+                    Annual ({pricing?.annual.displayPrice || 'Loading...'})
+                  </option>
+                  <option value="Lifetime">
+                    Lifetime ({pricing?.lifetime.displayPrice || 'Loading...'})
+                  </option>
                 </select>
               </div>
             </div>
@@ -634,11 +776,21 @@ export default function JoinPage() {
               </div>
             </div>
 
-            {/* Submit Button */}
+            {/* Terms Acceptance */}
             <div className="border-t pt-6">
+              <TermsCheckbox
+                checked={termsAccepted}
+                onChange={setTermsAccepted}
+                required={true}
+                className="mb-6"
+              />
+            </div>
+
+            {/* Submit Button */}
+            <div>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !termsAccepted}
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#FF9933] to-[#800000] hover:from-[#FF8800] hover:to-[#700000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9933] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {loading ? (
@@ -670,8 +822,7 @@ export default function JoinPage() {
                 )}
               </button>
               <p className="mt-4 text-center text-xs text-gray-500">
-                By submitting this application, you agree to our terms of service and privacy
-                policy. A member of our team will review your application and contact you within
+                A member of our team will review your application and contact you within
                 2-3 business days.
               </p>
             </div>

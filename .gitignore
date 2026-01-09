@@ -23,8 +23,10 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env*.local
-.env.example
+.env.production
+.env.development
 
 # vercel
 .vercel
@@ -35,3 +37,54 @@ next-env.d.ts
 
 # generated version JSON (TypeScript file is kept as placeholder)
 lib/constants/version.generated.json
+
+# supabase
+supabase/.temp/
+supabase/.branches/
+supabase/.config/
+**/supabase/.temp/**
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
+*_backup
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Database dumps
+*.sql.gz
+*.dump
+
+# Keys and certificates
+*.key
+*.pem
+*.p12
+*.pfx
+*.cer
+*.crt
+
+# Secrets
+secrets/
+.secrets/
+credentials.json
+service-account*.json
