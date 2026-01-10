@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
-import type { PaymentCategory, PaymentMethod } from '@/types/database'
+import type { PaymentPurpose, PaymentMethod } from '@/types/database'
 import { useTestData } from '@/lib/context/TestDataContext'
 import { getTestMemberIds } from '@/lib/utils/testDataFiltering'
 
@@ -16,11 +16,11 @@ interface Payment {
   membership_id: string
   amount: number
   payment_date: string
-  payment_method: PaymentMethod
-  category: PaymentCategory
+  method: PaymentMethod
+  purpose: PaymentPurpose
   check_number?: string
-  transaction_id?: string
-  stripe_payment_id?: string
+  zelle_reference?: string
+  stripe_payment_intent_id?: string
   notes?: string
   member_name?: string
   member_email?: string
@@ -35,7 +35,7 @@ export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterCategory, setFilterCategory] = useState<PaymentCategory | 'All'>('All')
+  const [filterPurpose, setFilterPurpose] = useState<PaymentPurpose | 'All'>('All')
   const [filterMethod, setFilterMethod] = useState<PaymentMethod | 'All'>('All')
 
   useEffect(() => {
@@ -98,31 +98,33 @@ export default function PaymentsPage() {
       payment.member_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       payment.member_email?.toLowerCase().includes(searchQuery.toLowerCase())
 
-    const matchesCategory = filterCategory === 'All' || payment.category === filterCategory
-    const matchesMethod = filterMethod === 'All' || payment.payment_method === filterMethod
+    const matchesPurpose = filterPurpose === 'All' || payment.purpose === filterPurpose
+    const matchesMethod = filterMethod === 'All' || payment.method === filterMethod
 
-    return matchesSearch && matchesCategory && matchesMethod
+    return matchesSearch && matchesPurpose && matchesMethod
   })
 
   // Calculate totals
   const totalAmount = filteredPayments.reduce((sum, p) => sum + p.amount, 0)
 
-  const getCategoryBadgeColor = (category: PaymentCategory) => {
-    switch (category) {
+  const getPurposeBadgeColor = (purpose: PaymentPurpose) => {
+    switch (purpose) {
       case 'Membership': return 'bg-blue-100 text-blue-800'
       case 'Donation': return 'bg-green-100 text-green-800'
       case 'Service': return 'bg-purple-100 text-purple-800'
       case 'Event': return 'bg-orange-100 text-orange-800'
+      case 'Sponsorship': return 'bg-yellow-100 text-yellow-800'
+      case 'Request': return 'bg-pink-100 text-pink-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
 
   const getMethodBadgeColor = (method: PaymentMethod) => {
     switch (method) {
+      case 'Stripe': return 'bg-purple-100 text-purple-800'
       case 'Cash': return 'bg-yellow-100 text-yellow-800'
       case 'Check': return 'bg-indigo-100 text-indigo-800'
-      case 'Card': return 'bg-pink-100 text-pink-800'
-      case 'Online': return 'bg-emerald-100 text-emerald-800'
+      case 'Zelle': return 'bg-emerald-100 text-emerald-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -162,13 +164,13 @@ export default function PaymentsPage() {
             <div className="bg-white p-4 rounded-lg shadow">
               <p className="text-sm text-gray-600">Membership Payments</p>
               <p className="text-2xl font-bold text-blue-600">
-                {filteredPayments.filter(p => p.category === 'Membership').length}
+                {filteredPayments.filter(p => p.purpose === 'Membership').length}
               </p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow">
               <p className="text-sm text-gray-600">Donations</p>
               <p className="text-2xl font-bold text-green-600">
-                {filteredPayments.filter(p => p.category === 'Donation').length}
+                {filteredPayments.filter(p => p.purpose === 'Donation').length}
               </p>
             </div>
           </div>
@@ -187,19 +189,20 @@ export default function PaymentsPage() {
                 />
               </div>
 
-              {/* Category Filter */}
+              {/* Purpose Filter */}
               <div>
                 <select
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value as any)}
+                  value={filterPurpose}
+                  onChange={(e) => setFilterPurpose(e.target.value as any)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
                 >
-                  <option value="All">All Categories</option>
+                  <option value="All">All Purposes</option>
                   <option value="Membership">Membership</option>
                   <option value="Donation">Donation</option>
                   <option value="Service">Service</option>
                   <option value="Event">Event</option>
-                  <option value="Other">Other</option>
+                  <option value="Sponsorship">Sponsorship</option>
+                  <option value="Request">Request</option>
                 </select>
               </div>
 
@@ -211,11 +214,10 @@ export default function PaymentsPage() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
                 >
                   <option value="All">All Methods</option>
+                  <option value="Stripe">Stripe</option>
                   <option value="Cash">Cash</option>
                   <option value="Check">Check</option>
-                  <option value="Card">Card</option>
-                  <option value="Online">Online</option>
-                  <option value="Other">Other</option>
+                  <option value="Zelle">Zelle</option>
                 </select>
               </div>
             </div>
@@ -279,8 +281,8 @@ export default function PaymentsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2">
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryBadgeColor(payment.category)}`}>
-                              {payment.category}
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPurposeBadgeColor(payment.purpose)}`}>
+                              {payment.purpose}
                             </span>
                             {payment.is_test_payment && (
                               <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
@@ -290,14 +292,14 @@ export default function PaymentsPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getMethodBadgeColor(payment.payment_method)}`}>
-                            {payment.payment_method}
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getMethodBadgeColor(payment.method)}`}>
+                            {payment.method}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {payment.check_number && `Check #${payment.check_number}`}
-                          {payment.transaction_id && `TXN: ${payment.transaction_id}`}
-                          {payment.stripe_payment_id && `Stripe: ${payment.stripe_payment_id.slice(0, 12)}...`}
+                          {payment.zelle_reference && `Zelle: ${payment.zelle_reference}`}
+                          {payment.stripe_payment_intent_id && `Stripe: ${payment.stripe_payment_intent_id.slice(0, 12)}...`}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button

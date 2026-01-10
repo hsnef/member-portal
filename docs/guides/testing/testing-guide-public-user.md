@@ -17,7 +17,7 @@ Public users can:
 
 ## Test Environment
 
-**Portal URL:** https://portal.hsnef.org (or http://localhost:3000 for development)
+**Portal URL:** https://dev.member.hsnef.org (or http://localhost:3000 for development)
 
 ---
 
@@ -27,13 +27,16 @@ While public user testing doesn't require login, you may need these for verifica
 
 | Role | Email | MembershipID |
 |------|-------|--------------|
-| Manager | test.manager@example.com | 99991000 |
-| Staff | test.staff@example.com | 99992000 |
-| Lifetime Member | test.lifetime@example.com | 99993000 |
-| Annual Member | test.annual@example.com | 99994000 |
-| Community Member | test.community@example.com | 99995000 |
+| Admin | dev-mp+testadmin@hsnef.org | 99990000 |
+| Manager | dev-mp+testmanager@hsnef.org | 99991000 |
+| Staff | dev-mp+teststaff@hsnef.org | 99992000 |
+| Lifetime Member | dev-mp+testlifetime@hsnef.org | 99993000 |
+| Annual Member | dev-mp+testannual@hsnef.org | 99994000 |
+| Community Member | dev-mp+testcommunity@hsnef.org | 99995000 |
 
 Test accounts use prefix `9` and are marked with a purple "TEST" badge.
+
+**Recommended Password:** `TestPassword123!`
 
 ---
 
@@ -189,7 +192,7 @@ Test accounts use prefix `9` and are marked with a purple "TEST" badge.
 
 ### TC-PUB-09: Verify Membership QR Code
 
-**Prerequisite:** Have a valid QR code from a test member's pass (e.g., test.lifetime@example.com)
+**Prerequisite:** Have a valid QR code from a test member's pass (e.g., dev-mp+testlifetime@hsnef.org)
 
 **Steps:**
 1. Scan a member's QR code with your phone camera
@@ -251,7 +254,7 @@ Test accounts use prefix `9` and are marked with a purple "TEST" badge.
 
 **Steps:**
 1. Navigate to /register
-2. Enter test.lifetime@example.com (or another test account email)
+2. Enter dev-mp+testlifetime@hsnef.org (or another test account email)
 3. Create a password (e.g., "TestPassword123!")
 4. Submit registration
 

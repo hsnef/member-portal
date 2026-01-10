@@ -233,11 +233,12 @@ user_roles {
 
 ## 🧪 Test Account Registration
 
-### **Current Test Accounts:**
+### **Available Test Accounts:**
 
 ```
 Email                              | Membership ID | Role
 -----------------------------------|---------------|---------------
+dev-mp+testadmin@hsnef.org       | 99990000      | Admin
 dev-mp+testmanager@hsnef.org     | 99991000      | Office Manager
 dev-mp+teststaff@hsnef.org       | 99992000      | Office Staff
 dev-mp+testlifetime@hsnef.org    | 99993000      | Member
@@ -245,47 +246,41 @@ dev-mp+testannual@hsnef.org      | 99994000      | Member
 dev-mp+testcommunity@hsnef.org   | 99995000      | Member
 ```
 
-### **Registration Steps:**
+**Recommended Password:** `TestPassword123!`
 
-1. **Update Email Addresses** (if not done):
-```sql
-UPDATE members
-SET primary_email = CASE membership_id
-  WHEN '99991000' THEN 'dev-mp+testmanager@hsnef.org'
-  WHEN '99992000' THEN 'dev-mp+teststaff@hsnef.org'
-  WHEN '99993000' THEN 'dev-mp+testlifetime@hsnef.org'
-  WHEN '99994000' THEN 'dev-mp+testannual@hsnef.org'
-  WHEN '99995000' THEN 'dev-mp+testcommunity@hsnef.org'
-END
-WHERE is_test_account = true;
-```
+### **Initial Setup (Required First):**
 
-2. **Register Each Account:**
-   - Go to: `http://localhost:3000/register`
-   - Email: `dev-mp+testmanager@hsnef.org`
-   - Password: `TestPassword123!` (or your choice)
+Before testers can begin, a real Admin must set up the test admin account:
+
+1. **Register the Test Admin Account:**
+   - Go to: `https://dev.member.hsnef.org/register`
+   - Email: `dev-mp+testadmin@hsnef.org`
+   - Password: `TestPassword123!`
    - Click "Create Account"
-   - Repeat for all 5 accounts
 
-3. **Assign Staff Roles:**
-```sql
--- Get auth_user_id for manager and staff
-SELECT membership_id, primary_email, auth_user_id
-FROM members
-WHERE primary_email IN (
-  'dev-mp+testmanager@hsnef.org',
-  'dev-mp+teststaff@hsnef.org'
-);
+2. **Real Admin Assigns Test Admin Role:**
+   - Login with your **real Admin account**
+   - Go to **Settings → Staff Role Management** (`/admin/settings/staff-roles`)
+   - Search for "testadmin"
+   - Assign the **Admin** role
 
--- Assign roles (replace with actual UUIDs)
-INSERT INTO user_roles (user_id, role)
-VALUES
-  ('manager-auth-uuid', 'Office Manager'),
-  ('staff-auth-uuid', 'Office Staff')
-ON CONFLICT (user_id, role) DO NOTHING;
-```
+3. **Test Admin Assigns Other Roles:**
+   Once the Test Admin has the Admin role, they can:
+   - Login as `dev-mp+testadmin@hsnef.org`
+   - Navigate to **Settings → Staff Role Management**
+   - Assign roles to other registered test accounts:
+     - `dev-mp+testmanager@hsnef.org` → **Office Manager**
+     - `dev-mp+teststaff@hsnef.org` → **Office Staff**
 
-4. **Verify:**
+### **Register Other Test Accounts:**
+
+1. Go to: `https://dev.member.hsnef.org/register`
+2. Enter test account email (e.g., `dev-mp+testlifetime@hsnef.org`)
+3. Password: `TestPassword123!`
+4. Click "Create Account"
+5. Repeat for all accounts as needed
+
+### **Verify Registration (SQL):**
 ```sql
 SELECT
   m.membership_id,
@@ -433,10 +428,20 @@ LIMIT 20;
 
 ## ✅ Quick Reference
 
-**Registration URL:** `http://localhost:3000/register` (or your domain)
+**Portal URL:** `https://dev.member.hsnef.org`
 
-**Login URL:** `http://localhost:3000/login`
+**Registration URL:** `/register`
 
-**Test Password:** `TestPassword123!` (recommended)
+**Login URL:** `/login`
 
-**All test emails arrive at:** `dev-msp@hsnef.org`
+**Test Password:** `TestPassword123!`
+
+**Test Accounts:**
+| Account | Email | MembershipID |
+|---------|-------|--------------|
+| Admin | dev-mp+testadmin@hsnef.org | 99990000 |
+| Manager | dev-mp+testmanager@hsnef.org | 99991000 |
+| Staff | dev-mp+teststaff@hsnef.org | 99992000 |
+| Lifetime | dev-mp+testlifetime@hsnef.org | 99993000 |
+| Annual | dev-mp+testannual@hsnef.org | 99994000 |
+| Community | dev-mp+testcommunity@hsnef.org | 99995000 |

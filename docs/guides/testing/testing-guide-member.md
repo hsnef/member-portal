@@ -24,9 +24,11 @@ Use these pre-configured test accounts for member testing:
 
 | Account | Email | MembershipID | Level | Purpose |
 |---------|-------|--------------|-------|---------|
-| Lifetime | test.lifetime@example.com | 99993000 | Lifetime | Test member pricing, no expiry |
-| Annual | test.annual@example.com | 99994000 | Annual | Test renewal flow, expiry handling |
-| Community | test.community@example.com | 99995000 | Community | Test non-member pricing |
+| Lifetime | dev-mp+testlifetime@hsnef.org | 99993000 | Lifetime | Test member pricing, no expiry |
+| Annual | dev-mp+testannual@hsnef.org | 99994000 | Annual | Test renewal flow, expiry handling |
+| Community | dev-mp+testcommunity@hsnef.org | 99995000 | Community | Test non-member pricing |
+
+**Recommended Password:** `TestPassword123!`
 
 ### First-Time Setup
 
@@ -50,7 +52,7 @@ If the test account shows "Not Registered":
 
 **Steps:**
 1. Navigate to /login
-2. Login with test.lifetime@example.com
+2. Login with dev-mp+testlifetime@hsnef.org
 3. Observe the dashboard
 
 **Expected Results:**
@@ -350,7 +352,7 @@ If the test account shows "Not Registered":
 
 ### TC-MEM-19: Renew Membership (Annual Member)
 
-**Prerequisites:** Login as test.annual@example.com
+**Prerequisites:** Login as dev-mp+testannual@hsnef.org
 
 **Steps:**
 1. Click "Renew" from dashboard or navigate to /member/renew
@@ -369,7 +371,7 @@ If the test account shows "Not Registered":
 ### TC-MEM-20: Upgrade to Lifetime
 
 **Steps:**
-1. Login as test.annual@example.com
+1. Login as dev-mp+testannual@hsnef.org
 2. Navigate to /member/renew
 3. Select "Lifetime" membership
 4. Confirm the $1,001 one-time payment
@@ -437,11 +439,11 @@ If the test account shows "Not Registered":
 ### TC-MEM-24: Pricing Comparison (Member vs Community)
 
 **Steps:**
-1. Login as test.lifetime@example.com
+1. Login as dev-mp+testlifetime@hsnef.org
 2. Navigate to Bookings > New Booking
 3. Select a service, note the price
 4. Logout
-5. Login as test.community@example.com
+5. Login as dev-mp+testcommunity@hsnef.org
 6. Navigate to Bookings > New Booking
 7. Select the same service, note the price
 
@@ -468,13 +470,13 @@ If the test account shows "Not Registered":
 ## Edge Cases
 
 ### EC-MEM-01: Expired Annual Membership
-- Login as test.annual@example.com (if expired in test data)
+- Login as dev-mp+testannual@hsnef.org (if expired in test data)
 - Dashboard shows "Membership Expired"
 - Renewal prominently displayed
 - Limited access until renewed
 
 ### EC-MEM-02: Community Member Limitations
-- Login as test.community@example.com
+- Login as dev-mp+testcommunity@hsnef.org
 - Higher pricing on services
 - May not have full membership pass
 - Upgrade prompts displayed
@@ -502,7 +504,7 @@ If the test account shows "Not Registered":
 ## Clean Test Data
 
 After testing, staff can clean all test transactions:
-1. Login as test.manager@example.com
+1. Login as dev-mp+testmanager@hsnef.org
 2. Navigate to /admin/test-accounts
 3. Click "Clean Test Data"
 4. All test payments, bookings, registrations removed
@@ -514,7 +516,7 @@ After testing, staff can clean all test transactions:
 
 When reporting bugs, include:
 1. Test case ID (e.g., TC-MEM-05)
-2. Test account used (e.g., test.lifetime@example.com)
+2. Test account used (e.g., dev-mp+testlifetime@hsnef.org)
 3. Steps to reproduce
 4. Expected vs actual behavior
 5. Screenshots if applicable
