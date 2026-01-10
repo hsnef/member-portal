@@ -22,30 +22,27 @@ As Office Staff, you have all Member features plus:
 | Field | Value |
 |-------|-------|
 | Role | Office Staff |
-| Email | test.staff@example.com |
+| Email | dev-mp+teststaff@hsnef.org |
 | MembershipID | 99992000 |
 | Membership Level | Lifetime |
+
+**Recommended Password:** `TestPassword123!`
 
 ### First-Time Setup
 
 If not yet registered:
 1. Navigate to `/register`
-2. Enter: test.staff@example.com
+2. Enter: dev-mp+teststaff@hsnef.org
 3. Create password (e.g., "TestPassword123!")
 4. System links auth to existing member record
 
 ### After Registration - Assign Role
 
-The Office Staff role must be assigned after registration:
-```sql
--- Get the auth_user_id
-SELECT id, auth_user_id FROM members WHERE primary_email = 'test.staff@example.com';
-
--- Assign role (replace USER_ID with actual auth_user_id)
-INSERT INTO user_roles (user_id, role) VALUES ('USER_ID', 'Office Staff');
-```
-
-Or ask an admin to assign the role via the admin panel.
+The Office Staff role must be assigned by the Test Admin:
+1. Test Admin logs in as `dev-mp+testadmin@hsnef.org`
+2. Navigates to **Settings → Staff Role Management** (`/admin/settings/staff-roles`)
+3. Searches for "teststaff"
+4. Assigns the **Office Staff** role
 
 ---
 
@@ -53,10 +50,11 @@ Or ask an admin to assign the role via the admin panel.
 
 | Account | Email | MembershipID | Purpose |
 |---------|-------|--------------|---------|
-| Manager | test.manager@example.com | 99991000 | For approval workflows |
-| Lifetime Member | test.lifetime@example.com | 99993000 | Test member interactions |
-| Annual Member | test.annual@example.com | 99994000 | Test renewals, payments |
-| Community Member | test.community@example.com | 99995000 | Test non-member pricing |
+| Admin | dev-mp+testadmin@hsnef.org | 99990000 | Full admin access |
+| Manager | dev-mp+testmanager@hsnef.org | 99991000 | For approval workflows |
+| Lifetime Member | dev-mp+testlifetime@hsnef.org | 99993000 | Test member interactions |
+| Annual Member | dev-mp+testannual@hsnef.org | 99994000 | Test renewals, payments |
+| Community Member | dev-mp+testcommunity@hsnef.org | 99995000 | Test non-member pricing |
 
 All test accounts have purple "TEST" badge and are excluded from reports.
 
@@ -65,7 +63,7 @@ All test accounts have purple "TEST" badge and are excluded from reports.
 ## Accessing Admin Panel
 
 **Steps:**
-1. Login with test.staff@example.com
+1. Login with dev-mp+teststaff@hsnef.org
 2. From your member dashboard, click "Admin Portal" or navigate to /admin
 
 **Expected Results:**
@@ -116,7 +114,7 @@ All test accounts have purple "TEST" badge and are excluded from reports.
 1. On Members page, use the search box
 2. Search by name (e.g., "Test Lifetime")
 3. Search by MembershipID (e.g., "99993000")
-4. Search by email (e.g., "test.lifetime@example.com")
+4. Search by email (e.g., "dev-mp+testlifetime@hsnef.org")
 
 **Expected Results:**
 - Search returns matching members
@@ -146,7 +144,7 @@ All test accounts have purple "TEST" badge and are excluded from reports.
 ### TC-STF-05: View Member Details
 
 **Steps:**
-1. Click on test.lifetime@example.com from the list
+1. Click on dev-mp+testlifetime@hsnef.org from the list
 2. Review the member detail page
 
 **Expected Results:**
@@ -211,7 +209,7 @@ All test accounts have purple "TEST" badge and are excluded from reports.
 
 **Steps:**
 1. Navigate to Admin > Payments > New (or Record Payment)
-2. Search and select test.annual@example.com
+2. Search and select dev-mp+testannual@hsnef.org
 3. Fill in payment details:
    - Amount: $251.00
    - Payment Method: Cash
@@ -232,7 +230,7 @@ All test accounts have purple "TEST" badge and are excluded from reports.
 
 **Steps:**
 1. Navigate to Admin > Payments > New
-2. Select test.lifetime@example.com
+2. Select dev-mp+testlifetime@hsnef.org
 3. Fill in:
    - Amount: $100.00
    - Payment Method: Check
@@ -252,7 +250,7 @@ All test accounts have purple "TEST" badge and are excluded from reports.
 
 **Steps:**
 1. Navigate to Admin > Payments > New
-2. Select test.annual@example.com
+2. Select dev-mp+testannual@hsnef.org
 3. Fill in:
    - Amount: $50.00
    - Payment Method: Zelle
@@ -362,7 +360,7 @@ All test accounts have purple "TEST" badge and are excluded from reports.
 **Steps:**
 1. Navigate to Admin > Bookings
 2. Click "New Booking"
-3. Search and select test.annual@example.com
+3. Search and select dev-mp+testannual@hsnef.org
 4. Select service type
 5. Fill in booking details:
    - Preferred date
@@ -399,7 +397,7 @@ All test accounts have purple "TEST" badge and are excluded from reports.
 **Steps:**
 1. Navigate to Admin > Scan QR
 2. Allow camera access when prompted
-3. Point camera at test.lifetime@example.com's QR code
+3. Point camera at dev-mp+testlifetime@hsnef.org's QR code
 4. Observe the result
 
 **Expected Results:**
@@ -498,8 +496,8 @@ All test accounts have purple "TEST" badge and are excluded from reports.
 
 ### Scenario A: Member Walks In to Pay
 
-1. Member (use test.annual@example.com) arrives at office
-2. Staff (test.staff@example.com) searches for member
+1. Member (use dev-mp+testannual@hsnef.org) arrives at office
+2. Staff (dev-mp+teststaff@hsnef.org) searches for member
 3. Staff verifies member identity
 4. Staff records cash/check payment
 5. Staff provides receipt (print or email)
@@ -515,7 +513,7 @@ All test accounts have purple "TEST" badge and are excluded from reports.
 
 ### Scenario C: Event Day Check-In
 
-1. Member (test.lifetime@example.com) arrives at event
+1. Member (dev-mp+testlifetime@hsnef.org) arrives at event
 2. Staff opens QR scanner
 3. Member shows digital pass or printed pass
 4. Staff scans QR code
@@ -541,7 +539,7 @@ All test accounts have purple "TEST" badge and are excluded from reports.
 ## Cleaning Test Data
 
 To reset test transactions for fresh testing:
-1. Login as test.manager@example.com (or ask manager)
+1. Login as dev-mp+testmanager@hsnef.org (or ask manager)
 2. Navigate to /admin/test-accounts
 3. Click "Clean Test Data"
 4. Confirm the action
@@ -554,7 +552,7 @@ To reset test transactions for fresh testing:
 
 When reporting bugs, include:
 1. Test case ID (e.g., TC-STF-09)
-2. Test account: test.staff@example.com
+2. Test account: dev-mp+teststaff@hsnef.org
 3. Steps to reproduce
 4. Expected vs actual behavior
 5. Screenshots if applicable

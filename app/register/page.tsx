@@ -24,6 +24,12 @@ export default function RegisterPage() {
   const [traditionalLoginEnabled, setTraditionalLoginEnabled] = useState<boolean | null>(null)
   const [activeTerms, setActiveTerms] = useState<TermsContent | null>(null)
   const [termsAccepted, setTermsAccepted] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Mark as mounted to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Check if traditional login is enabled and load terms
   useEffect(() => {
@@ -198,11 +204,11 @@ export default function RegisterPage() {
     }
   }
 
-  // Show loading while checking setting
-  if (traditionalLoginEnabled === null) {
+  // Show loading while checking setting (also check mounted to avoid hydration mismatch)
+  if (!mounted || traditionalLoginEnabled === null) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
-        <div className="text-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4" suppressHydrationWarning>
+        <div className="text-center" suppressHydrationWarning>
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>

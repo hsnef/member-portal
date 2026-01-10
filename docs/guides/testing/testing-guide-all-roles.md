@@ -2,38 +2,69 @@
 
 This document provides testing instructions for each user role in the HSNEF Member Portal.
 
+**Portal URL:** https://dev.member.hsnef.org
+
 ---
 
 ## Table of Contents
 
-1. [Test Accounts Setup](#test-accounts-setup)
-2. [Public User Testing](#public-user-testing)
-3. [Member Testing](#member-testing)
-4. [Office Staff Testing](#office-staff-testing)
-5. [Office Manager Testing](#office-manager-testing)
+1. [Initial Setup (Required First)](#initial-setup-required-first)
+2. [Test Accounts Setup](#test-accounts-setup)
+3. [Public User Testing](#public-user-testing)
+4. [Member Testing](#member-testing)
+5. [Office Staff Testing](#office-staff-testing)
+6. [Office Manager Testing](#office-manager-testing)
+
+---
+
+## Initial Setup (Required First)
+
+Before testers can begin, a real Admin must set up the test admin account.
+
+### Step 1: Register the Test Admin Account
+1. Navigate to `https://dev.member.hsnef.org/register`
+2. Register using email: `dev-mp+testadmin@hsnef.org`
+3. Create a password (e.g., "TestPassword123!")
+
+### Step 2: Real Admin Assigns Test Admin Role
+1. Login with your **real Admin account** (not the test account)
+2. Go to **Settings → Staff Role Management** (`/admin/settings/staff-roles`)
+3. Search for "testadmin"
+4. Assign the **Admin** role
+
+### Step 3: Test Admin Assigns Other Roles
+Once the Test Admin has the Admin role, they can:
+1. Login as `dev-mp+testadmin@hsnef.org`
+2. Navigate to **Settings → Staff Role Management**
+3. Assign roles to other registered test accounts:
+   - `dev-mp+testmanager@hsnef.org` → **Office Manager**
+   - `dev-mp+teststaff@hsnef.org` → **Office Staff**
+
+**Once this setup is complete, testers can use the test admin account to test all admin functionality without creating permanent data.**
 
 ---
 
 ## Test Accounts Setup
 
-The portal includes pre-configured test accounts that are automatically excluded from reports and metrics. Test accounts use MembershipID prefix `9` (99991000-99995000) and are marked with a purple "TEST" badge in the UI.
+The portal includes pre-configured test accounts that are automatically excluded from reports and metrics. Test accounts use MembershipID prefix `9` (99990000-99995000) and are marked with a purple "TEST" badge in the UI.
 
 ### Available Test Accounts
 
 | Role | Email | MembershipID | Level |
 |------|-------|--------------|-------|
-| Office Manager | test.manager@example.com | 99991000 | Lifetime |
-| Office Staff | test.staff@example.com | 99992000 | Lifetime |
-| Member (Lifetime) | test.lifetime@example.com | 99993000 | Lifetime |
-| Member (Annual) | test.annual@example.com | 99994000 | Annual |
-| Member (Community) | test.community@example.com | 99995000 | Community |
+| Admin | dev-mp+testadmin@hsnef.org | 99990000 | Lifetime |
+| Office Manager | dev-mp+testmanager@hsnef.org | 99991000 | Lifetime |
+| Office Staff | dev-mp+teststaff@hsnef.org | 99992000 | Lifetime |
+| Member (Lifetime) | dev-mp+testlifetime@hsnef.org | 99993000 | Lifetime |
+| Member (Annual) | dev-mp+testannual@hsnef.org | 99994000 | Annual |
+| Member (Community) | dev-mp+testcommunity@hsnef.org | 99995000 | Community |
 
 ### Registering Test Accounts
 
 Test accounts exist in the database but need to be registered in Supabase Auth:
 
 1. Navigate to `/register`
-2. Enter the test account email (e.g., test.lifetime@example.com)
+2. Enter the test account email (e.g., dev-mp+testlifetime@hsnef.org)
 3. Create a password (e.g., "TestPassword123!")
 4. The system links the auth account to the existing member record
 
@@ -53,6 +84,13 @@ This page shows:
 - Password reset functionality
 - "Clean Test Data" button
 - Usage instructions
+
+### Recommended Password
+
+Use the same password for all test accounts:
+```
+TestPassword123!
+```
 
 ---
 
@@ -104,10 +142,10 @@ This page shows:
 
 ## Member Testing
 
-**Login Required:** Use test.lifetime@example.com, test.annual@example.com, or test.community@example.com
+**Login Required:** Use dev-mp+testlifetime@hsnef.org, dev-mp+testannual@hsnef.org, or dev-mp+testcommunity@hsnef.org
 
 ### Test Case 7: View Dashboard
-1. Login as test.lifetime@example.com
+1. Login as dev-mp+testlifetime@hsnef.org
 2. **Expected:** Dashboard displays with:
    - Membership status banner (level and expiry)
    - Digital membership pass with QR code
@@ -152,7 +190,7 @@ This page shows:
 3. **Expected:** Bookings display with appropriate status badges
 
 ### Test Case 13: Renew Membership (Annual Member)
-1. Login as test.annual@example.com
+1. Login as dev-mp+testannual@hsnef.org
 2. Navigate to Member > Renew
 3. Select new membership level
 4. Enter payment details (use Stripe test card: 4242 4242 4242 4242)
@@ -167,8 +205,8 @@ This page shows:
 5. **Expected:** Modal closes, access granted
 
 ### Test Case 15: Pricing Verification
-1. Login as test.lifetime@example.com, create a service booking, note the price
-2. Logout, login as test.community@example.com
+1. Login as dev-mp+testlifetime@hsnef.org, create a service booking, note the price
+2. Logout, login as dev-mp+testcommunity@hsnef.org
 3. Create the same service booking, note the price
 4. **Expected:** Community member sees higher (non-member) pricing
 
@@ -176,10 +214,10 @@ This page shows:
 
 ## Office Staff Testing
 
-**Login Required:** Use test.staff@example.com
+**Login Required:** Use dev-mp+teststaff@hsnef.org
 
 ### Test Case 16: Access Admin Panel
-1. Login as test.staff@example.com
+1. Login as dev-mp+teststaff@hsnef.org
 2. Navigate to /admin
 3. **Expected:** Admin dashboard displays with staff-level menu
 
@@ -198,7 +236,7 @@ This page shows:
 
 ### Test Case 19: Record Manual Payment
 1. Navigate to Admin > Payments > New
-2. Select a test member (e.g., test.annual@example.com)
+2. Select a test member (e.g., dev-mp+testannual@hsnef.org)
 3. Enter payment details:
    - Amount: $100
    - Payment method: Cash
@@ -219,14 +257,14 @@ This page shows:
 ### Test Case 21: Scan Member QR Code
 1. Navigate to Admin > Scan QR
 2. Allow camera access
-3. Scan a test member's QR code (e.g., from test.lifetime@example.com)
+3. Scan a test member's QR code (e.g., from dev-mp+testlifetime@hsnef.org)
 4. **Expected:** Member info displays with verification status and "TEST" badge
 
 ---
 
 ## Office Manager Testing
 
-**Login Required:** Use test.manager@example.com
+**Login Required:** Use dev-mp+testmanager@hsnef.org
 
 ### Test Case 22: Approve Membership Application
 1. Navigate to Admin > Applications
@@ -320,23 +358,23 @@ This page shows:
 ### Scenario A: New Member Journey
 1. Guest visits /join
 2. Fills application form
-3. Office reviews and approves (login as test.manager@example.com)
+3. Office reviews and approves (login as dev-mp+testmanager@hsnef.org)
 4. Member receives welcome email
 5. Member logs in and views dashboard
 6. Member prints membership pass
 
 ### Scenario B: Event Registration Flow
-1. Staff creates event (login as test.staff@example.com)
-2. Member logs in (test.lifetime@example.com)
+1. Staff creates event (login as dev-mp+teststaff@hsnef.org)
+2. Member logs in (dev-mp+testlifetime@hsnef.org)
 3. Member browses events
 4. Member registers for event
 5. Staff views registration list
 6. Member cancels registration
 
 ### Scenario C: Service Booking Flow
-1. Member creates booking request (test.annual@example.com)
-2. Staff reviews booking (test.staff@example.com)
-3. Manager approves booking (test.manager@example.com)
+1. Member creates booking request (dev-mp+testannual@hsnef.org)
+2. Staff reviews booking (dev-mp+teststaff@hsnef.org)
+3. Manager approves booking (dev-mp+testmanager@hsnef.org)
 4. Member makes payment
 5. Service completed
 6. Booking marked complete
@@ -349,9 +387,9 @@ This page shows:
 5. Member downloads receipt
 
 ### Scenario E: Pricing Verification
-1. Login as test.lifetime@example.com (member pricing)
+1. Login as dev-mp+testlifetime@hsnef.org (member pricing)
 2. Create service booking, note price
-3. Login as test.community@example.com (community pricing)
+3. Login as dev-mp+testcommunity@hsnef.org (community pricing)
 4. Create same service booking
 5. **Verify:** Community sees higher rates than member
 
@@ -394,19 +432,20 @@ Before generating reports or demos:
 ## Quick Reference Card
 
 ```
-+----------------------------------------------------------+
-|               TEST ACCOUNTS QUICK REFERENCE               |
-+----------------------------------------------------------+
-| Manager:     test.manager@example.com    (99991000)      |
-| Staff:       test.staff@example.com      (99992000)      |
-| Lifetime:    test.lifetime@example.com   (99993000)      |
-| Annual:      test.annual@example.com     (99994000)      |
-| Community:   test.community@example.com  (99995000)      |
-+----------------------------------------------------------+
-| Management:  /admin/test-accounts                         |
-| Clean Data:  Click "Clean Test Data" button              |
-| Password:    Use "Reset Password" on management page     |
-+----------------------------------------------------------+
++------------------------------------------------------------------+
+|                  TEST ACCOUNTS QUICK REFERENCE                    |
++------------------------------------------------------------------+
+| Admin:       dev-mp+testadmin@hsnef.org       (99990000)         |
+| Manager:     dev-mp+testmanager@hsnef.org     (99991000)         |
+| Staff:       dev-mp+teststaff@hsnef.org       (99992000)         |
+| Lifetime:    dev-mp+testlifetime@hsnef.org    (99993000)         |
+| Annual:      dev-mp+testannual@hsnef.org      (99994000)         |
+| Community:   dev-mp+testcommunity@hsnef.org   (99995000)         |
++------------------------------------------------------------------+
+| Password:    TestPassword123!                                    |
+| Management:  /admin/test-accounts                                |
+| Clean Data:  Click "Clean Test Data" button                      |
++------------------------------------------------------------------+
 ```
 
 ---

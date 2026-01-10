@@ -83,6 +83,19 @@ interface ParsedMember {
   member_profile_name: string
   member_since: string | null
   family_gotra: string
+  // Primary member contact info
+  first_name: string
+  last_name: string
+  primary_email: string
+  primary_phone?: string
+  primary_phone_2?: string
+  nakshatra?: string
+  // Secondary member info
+  secondary_first_name?: string
+  secondary_last_name?: string
+  secondary_email?: string
+  secondary_phone?: string
+  secondary_nakshatra?: string
   // Address
   address_line_1: string
   address_line_2: string
@@ -329,6 +342,20 @@ export default function ImportMembersPage() {
       member_profile_name: memberProfileName,
       member_since: memberSince,
       family_gotra: row.Family_Gotra?.trim() || '',
+      // Primary member contact info
+      first_name: firstName,
+      last_name: lastName,
+      primary_email: primaryEmail,
+      primary_phone: primaryPhone1 || undefined,
+      primary_phone_2: primaryPhone2 || undefined,
+      nakshatra: memberNakshatra || undefined,
+      // Secondary member info
+      secondary_first_name: secondaryFirstName || undefined,
+      secondary_last_name: secondaryLastName || undefined,
+      secondary_email: secondaryEmail || undefined,
+      secondary_phone: secondaryPhone || undefined,
+      secondary_nakshatra: secondaryNakshatra || undefined,
+      // Address
       address_line_1: addressLine1,
       address_line_2: addressLine2,
       city: city,
@@ -439,11 +466,26 @@ export default function ImportMembersPage() {
               membership_id: finalMemberNumber || null,
               member_class: member.member_class,
               current_level: member.current_level,
+              // Primary member info
+              first_name: member.first_name || null,
+              last_name: member.last_name || null,
+              primary_email: member.primary_email, // Required field
+              primary_phone: member.primary_phone || null,
+              primary_phone_2: member.primary_phone_2 || null,
+              nakshatra: member.nakshatra || null,
+              // Secondary member info
+              secondary_first_name: member.secondary_first_name || null,
+              secondary_last_name: member.secondary_last_name || null,
+              secondary_email: member.secondary_email || null,
+              secondary_phone: member.secondary_phone || null,
+              secondary_nakshatra: member.secondary_nakshatra || null,
+              // Business info
               business_name: member.business_name || null,
               business_ein: member.business_ein || null,
               member_profile_name: member.member_profile_name || null,
               member_since: member.member_since || null,
               family_gotra: member.family_gotra || null,
+              // Address
               address_line_1: member.address_line_1 || null,
               address_line_2: member.address_line_2 || null,
               city: member.city || null,

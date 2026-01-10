@@ -26,30 +26,27 @@ As Office Manager, you have all Staff features plus:
 | Field | Value |
 |-------|-------|
 | Role | Office Manager |
-| Email | test.manager@example.com |
+| Email | dev-mp+testmanager@hsnef.org |
 | MembershipID | 99991000 |
 | Membership Level | Lifetime |
+
+**Recommended Password:** `TestPassword123!`
 
 ### First-Time Setup
 
 If not yet registered:
 1. Navigate to `/register`
-2. Enter: test.manager@example.com
+2. Enter: dev-mp+testmanager@hsnef.org
 3. Create password (e.g., "TestPassword123!")
 4. System links auth to existing member record
 
 ### After Registration - Assign Role
 
-The Office Manager role must be assigned after registration:
-```sql
--- Get the auth_user_id
-SELECT id, auth_user_id FROM members WHERE primary_email = 'test.manager@example.com';
-
--- Assign role (replace USER_ID with actual auth_user_id)
-INSERT INTO user_roles (user_id, role) VALUES ('USER_ID', 'Office Manager');
-```
-
-Or have an existing admin assign the role via the admin panel.
+The Office Manager role must be assigned by the Test Admin:
+1. Test Admin logs in as `dev-mp+testadmin@hsnef.org`
+2. Navigates to **Settings → Staff Role Management** (`/admin/settings/staff-roles`)
+3. Searches for "testmanager"
+4. Assigns the **Office Manager** role
 
 ---
 
@@ -57,14 +54,15 @@ Or have an existing admin assign the role via the admin panel.
 
 | Account | Email | MembershipID | Level | Role |
 |---------|-------|--------------|-------|------|
-| Manager | test.manager@example.com | 99991000 | Lifetime | Office Manager |
-| Staff | test.staff@example.com | 99992000 | Lifetime | Office Staff |
-| Lifetime | test.lifetime@example.com | 99993000 | Lifetime | Member |
-| Annual | test.annual@example.com | 99994000 | Annual | Member |
-| Community | test.community@example.com | 99995000 | Community | Member |
+| Admin | dev-mp+testadmin@hsnef.org | 99990000 | Lifetime | Admin |
+| Manager | dev-mp+testmanager@hsnef.org | 99991000 | Lifetime | Office Manager |
+| Staff | dev-mp+teststaff@hsnef.org | 99992000 | Lifetime | Office Staff |
+| Lifetime | dev-mp+testlifetime@hsnef.org | 99993000 | Lifetime | Member |
+| Annual | dev-mp+testannual@hsnef.org | 99994000 | Annual | Member |
+| Community | dev-mp+testcommunity@hsnef.org | 99995000 | Community | Member |
 
 All test accounts:
-- Use MembershipID prefix `9` (99991000-99995000)
+- Use MembershipID prefix `9` (99990000-99995000)
 - Show purple "TEST" badge in UI
 - Are excluded from reports and metrics
 - Can be cleaned without deleting member records
@@ -190,7 +188,7 @@ All test accounts:
 
 **Steps:**
 1. Navigate to Admin > Members
-2. Click on test.lifetime@example.com to view details
+2. Click on dev-mp+testlifetime@hsnef.org to view details
 3. Click "Audit Log" or "View History" button
 4. Review the audit entries
 
@@ -313,7 +311,7 @@ All test accounts:
 
 **Steps:**
 1. Navigate to Admin > Bookings
-2. Find a "Pending Approval" booking (create one using test.annual@example.com first)
+2. Find a "Pending Approval" booking (create one using dev-mp+testannual@hsnef.org first)
 3. Click to view details
 4. Review the request:
    - Service requested
@@ -441,11 +439,11 @@ All test accounts:
 
 **Expected Results:**
 - All test accounts listed:
-  - test.manager@example.com (99991000)
-  - test.staff@example.com (99992000)
-  - test.lifetime@example.com (99993000)
-  - test.annual@example.com (99994000)
-  - test.community@example.com (99995000)
+  - dev-mp+testmanager@hsnef.org (99991000)
+  - dev-mp+teststaff@hsnef.org (99992000)
+  - dev-mp+testlifetime@hsnef.org (99993000)
+  - dev-mp+testannual@hsnef.org (99994000)
+  - dev-mp+testcommunity@hsnef.org (99995000)
 - Registration status shown
 - Password reset sends email
 
@@ -493,7 +491,7 @@ All test accounts:
 
 **Steps:**
 1. Navigate to Admin > Members
-2. Find test.annual@example.com
+2. Find dev-mp+testannual@hsnef.org
 3. Click "Edit"
 4. Update phone number
 5. Save changes
@@ -556,7 +554,7 @@ All test accounts:
 ### Scenario A: New Member Approval Flow
 
 1. Application submitted via /join (use new email)
-2. Login as test.manager@example.com
+2. Login as dev-mp+testmanager@hsnef.org
 3. Navigate to Applications
 4. Review application details
 5. Verify information (call if needed)
@@ -566,19 +564,19 @@ All test accounts:
 
 ### Scenario B: Service Booking Approval
 
-1. Login as test.annual@example.com
+1. Login as dev-mp+testannual@hsnef.org
 2. Create service booking request
-3. Logout, login as test.manager@example.com
+3. Logout, login as dev-mp+testmanager@hsnef.org
 4. Navigate to Bookings
 5. Review and approve the booking
-6. Logout, login as test.annual@example.com
+6. Logout, login as dev-mp+testannual@hsnef.org
 7. Pay for the approved booking
 8. Manager marks service complete
 
 ### Scenario C: Payment Correction
 
 1. Staff recorded incorrect amount
-2. Login as test.manager@example.com
+2. Login as dev-mp+testmanager@hsnef.org
 3. Navigate to Payments
 4. Locate payment (within 90 days)
 5. Edit payment with correct amount
@@ -587,7 +585,7 @@ All test accounts:
 
 ### Scenario D: Clean Testing Environment
 
-1. Login as test.manager@example.com
+1. Login as dev-mp+testmanager@hsnef.org
 2. Navigate to /admin/test-accounts
 3. Click "Clean Test Data"
 4. All test transactions removed
@@ -618,27 +616,28 @@ As a Manager, you have audit log access. Be aware that:
 ## Quick Reference Card
 
 ```
-+----------------------------------------------------------+
-|            OFFICE MANAGER QUICK REFERENCE                 |
-+----------------------------------------------------------+
-| Login:       test.manager@example.com                     |
-| MembershipID: 99991000                                    |
-| Role:        Office Manager                               |
-+----------------------------------------------------------+
-| APPROVALS                                                 |
-| - Applications: Admin > Applications > Approve/Reject    |
-| - Bookings: Admin > Bookings > Approve/Reject            |
-+----------------------------------------------------------+
-| SETTINGS                                                  |
-| - Portal Settings: Admin > Portal Settings               |
-| - Membership Pricing: Portal Settings > Pricing          |
-| - Services: Admin > Services                             |
-| - Purohits: Admin > Purohits                             |
-+----------------------------------------------------------+
-| TEST ACCOUNTS                                             |
-| - Manage: /admin/test-accounts                           |
-| - Clean Data: Click "Clean Test Data" button             |
-+----------------------------------------------------------+
++------------------------------------------------------------------+
+|               OFFICE MANAGER QUICK REFERENCE                      |
++------------------------------------------------------------------+
+| Login:        dev-mp+testmanager@hsnef.org                       |
+| Password:     TestPassword123!                                   |
+| MembershipID: 99991000                                           |
+| Role:         Office Manager                                     |
++------------------------------------------------------------------+
+| APPROVALS                                                        |
+| - Applications: Admin > Applications > Approve/Reject            |
+| - Bookings: Admin > Bookings > Approve/Reject                    |
++------------------------------------------------------------------+
+| SETTINGS                                                         |
+| - Portal Settings: Admin > Portal Settings                       |
+| - Membership Pricing: Portal Settings > Pricing                  |
+| - Services: Admin > Services                                     |
+| - Purohits: Admin > Purohits                                     |
++------------------------------------------------------------------+
+| TEST ACCOUNTS                                                    |
+| - Manage: /admin/test-accounts                                   |
+| - Clean Data: Click "Clean Test Data" button                     |
++------------------------------------------------------------------+
 ```
 
 ---
@@ -647,7 +646,7 @@ As a Manager, you have audit log access. Be aware that:
 
 When reporting bugs, include:
 1. Test case ID (e.g., TC-MGR-05)
-2. Test account: test.manager@example.com
+2. Test account: dev-mp+testmanager@hsnef.org
 3. Steps to reproduce
 4. Expected vs actual behavior
 5. Screenshots if applicable

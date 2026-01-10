@@ -28,20 +28,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   // Fetch member and roles for the authenticated user
-  const fetchMemberAndRoles = async (userId: string) => {
+  const fetchMemberAndRoles = async (userId: string, userEmail?: string) => {
     try {
-      // Fetch member record and roles in parallel for better performance
-      const [memberResult, rolesResult] = await Promise.all([
-        supabase
+      // First try to fetch member by auth_user_id
+      let memberResult = await supabase
+        .from('members')
+        .select('*')
+        .eq('auth_user_id', userId)
+        .single()
+
+      // If no member found by auth_user_id, try to auto-link by email
+      if (memberResult.error && userEmail) {
+        console.log('[AuthContext] No member found by auth_user_id, trying email lookup:', userEmail)
+
+        // Look for member with matching email but no auth_user_id
+        const emailLookup = await supabase
           .from('members')
           .select('*')
-          .eq('auth_user_id', userId)
-          .single(),
-        supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', userId)
-      ])
+          .eq('primary_email', userEmail)
+          .is('auth_user_id', null)
+          .single()
+
+        if (!emailLookup.error && emailLookup.data) {
+          console.log('[AuthContext] Found unlinked member by email, auto-linking:', emailLookup.data.id)
+
+          // Auto-link the member to this auth user
+          const { error: linkError } = await supabase
+            .from('members')
+            .update({ auth_user_id: userId })
+            .eq('id', emailLookup.data.id)
+
+          if (linkError) {
+            console.error('[AuthContext] Error auto-linking member:', linkError)
+          } else {
+            console.log('[AuthContext] Successfully auto-linked member')
+            // Re-fetch the member with updated auth_user_id
+            memberResult = await supabase
+              .from('members')
+              .select('*')
+              .eq('auth_user_id', userId)
+              .single()
+          }
+        }
+      }
+
+      // Fetch roles (always do this regardless of member status)
+      const rolesResult = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
 
       // Handle member result
       if (memberResult.error) {
@@ -87,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setUser(session?.user ?? null)
         if (session?.user) {
-          await fetchMemberAndRoles(session.user.id)
+          await fetchMemberAndRoles(session.user.id, session.user.email)
         }
         setLoading(false)
       })
@@ -104,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
-        await fetchMemberAndRoles(session.user.id)
+        await fetchMemberAndRoles(session.user.id, session.user.email)
       } else {
         setMember(null)
         setRoles([])
@@ -137,7 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Manually refresh member data (useful after profile updates)
   const refreshMember = async () => {
     if (user) {
-      await fetchMemberAndRoles(user.id)
+      await fetchMemberAndRoles(user.id, user.email)
     }
   }
 

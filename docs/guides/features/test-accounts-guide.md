@@ -6,17 +6,42 @@ Test accounts allow you to test all functionality without affecting real member 
 
 ---
 
+## Initial Setup (Required First)
+
+Before testers can begin, a real Admin must set up the test admin account.
+
+### Step 1: Register the Test Admin Account
+1. Navigate to `https://dev.member.hsnef.org/register`
+2. Register using email: `dev-mp+testadmin@hsnef.org`
+3. Create a password (e.g., "TestPassword123!")
+
+### Step 2: Real Admin Assigns Test Admin Role
+1. Login with your **real Admin account** (not the test account)
+2. Go to **Settings → Staff Role Management** (`/admin/settings/staff-roles`)
+3. Search for "testadmin"
+4. Assign the **Admin** role
+
+### Step 3: Test Admin Assigns Other Roles
+Once the Test Admin has the Admin role, they can assign roles to other registered test accounts via the UI.
+
+**Once this setup is complete, testers can use the test admin account to test all admin functionality without creating permanent data.**
+
+---
+
 ## Test Accounts Created
 
 After running the migration, these test accounts will be available:
 
 | Email | Membership ID | Role | Level | Purpose |
 |-------|---------------|------|-------|---------|
-| dev-mp+testmanager@hsnef.org | 99991000 | Office Manager | Lifetime | Full admin access |
+| dev-mp+testadmin@hsnef.org | 99990000 | Admin | Lifetime | Full system testing |
+| dev-mp+testmanager@hsnef.org | 99991000 | Office Manager | Lifetime | Manager functions |
 | dev-mp+teststaff@hsnef.org | 99992000 | Office Staff | Lifetime | Staff functions |
 | dev-mp+testlifetime@hsnef.org | 99993000 | Member | Lifetime | Lifetime member pricing |
 | dev-mp+testannual@hsnef.org | 99994000 | Member | Annual | Annual member pricing |
 | dev-mp+testcommunity@hsnef.org | 99995000 | Member | Community | Non-paid member pricing |
+
+**Recommended Password:** `TestPassword123!`
 
 ---
 
@@ -349,26 +374,28 @@ If you encounter issues with test accounts:
 ## Quick Reference Card
 
 ```
-╔═══════════════════════════════════════════════════════════╗
-║               TEST ACCOUNTS QUICK REFERENCE               ║
-╠═══════════════════════════════════════════════════════════╣
-║ Manager:     dev-mp+testmanager@hsnef.org    (99991000)      ║
-║ Staff:       dev-mp+teststaff@hsnef.org      (99992000)      ║
-║ Lifetime:    dev-mp+testlifetime@hsnef.org   (99993000)      ║
-║ Annual:      dev-mp+testannual@hsnef.org     (99994000)      ║
-║ Community:   dev-mp+testcommunity@hsnef.org  (99995000)      ║
-╠═══════════════════════════════════════════════════════════╣
-║ Management:  /admin/test-accounts                         ║
-║ Clean Data:  Click "Clean Test Data" button              ║
-║ Password:    Use "Reset Password" on management page     ║
-╠═══════════════════════════════════════════════════════════╣
-║ STAFF TOGGLE (Admin Header - Top Right):                 ║
-║   🧪 HIDDEN  = Production data only (DEFAULT)            ║
-║   🧪 SHOWING = Test data visible with badges             ║
-║                                                           ║
-║ TEST USER ISOLATION:                                      ║
-║   • Test users see ONLY test events                      ║
-║   • Regular members see ONLY production events           ║
-║   • No cross-contamination                               ║
-╚═══════════════════════════════════════════════════════════╝
+╔═══════════════════════════════════════════════════════════════╗
+║                TEST ACCOUNTS QUICK REFERENCE                   ║
+╠═══════════════════════════════════════════════════════════════╣
+║ Admin:       dev-mp+testadmin@hsnef.org       (99990000)      ║
+║ Manager:     dev-mp+testmanager@hsnef.org     (99991000)      ║
+║ Staff:       dev-mp+teststaff@hsnef.org       (99992000)      ║
+║ Lifetime:    dev-mp+testlifetime@hsnef.org    (99993000)      ║
+║ Annual:      dev-mp+testannual@hsnef.org      (99994000)      ║
+║ Community:   dev-mp+testcommunity@hsnef.org   (99995000)      ║
+╠═══════════════════════════════════════════════════════════════╣
+║ Password:    TestPassword123!                                 ║
+║ Management:  /admin/test-accounts                             ║
+║ Staff Roles: /admin/settings/staff-roles                      ║
+║ Clean Data:  Click "Clean Test Data" button                   ║
+╠═══════════════════════════════════════════════════════════════╣
+║ STAFF TOGGLE (Admin Header - Top Right):                      ║
+║   🧪 HIDDEN  = Production data only (DEFAULT)                 ║
+║   🧪 SHOWING = Test data visible with badges                  ║
+║                                                               ║
+║ TEST USER ISOLATION:                                          ║
+║   • Test users see ONLY test events                           ║
+║   • Regular members see ONLY production events                ║
+║   • No cross-contamination                                    ║
+╚═══════════════════════════════════════════════════════════════╝
 ```

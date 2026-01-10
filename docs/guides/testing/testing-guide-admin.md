@@ -17,39 +17,52 @@ As Admin, you have complete system access including:
 - Terms of use management
 - Database/system health monitoring
 
-**Important:** There is no pre-configured Admin test account. The highest role available in test accounts is Office Manager (test.manager@example.com). For Admin-level testing, you need:
-1. A real Admin account, OR
-2. Database access to assign Admin role to a test account
+---
+
+## Test Admin Account Setup
+
+### Initial Setup (Required First)
+
+Before testing Admin features, the Test Admin account must be set up:
+
+**Step 1: Register the Test Admin Account**
+1. Navigate to `https://dev.member.hsnef.org/register`
+2. Register using email: `dev-mp+testadmin@hsnef.org`
+3. Create a password (e.g., "TestPassword123!")
+
+**Step 2: Real Admin Assigns Test Admin Role**
+1. Login with your **real Admin account** (not the test account)
+2. Go to **Settings → Staff Role Management** (`/admin/settings/staff-roles`)
+3. Search for "testadmin"
+4. Assign the **Admin** role
+
+**Once this setup is complete, testers can use the test admin account to test all admin functionality without creating permanent data.**
 
 ---
 
-## Creating an Admin Test Account
+## Test Admin Account
 
-### Option 1: Promote Test Manager to Admin
+| Field | Value |
+|-------|-------|
+| Role | Admin |
+| Email | dev-mp+testadmin@hsnef.org |
+| MembershipID | 99990000 |
+| Membership Level | Lifetime |
 
-```sql
--- Get the auth_user_id for test.manager
-SELECT id, auth_user_id FROM members WHERE primary_email = 'test.manager@example.com';
-
--- Add Admin role (replace USER_ID with actual auth_user_id)
-INSERT INTO user_roles (user_id, role) VALUES ('USER_ID', 'Admin');
-```
-
-### Option 2: Use Existing Admin Account
-
-If you have a production Admin account, use that for Admin-specific testing.
+**Recommended Password:** `TestPassword123!`
 
 ---
 
-## Test Accounts Reference
+## All Test Accounts
 
 | Account | Email | MembershipID | Level | Role |
 |---------|-------|--------------|-------|------|
-| Manager | test.manager@example.com | 99991000 | Lifetime | Office Manager |
-| Staff | test.staff@example.com | 99992000 | Lifetime | Office Staff |
-| Lifetime | test.lifetime@example.com | 99993000 | Lifetime | Member |
-| Annual | test.annual@example.com | 99994000 | Annual | Member |
-| Community | test.community@example.com | 99995000 | Community | Member |
+| Admin | dev-mp+testadmin@hsnef.org | 99990000 | Lifetime | Admin |
+| Manager | dev-mp+testmanager@hsnef.org | 99991000 | Lifetime | Office Manager |
+| Staff | dev-mp+teststaff@hsnef.org | 99992000 | Lifetime | Office Staff |
+| Lifetime | dev-mp+testlifetime@hsnef.org | 99993000 | Lifetime | Member |
+| Annual | dev-mp+testannual@hsnef.org | 99994000 | Annual | Member |
+| Community | dev-mp+testcommunity@hsnef.org | 99995000 | Community | Member |
 
 ### Test Account Features
 
@@ -115,7 +128,7 @@ If you have a production Admin account, use that for Admin-specific testing.
 
 **Steps:**
 1. Navigate to Admin > Members
-2. Select test.lifetime@example.com
+2. Select dev-mp+testlifetime@hsnef.org
 3. Click "Edit" or "Manage Roles"
 4. Assign a new role:
    - Select "Office Staff"
@@ -183,11 +196,11 @@ If you have a production Admin account, use that for Admin-specific testing.
 
 **Expected Results:**
 - All 5 test accounts displayed:
-  - test.manager@example.com (99991000) - Office Manager
-  - test.staff@example.com (99992000) - Office Staff
-  - test.lifetime@example.com (99993000) - Member
-  - test.annual@example.com (99994000) - Member
-  - test.community@example.com (99995000) - Member
+  - dev-mp+testmanager@hsnef.org (99991000) - Office Manager
+  - dev-mp+teststaff@hsnef.org (99992000) - Office Staff
+  - dev-mp+testlifetime@hsnef.org (99993000) - Member
+  - dev-mp+testannual@hsnef.org (99994000) - Member
+  - dev-mp+testcommunity@hsnef.org (99995000) - Member
 - Registration status shown for each
 - "Reset Password" button for each account
 - "Clean Test Data" button available
@@ -199,7 +212,7 @@ If you have a production Admin account, use that for Admin-specific testing.
 
 **Steps:**
 1. On Test Accounts page
-2. Click "Reset Password" for test.annual@example.com
+2. Click "Reset Password" for dev-mp+testannual@hsnef.org
 3. Check email inbox for reset link
 4. Complete password reset
 
@@ -466,7 +479,7 @@ If you have a production Admin account, use that for Admin-specific testing.
 
 **Steps:**
 1. Navigate to Admin > Members
-2. Select test.annual@example.com
+2. Select dev-mp+testannual@hsnef.org
 3. Edit all fields including:
    - Membership level change
    - MembershipID correction
@@ -484,7 +497,7 @@ If you have a production Admin account, use that for Admin-specific testing.
 ### TC-ADM-23: Designate Founding Member
 
 **Steps:**
-1. Find a Lifetime member (test.lifetime@example.com)
+1. Find a Lifetime member (dev-mp+testlifetime@hsnef.org)
 2. Edit their profile
 3. Check "Founding Member" box
 4. Save
@@ -501,7 +514,7 @@ If you have a production Admin account, use that for Admin-specific testing.
 **Steps:**
 1. Navigate to Admin > Members > Add Member
 2. Create new member with:
-   - Email: test.newmember@example.com
+   - Email: dev-mp+testnewmember@hsnef.org
    - Set `is_test_account = true` (may need SQL)
    - Use MembershipID in 9999xxxx range
 3. Save
@@ -592,29 +605,33 @@ As Admin, you are responsible for:
 ## Quick Reference Card
 
 ```
-+----------------------------------------------------------+
-|                 ADMIN QUICK REFERENCE                     |
-+----------------------------------------------------------+
-| TEST ACCOUNTS (Prefix 9)                                  |
-| - Manager:   test.manager@example.com   (99991000)       |
-| - Staff:     test.staff@example.com     (99992000)       |
-| - Lifetime:  test.lifetime@example.com  (99993000)       |
-| - Annual:    test.annual@example.com    (99994000)       |
-| - Community: test.community@example.com (99995000)       |
-+----------------------------------------------------------+
-| KEY PAGES                                                 |
-| - Test Accounts: /admin/test-accounts                    |
-| - Clean Data: Test Accounts > "Clean Test Data"          |
-| - Portal Settings: /admin/portal-settings                |
-| - System Settings: /admin/settings                       |
-| - Member Import: /admin/members/import                   |
-+----------------------------------------------------------+
-| MEMBERSHIPID FORMAT                                       |
-| - Lifetime: 1XXXXX00  (e.g., 10000100)                   |
-| - Annual:   2XXXXX00  (e.g., 20000100)                   |
-| - Community: 3XXXXX00 (e.g., 30000100)                   |
-| - Test:     9XXXXX00  (e.g., 99991000)                   |
-+----------------------------------------------------------+
++------------------------------------------------------------------+
+|                    ADMIN QUICK REFERENCE                          |
++------------------------------------------------------------------+
+| TEST ACCOUNTS (Prefix 9)                                         |
+| - Admin:     dev-mp+testadmin@hsnef.org      (99990000)          |
+| - Manager:   dev-mp+testmanager@hsnef.org    (99991000)          |
+| - Staff:     dev-mp+teststaff@hsnef.org      (99992000)          |
+| - Lifetime:  dev-mp+testlifetime@hsnef.org   (99993000)          |
+| - Annual:    dev-mp+testannual@hsnef.org     (99994000)          |
+| - Community: dev-mp+testcommunity@hsnef.org  (99995000)          |
++------------------------------------------------------------------+
+| Password:    TestPassword123!                                    |
++------------------------------------------------------------------+
+| KEY PAGES                                                        |
+| - Test Accounts: /admin/test-accounts                            |
+| - Clean Data: Test Accounts > "Clean Test Data"                  |
+| - Staff Roles: /admin/settings/staff-roles                       |
+| - Portal Settings: /admin/portal-settings                        |
+| - System Settings: /admin/settings                               |
+| - Member Import: /admin/members/import                           |
++------------------------------------------------------------------+
+| MEMBERSHIPID FORMAT                                              |
+| - Lifetime:  1XXXXX00  (e.g., 10000100)                          |
+| - Annual:    2XXXXX00  (e.g., 20000100)                          |
+| - Community: 3XXXXX00  (e.g., 30000100)                          |
+| - Test:      9XXXXX00  (e.g., 99990000)                          |
++------------------------------------------------------------------+
 ```
 
 ---
