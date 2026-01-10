@@ -4,7 +4,18 @@
       "Bash(npx create-next-app:*)",
       "Bash(npm run build:*)",
       "Bash(npm install:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(for:*)",
+      "Bash(do if head -5 \"$file\")",
+      "Bash(then echo \"CLIENT: $file\")",
+      "Bash(fi:*)",
+      "Bash(done)",
+      "Bash(grep:*)",
+      "Bash(git fetch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(find:*)"
     ]
   }
 }

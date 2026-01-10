@@ -1,29 +1,30 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
-import { createClient } from '@/lib/supabase/client'
+import { getMembershipPricing, type MembershipPricing } from '@/lib/utils/portalSettings'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
-const MEMBERSHIP_FEES = {
-  Lifetime: 1001.00,
-  Annual: 251.00,
-  Community: 0,
-}
-
-function RenewMembershipForm() {
+function RenewMembershipForm({
+  pricing,
+  selectedLevel,
+  onLevelChange
+}: {
+  pricing: MembershipPricing
+  selectedLevel: 'annual' | 'lifetime'
+  onLevelChange: (level: 'annual' | 'lifetime') => void
+}) {
   const router = useRouter()
   const stripe = useStripe()
   const elements = useElements()
   const { member } = useAuth()
 
   const [loading, setLoading] = useState(false)
-  const [selectedLevel, setSelectedLevel] = useState<'Lifetime' | 'Annual' | 'Community'>('Annual')
   const [message, setMessage] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,31 +55,30 @@ function RenewMembershipForm() {
     }
   }
 
-  const amount = MEMBERSHIP_FEES[selectedLevel]
+  const amount = pricing[selectedLevel].price
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Membership Level</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {(['Annual', 'Lifetime'] as const).map((level) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {(['annual', 'lifetime'] as const).map((level) => (
             <button
               key={level}
               type="button"
-              onClick={() => setSelectedLevel(level)}
+              onClick={() => onLevelChange(level)}
               className={`p-6 border-2 rounded-lg transition-all ${
                 selectedLevel === level
                   ? 'border-[#FF9933] bg-orange-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <h4 className="text-xl font-bold text-gray-900 mb-2">{level}</h4>
+              <h4 className="text-xl font-bold text-gray-900 mb-2 capitalize">{level} Membership</h4>
               <p className="text-3xl font-bold text-[#FF9933] mb-2">
-                ${MEMBERSHIP_FEES[level].toFixed(2)}
+                {pricing[level].displayPrice}
               </p>
               <p className="text-sm text-gray-600">
-                {level === 'Annual' && 'Renew for one year'}
-                {level === 'Lifetime' && 'One-time payment, valid forever'}
+                {pricing[level].description}
               </p>
             </button>
           ))}
@@ -124,41 +124,78 @@ function RenewMembershipContent() {
   const router = useRouter()
   const { member } = useAuth()
   const [clientSecret, setClientSecret] = useState<string | null>(null)
+  const [pricing, setPricing] = useState<MembershipPricing | null>(null)
   const [loading, setLoading] = useState(true)
+  const [selectedLevel, setSelectedLevel] = useState<'annual' | 'lifetime'>('annual')
+  const [updatingPayment, setUpdatingPayment] = useState(false)
+
+  // Create or update payment intent based on selected level
+  const createPaymentIntent = useCallback(async (level: 'annual' | 'lifetime', membershipPricing: MembershipPricing) => {
+    if (!member) return null
+
+    try {
+      const response = await fetch('/api/stripe/create-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: Math.round(membershipPricing[level].price * 100), // Convert to cents
+          memberId: member.id,
+          category: 'Membership',
+          description: `${level.charAt(0).toUpperCase() + level.slice(1)} membership renewal`,
+          metadata: {
+            membershipLevel: level,
+          },
+        }),
+      })
+
+      const data = await response.json()
+      return data.clientSecret || null
+    } catch (error) {
+      console.error('Error creating payment intent:', error)
+      return null
+    }
+  }, [member])
+
+  // Handle level change - create new payment intent
+  const handleLevelChange = async (level: 'annual' | 'lifetime') => {
+    if (level === selectedLevel || !pricing) return
+
+    setUpdatingPayment(true)
+    setSelectedLevel(level)
+
+    // Create new payment intent with correct amount
+    const newClientSecret = await createPaymentIntent(level, pricing)
+    if (newClientSecret) {
+      setClientSecret(newClientSecret)
+    }
+
+    setUpdatingPayment(false)
+  }
 
   useEffect(() => {
     if (!member) return
 
-    // Create payment intent
-    const createPaymentIntent = async () => {
+    // Fetch pricing and create initial payment intent
+    const initializePayment = async () => {
       try {
-        const response = await fetch('/api/stripe/create-payment-intent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amount: 25100, // Default to Annual, will update based on selection
-            memberId: member.id,
-            category: 'Membership',
-            description: 'Membership renewal',
-            metadata: {
-              membershipLevel: 'Annual',
-            },
-          }),
-        })
+        // Fetch membership pricing from database
+        const membershipPricing = await getMembershipPricing()
+        setPricing(membershipPricing)
 
-        const data = await response.json()
-        if (data.clientSecret) {
-          setClientSecret(data.clientSecret)
+        // Create payment intent with default annual price
+        const secret = await createPaymentIntent('annual', membershipPricing)
+        if (secret) {
+          setClientSecret(secret)
         }
       } catch (error) {
-        console.error('Error creating payment intent:', error)
+        console.error('Error initializing payment:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    createPaymentIntent()
-  }, [member])
+    initializePayment()
+  }, [member, createPaymentIntent])
 
   if (loading) {
     return (
@@ -171,7 +208,7 @@ function RenewMembershipContent() {
     )
   }
 
-  if (!clientSecret) {
+  if (!clientSecret || !pricing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center max-w-md">
@@ -234,9 +271,21 @@ function RenewMembershipContent() {
         )}
 
         {/* Payment Form */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <Elements stripe={stripePromise} options={options}>
-            <RenewMembershipForm />
+        <div className="bg-white shadow rounded-lg p-6 relative">
+          {updatingPayment && (
+            <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-lg">
+              <div className="text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <p className="mt-2 text-sm text-gray-600">Updating payment...</p>
+              </div>
+            </div>
+          )}
+          <Elements stripe={stripePromise} options={options} key={clientSecret}>
+            <RenewMembershipForm
+              pricing={pricing}
+              selectedLevel={selectedLevel}
+              onLevelChange={handleLevelChange}
+            />
           </Elements>
         </div>
 

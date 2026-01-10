@@ -79,7 +79,19 @@ export default function ViewRequestPage() {
 
   const handleUpdateStatus = async (newStatus: string) => {
     if (!request) return
-    if (!confirm(`Change status to ${newStatus}?`)) return
+
+    // Ask if they want to send notification for relevant status changes
+    const notifyStatuses = ['Sent', 'Paid', 'Completed', 'Cancelled']
+    let sendNotification = false
+
+    if (notifyStatuses.includes(newStatus)) {
+      sendNotification = confirm(`Change status to ${newStatus}?\n\nClick OK to also send email notification to member.\nClick Cancel to update status without notification.`)
+      if (!sendNotification && !confirm(`Update status to ${newStatus} WITHOUT sending email?`)) {
+        return
+      }
+    } else {
+      if (!confirm(`Change status to ${newStatus}?`)) return
+    }
 
     try {
       const { error } = await supabase
@@ -89,7 +101,31 @@ export default function ViewRequestPage() {
 
       if (error) throw error
 
-      alert('Status updated successfully!')
+      // Send notification if requested
+      if (sendNotification) {
+        try {
+          const emailResponse = await fetch('/api/requests/send-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              requestId: request.id,
+              status: newStatus,
+            }),
+          })
+
+          if (emailResponse.ok) {
+            alert('Status updated and notification sent!')
+          } else {
+            alert('Status updated but failed to send notification.')
+          }
+        } catch (emailError) {
+          console.error('Error sending notification:', emailError)
+          alert('Status updated but failed to send notification.')
+        }
+      } else {
+        alert('Status updated successfully!')
+      }
+
       fetchRequest()
     } catch (error) {
       console.error('Error updating status:', error)

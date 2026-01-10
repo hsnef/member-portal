@@ -4,15 +4,15 @@
  * Update MAJOR_VERSION in scripts/generate-version.ts to change major version
  */
 
-export const APP_VERSION = '1.0.20'
+export const APP_VERSION = '1.0.23'
 export const MAJOR_VERSION = 1
 export const MINOR_VERSION = 0
-export const PATCH_VERSION = 20
-export const COMMIT_COUNT = '20'
-export const COMMIT_HASH = '9801c81'
+export const PATCH_VERSION = 23
+export const COMMIT_COUNT = '23'
+export const COMMIT_HASH = '2fe7bae'
 export const COMMIT_DATE = '2026-01-09'
-export const BUILD_DATE = '2026-01-09'
-export const BUILD_TIME = '2026-01-09T22:27:42.607Z'
+export const BUILD_DATE = '2026-01-10'
+export const BUILD_TIME = '2026-01-10T20:10:44.853Z'
 export const BRANCH = 'dev'
 
 /**

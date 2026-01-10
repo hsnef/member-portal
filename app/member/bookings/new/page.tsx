@@ -248,7 +248,21 @@ export default function NewBookingPage() {
 
       if (itemsError) throw itemsError
 
-      alert('Booking submitted successfully! You will receive a notification once it is reviewed.')
+      // Send confirmation email
+      try {
+        await fetch('/api/bookings/send-notification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bookingId: bookingData.id,
+            status: 'submitted',
+          }),
+        })
+      } catch (emailError) {
+        console.warn('Failed to send confirmation email:', emailError)
+      }
+
+      alert('Booking submitted successfully! A confirmation email has been sent. You will receive another notification once it is reviewed.')
       router.push('/member/bookings')
     } catch (error: any) {
       console.error('Error submitting booking:', error)

@@ -16,12 +16,9 @@ export const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE
 // Payment configuration
 export const PAYMENT_CONFIG = {
   currency: 'usd',
-  // Membership fees (in cents)
-  membershipFees: {
-    Lifetime: 100100, // $1001.00
-    Annual: 25100,    // $251.00
-    Community: 0,     // Free
-  },
+  // NOTE: Membership fees are NOT hardcoded here.
+  // They are managed through Portal Settings UI (Admin → Portal Settings → Membership Pricing)
+  // and fetched from the database using getMembershipPricing() from @/lib/utils/portalSettings
   // Minimum donation amount (in cents)
   minDonationAmount: 100, // $1.00
 }

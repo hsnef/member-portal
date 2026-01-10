@@ -64,13 +64,13 @@ export default function RecordPaymentPage() {
         .from('payments')
         .insert({
           member_id: selectedMember.id,
-          membership_id: selectedMember.membership_id,
           amount: parseFloat(formData.amount),
           payment_date: new Date().toISOString(),
-          payment_method: formData.payment_method,
-          category: formData.category,
+          method: formData.payment_method,
+          purpose: formData.category,
           check_number: formData.check_number || null,
-          transaction_id: formData.transaction_id || null,
+          zelle_reference: formData.payment_method === 'Zelle' ? formData.transaction_id || null : null,
+          stripe_payment_intent_id: formData.payment_method === 'Stripe' ? formData.transaction_id || null : null,
           notes: formData.notes || null,
         })
 
@@ -219,9 +219,8 @@ export default function RecordPaymentPage() {
                   >
                     <option value="Cash">Cash</option>
                     <option value="Check">Check</option>
-                    <option value="Card">Card (In-Person)</option>
-                    <option value="Online">Online</option>
-                    <option value="Other">Other</option>
+                    <option value="Zelle">Zelle</option>
+                    <option value="Stripe">Card/Online (Stripe)</option>
                   </select>
                 </div>
 
@@ -240,7 +239,8 @@ export default function RecordPaymentPage() {
                     <option value="Donation">Donation</option>
                     <option value="Service">Service</option>
                     <option value="Event">Event</option>
-                    <option value="Other">Other</option>
+                    <option value="Sponsorship">Sponsorship</option>
+                    <option value="Request">Request</option>
                   </select>
                 </div>
 
@@ -260,18 +260,34 @@ export default function RecordPaymentPage() {
                   </div>
                 )}
 
-                {/* Transaction ID */}
-                {(formData.payment_method === 'Card' || formData.payment_method === 'Online') && (
+                {/* Zelle Reference */}
+                {formData.payment_method === 'Zelle' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Transaction ID
+                      Zelle Reference
                     </label>
                     <input
                       type="text"
                       value={formData.transaction_id}
                       onChange={(e) => setFormData({ ...formData, transaction_id: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-                      placeholder="Transaction or confirmation ID"
+                      placeholder="Zelle transaction reference"
+                    />
+                  </div>
+                )}
+
+                {/* Stripe Payment Intent ID */}
+                {formData.payment_method === 'Stripe' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Stripe Payment Intent ID
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.transaction_id}
+                      onChange={(e) => setFormData({ ...formData, transaction_id: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      placeholder="pi_xxxxxxxxxxxxxx"
                     />
                   </div>
                 )}

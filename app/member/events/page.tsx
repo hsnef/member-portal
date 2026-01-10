@@ -34,6 +34,8 @@ export default function MemberEventsPage() {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [filterCategory, setFilterCategory] = useState('All')
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null)
+  const [cancelling, setCancelling] = useState(false)
 
   useEffect(() => {
     if (!member) return
@@ -116,48 +118,50 @@ export default function MemberEventsPage() {
     if (!member) return
 
     try {
-      const { error } = await supabase
-        .from('event_registrations')
-        .insert({
-          event_id: eventId,
-          member_id: member.id,
-          membership_id: member.membership_id,
-          registration_date: new Date().toISOString(),
-          registration_status: 'Confirmed',
-        })
+      const response = await fetch('/api/events/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId }),
+      })
 
-      if (error) throw error
+      const result = await response.json()
 
-      alert('Successfully registered for event!')
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to register')
+      }
+
+      alert('Successfully registered! A confirmation email has been sent.')
       fetchEvents() // Refresh to update registration status
     } catch (error: any) {
       console.error('Error registering for event:', error)
-      if (error.code === '23505') {
-        alert('You are already registered for this event')
-      } else {
-        alert('Failed to register for event')
-      }
+      alert(error.message || 'Failed to register for event')
     }
   }
 
   const handleUnregister = async (eventId: string) => {
     if (!member) return
-    if (!confirm('Are you sure you want to cancel your registration?')) return
 
+    setCancelling(true)
     try {
-      const { error } = await supabase
-        .from('event_registrations')
-        .delete()
-        .eq('event_id', eventId)
-        .eq('member_id', member.id)
+      const response = await fetch('/api/events/unregister', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId }),
+      })
 
-      if (error) throw error
+      const result = await response.json()
 
-      alert('Registration cancelled successfully')
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to cancel registration')
+      }
+
+      setCancelConfirmId(null)
       fetchEvents()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error cancelling registration:', error)
-      alert('Failed to cancel registration')
+      alert(error.message || 'Failed to cancel registration')
+    } finally {
+      setCancelling(false)
     }
   }
 
@@ -324,12 +328,33 @@ export default function MemberEventsPage() {
                         >
                           View Details
                         </button>
-                        <button
-                          onClick={() => handleUnregister(event.id)}
-                          className="w-full px-4 py-2 border border-red-300 text-red-600 rounded-md hover:bg-red-50 text-sm"
-                        >
-                          Cancel Registration
-                        </button>
+                        {cancelConfirmId === event.id ? (
+                          <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                            <p className="text-sm text-red-800 mb-2">Cancel your registration for this event?</p>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleUnregister(event.id)}
+                                disabled={cancelling}
+                                className="flex-1 px-3 py-1.5 bg-red-600 text-white rounded text-sm hover:bg-red-700 disabled:bg-gray-300"
+                              >
+                                {cancelling ? 'Cancelling...' : 'Yes, Cancel'}
+                              </button>
+                              <button
+                                onClick={() => setCancelConfirmId(null)}
+                                className="flex-1 px-3 py-1.5 border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50"
+                              >
+                                Keep Registration
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setCancelConfirmId(event.id)}
+                            className="w-full px-4 py-2 border border-red-300 text-red-600 rounded-md hover:bg-red-50 text-sm"
+                          >
+                            Cancel Registration
+                          </button>
+                        )}
                       </div>
                     ) : isRegistrationClosed(event) ? (
                       <button

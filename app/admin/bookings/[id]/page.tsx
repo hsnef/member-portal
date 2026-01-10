@@ -134,7 +134,22 @@ export default function AdminBookingDetailPage() {
 
       if (error) throw error
 
-      alert('Booking approved successfully!')
+      // Send approval notification with payment link
+      try {
+        await fetch('/api/bookings/send-notification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bookingId: booking.id,
+            status: 'Approved',
+          }),
+        })
+        alert('Booking approved and notification sent to member!')
+      } catch (emailError) {
+        console.warn('Failed to send approval notification:', emailError)
+        alert('Booking approved but failed to send email notification.')
+      }
+
       setShowApproveModal(false)
       fetchBooking()
     } catch (error: any) {

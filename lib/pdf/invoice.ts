@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 
 interface InvoiceData {
   invoiceNumber: string
@@ -27,13 +28,13 @@ export function generateInvoice(data: InvoiceData): jsPDF {
   // Add temple logo/header
   doc.setFontSize(20)
   doc.setFont('helvetica', 'bold')
-  doc.text('Hindu Society of North East Florida', 105, 20, { align: 'center' })
+  doc.text(TEMPLE_CONFIG.name, 105, 20, { align: 'center' })
 
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
-  doc.text('HSNEF Temple', 105, 28, { align: 'center' })
-  doc.text('Jacksonville, FL', 105, 34, { align: 'center' })
-  doc.text('Tax ID: XX-XXXXXXX', 105, 40, { align: 'center' })
+  doc.text(TEMPLE_CONFIG.shortName + ' Temple', 105, 28, { align: 'center' })
+  doc.text(`${TEMPLE_CONFIG.address.city}, ${TEMPLE_CONFIG.address.state}`, 105, 34, { align: 'center' })
+  doc.text(`Tax ID: ${TEMPLE_CONFIG.taxId}`, 105, 40, { align: 'center' })
 
   // Invoice title
   doc.setFontSize(16)
@@ -143,9 +144,9 @@ export function generateInvoice(data: InvoiceData): jsPDF {
     doc.text('Payment Instructions:', 20, paymentY)
     doc.setFont('helvetica', 'normal')
     const instructions = [
-      '• Pay online through your member portal',
+      `• Pay online at ${TEMPLE_CONFIG.contact.memberPortal}`,
       '• Pay in person at the temple office',
-      '• Send check to: HSNEF Temple, Jacksonville, FL',
+      `• Send check to: ${TEMPLE_CONFIG.address.full}`,
     ]
     instructions.forEach((instruction, index) => {
       doc.text(instruction, 20, paymentY + 6 + (index * 6))
@@ -166,7 +167,7 @@ export function generateInvoice(data: InvoiceData): jsPDF {
   // Footer
   doc.setFontSize(8)
   doc.setFont('helvetica', 'italic')
-  doc.text('Thank you for your support!', 105, 280, { align: 'center' })
+  doc.text(TEMPLE_CONFIG.messaging.thankYou, 105, 280, { align: 'center' })
   doc.text('For questions about this invoice, please contact the temple office.', 105, 285, { align: 'center' })
 
   return doc

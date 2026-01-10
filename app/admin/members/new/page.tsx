@@ -87,6 +87,7 @@ export default function NewMemberPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [sendInvitation, setSendInvitation] = useState(true)
   const supabase = createClient()
 
   const {
@@ -157,6 +158,21 @@ export default function NewMemberPage() {
         .single()
 
       if (memberError) throw memberError
+
+      // Send invitation email if requested
+      if (sendInvitation) {
+        try {
+          await fetch('/api/members/send-invitation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              memberId: memberData.id,
+            }),
+          })
+        } catch (emailError) {
+          console.warn('Failed to send invitation email:', emailError)
+        }
+      }
 
       // Redirect to member detail page
       router.push(`/admin/members/${memberData.id}`)
@@ -555,6 +571,25 @@ export default function NewMemberPage() {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Email Invitation */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Portal Access</h2>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={sendInvitation}
+                  onChange={(e) => setSendInvitation(e.target.checked)}
+                  className="rounded border-gray-300 text-[#FF9933] focus:ring-[#FF9933]"
+                />
+                <span className="ml-2 text-sm text-gray-700">
+                  Send registration invitation email to member
+                </span>
+              </label>
+              <p className="mt-2 text-xs text-gray-500">
+                If checked, the member will receive an email with a link to create their portal account.
+              </p>
             </div>
 
             {/* Actions */}
