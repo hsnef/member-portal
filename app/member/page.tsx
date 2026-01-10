@@ -7,13 +7,15 @@ import { MembershipPass } from '@/components/member/MembershipPass'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import { generateQRToken } from '@/lib/qr-token'
-import type { Member, FamilyMember } from '@/types/database'
+import type { Member, FamilyMember, Membership, UserRole } from '@/types/database'
 
 export default function MemberDashboard() {
   const router = useRouter()
   const { user, member: authMember } = useAuth()
   const [member, setMember] = useState<Member | null>(null)
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
+  const [activeMembership, setActiveMembership] = useState<Membership | null>(null)
+  const [userRoles, setUserRoles] = useState<UserRole[]>([])
   const [qrToken, setQrToken] = useState<string>('')
   const [loading, setLoading] = useState(true)
 
@@ -48,6 +50,30 @@ export default function MemberDashboard() {
           setFamilyMembers(familyData || [])
         }
 
+        // Fetch active membership record for expiry date
+        const { data: membershipData } = await supabase
+          .from('memberships')
+          .select('*')
+          .eq('member_id', memberData.id)
+          .eq('status', 'Active')
+          .order('end_date', { ascending: false })
+          .limit(1)
+          .single()
+
+        if (membershipData) {
+          setActiveMembership(membershipData)
+        }
+
+        // Fetch user roles to determine if user can access admin
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+
+        if (roleData) {
+          setUserRoles(roleData.map(r => r.role))
+        }
+
         // Generate QR token
         const token = generateQRToken({
           membershipId: memberData.membership_id,
@@ -68,32 +94,54 @@ export default function MemberDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authMember])
 
-  // Calculate membership status
+  // Check if user has any staff/admin roles
+  const hasAdminAccess = userRoles.some(role =>
+    role === 'Admin' || role === 'Office Manager' || role === 'Office Staff'
+  )
+
+  // Calculate membership status using actual membership record
   const getMembershipStatus = () => {
-    if (!member) return { status: 'Unknown', color: 'gray' }
+    if (!member) return { status: 'Unknown', color: 'gray', daysUntilExpiry: null }
 
     if (member.current_level === 'Lifetime') {
-      return { status: 'Active (Lifetime)', color: 'green' }
+      return { status: 'Active (Lifetime)', color: 'green', daysUntilExpiry: null }
     }
 
-    // For Annual/Community, check if it's getting close to renewal time
-    // TODO: This should check actual membership end date
+    // For Annual/Community, check actual membership end date from database
     const now = new Date()
-    const currentYear = now.getFullYear()
-    const endOfYear = new Date(currentYear, 11, 31) // Dec 31
-    const daysUntilExpiry = Math.ceil((endOfYear.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
-    if (member.current_level === 'Annual') {
-      if (daysUntilExpiry > 60) {
-        return { status: 'Active', color: 'green' }
-      } else if (daysUntilExpiry > 0) {
-        return { status: `Expiring in ${daysUntilExpiry} days`, color: 'yellow' }
-      } else {
-        return { status: 'Expired - Renew Now', color: 'red' }
+    if (activeMembership && activeMembership.end_date) {
+      // Use actual end_date from membership record
+      const endDate = new Date(activeMembership.end_date)
+      const daysUntilExpiry = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+      if (member.current_level === 'Annual') {
+        if (daysUntilExpiry > 60) {
+          return { status: 'Active', color: 'green', daysUntilExpiry }
+        } else if (daysUntilExpiry > 0) {
+          return { status: `Expiring in ${daysUntilExpiry} days`, color: 'yellow', daysUntilExpiry }
+        } else {
+          return { status: 'Expired - Renew Now', color: 'red', daysUntilExpiry }
+        }
+      }
+    } else {
+      // Fallback to end of year if no membership record found
+      const currentYear = now.getFullYear()
+      const endOfYear = new Date(currentYear, 11, 31) // Dec 31
+      const daysUntilExpiry = Math.ceil((endOfYear.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+      if (member.current_level === 'Annual') {
+        if (daysUntilExpiry > 60) {
+          return { status: 'Active', color: 'green', daysUntilExpiry }
+        } else if (daysUntilExpiry > 0) {
+          return { status: `Expiring in ${daysUntilExpiry} days`, color: 'yellow', daysUntilExpiry }
+        } else {
+          return { status: 'Expired - Renew Now', color: 'red', daysUntilExpiry }
+        }
       }
     }
 
-    return { status: 'Community', color: 'blue' }
+    return { status: 'Community', color: 'blue', daysUntilExpiry: null }
   }
 
   const status = getMembershipStatus()
@@ -139,12 +187,14 @@ export default function MemberDashboard() {
                   Welcome back, {member.member_class === 'Personal' ? member.first_name : member.business_name}!
                 </p>
               </div>
-              <button
-                onClick={() => router.push('/admin')}
-                className="text-sm text-[#FF9933] hover:text-[#E68A2E] font-medium"
-              >
-                Admin Portal →
-              </button>
+              {hasAdminAccess && (
+                <button
+                  onClick={() => router.push('/admin')}
+                  className="text-sm text-[#FF9933] hover:text-[#E68A2E] font-medium"
+                >
+                  Admin Portal →
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -465,9 +465,11 @@ app/api/
 ## Support & Documentation
 
 - **Main Website:** [hsnef.org](https://hsnef.org)
-- **Requirements Doc:** `HSNEF-Membership-Portal-Final-Prompt-v3.md`
-- **Member Fields:** `MemberDetailsTobeCaptured-csv.csv`
-- **Import Template:** `CurrentMemberData_import-template-csv.csv`
+- **Requirements Doc:** `docs/reference/hsnef-membership-portal-final-prompt-v3.md`
+- **Full Documentation Index:** See `docs/README.md` for complete documentation organized by category
+- **Member Fields:** `docs/reference/data/member-details-to-be-captured.csv`
+- **Import Template:** `docs/reference/data/current-member-data-import-template.csv`
+- **CSV Templates (in public/):** `public/member-import-template.csv` and `public/member-import-template-blank.csv` (served directly via web)
 
 ## License
 

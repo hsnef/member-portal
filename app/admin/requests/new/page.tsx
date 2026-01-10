@@ -77,11 +77,29 @@ export default function NewRequestPage() {
 
       if (error) throw error
 
-      alert('Request created successfully!')
+      // Send invoice email if send_invoice is true
+      if (formData.send_invoice && formData.status === 'Sent' && request) {
+        try {
+          const emailResponse = await fetch('/api/requests/send-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              requestId: request.id,
+              status: 'Sent',
+            }),
+          })
 
-      // TODO: Send invoice email if send_invoice is true
-      if (formData.send_invoice) {
-        console.log('TODO: Send invoice email to', selectedMember.primary_email)
+          if (emailResponse.ok) {
+            alert('Request created and invoice email sent successfully!')
+          } else {
+            alert('Request created but failed to send email notification.')
+          }
+        } catch (emailError) {
+          console.error('Error sending invoice email:', emailError)
+          alert('Request created but failed to send email notification.')
+        }
+      } else {
+        alert('Request created successfully!')
       }
 
       router.push('/admin/requests')

@@ -158,6 +158,20 @@ export default function RegisterPage() {
         console.warn('Login tracking error:', trackingError)
       }
 
+      // Send welcome email
+      try {
+        await fetch('/api/members/send-welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            memberId: memberData.id,
+          }),
+        })
+      } catch (welcomeError) {
+        // Don't fail the registration if welcome email fails
+        console.warn('Welcome email error:', welcomeError)
+      }
+
       // Success!
       setMessage({
         type: 'success',

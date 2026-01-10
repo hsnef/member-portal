@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 
 interface ReceiptData {
   receiptNumber: string
@@ -27,13 +28,13 @@ export function generateReceipt(data: ReceiptData): jsPDF {
   // Add temple logo/header
   doc.setFontSize(20)
   doc.setFont('helvetica', 'bold')
-  doc.text('Hindu Society of North East Florida', 105, 20, { align: 'center' })
+  doc.text(TEMPLE_CONFIG.name, 105, 20, { align: 'center' })
 
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
-  doc.text('HSNEF Temple', 105, 28, { align: 'center' })
-  doc.text('Jacksonville, FL', 105, 34, { align: 'center' })
-  doc.text('Tax ID: XX-XXXXXXX', 105, 40, { align: 'center' })
+  doc.text(TEMPLE_CONFIG.shortName + ' Temple', 105, 28, { align: 'center' })
+  doc.text(`${TEMPLE_CONFIG.address.city}, ${TEMPLE_CONFIG.address.state}`, 105, 34, { align: 'center' })
+  doc.text(`Tax ID: ${TEMPLE_CONFIG.taxId}`, 105, 40, { align: 'center' })
 
   // Receipt title
   doc.setFontSize(16)
@@ -116,7 +117,7 @@ export function generateReceipt(data: ReceiptData): jsPDF {
     doc.setFontSize(10)
     doc.setFont('helvetica', 'italic')
     const noticeY = finalY + 45
-    doc.text('This donation is tax-deductible to the extent allowed by law.', 105, noticeY, { align: 'center' })
+    doc.text(TEMPLE_CONFIG.messaging.taxDeductible.split('.')[0] + '.', 105, noticeY, { align: 'center' })
     doc.text('Please retain this receipt for your tax records.', 105, noticeY + 6, { align: 'center' })
   }
 
@@ -134,8 +135,8 @@ export function generateReceipt(data: ReceiptData): jsPDF {
   // Footer
   doc.setFontSize(8)
   doc.setFont('helvetica', 'italic')
-  doc.text('Thank you for your support!', 105, 280, { align: 'center' })
-  doc.text('For questions about this receipt, please contact the temple office.', 105, 285, { align: 'center' })
+  doc.text(TEMPLE_CONFIG.messaging.thankYou, 105, 280, { align: 'center' })
+  doc.text(TEMPLE_CONFIG.messaging.contactFooter, 105, 285, { align: 'center' })
 
   return doc
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
+import { downloadInvoice } from '@/lib/pdf/invoice'
 
 interface Request {
   id: string
@@ -16,6 +17,7 @@ interface Request {
   payment_id?: string
   notes?: string
   created_at: string
+  due_date?: string
 }
 
 export default function MemberRequestsPage() {
@@ -51,10 +53,35 @@ export default function MemberRequestsPage() {
     }
   }
 
-  const handlePayRequest = (requestId: string, amount: number) => {
-    // TODO: Integrate with payment system
-    alert(`Payment integration for request ${requestId} - Amount: $${amount.toFixed(2)}`)
-    // router.push(`/member/pay-request/${requestId}`)
+  const handlePayRequest = (requestId: string) => {
+    router.push(`/member/requests/${requestId}/payment`)
+  }
+
+  const handleDownloadInvoice = (request: Request) => {
+    if (!member) return
+
+    const memberName = member.member_class === 'Personal'
+      ? `${member.first_name} ${member.last_name}`
+      : member.business_name || ''
+
+    downloadInvoice({
+      invoiceNumber: `INV-${request.id.slice(0, 8).toUpperCase()}`,
+      requestId: request.id,
+      memberName,
+      membershipId: member.membership_id,
+      memberEmail: member.primary_email,
+      memberAddress: member.address_line_1
+        ? `${member.address_line_1}, ${member.city}, ${member.state} ${member.zip}`
+        : undefined,
+      requestType: request.request_type,
+      serviceDescription: request.service_description,
+      requestedDate: request.requested_date,
+      amount: request.amount,
+      status: request.status,
+      notes: request.notes,
+      createdDate: request.created_at,
+      dueDate: request.due_date,
+    })
   }
 
   const filteredRequests = requests.filter((request) => {
@@ -209,14 +236,14 @@ export default function MemberRequestsPage() {
                     <div className="flex gap-3">
                       {request.status === 'Sent' && (
                         <button
-                          onClick={() => handlePayRequest(request.id, request.amount)}
+                          onClick={() => handlePayRequest(request.id)}
                           className="flex-1 px-6 py-3 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
                         >
                           💳 Pay Now - ${request.amount.toFixed(2)}
                         </button>
                       )}
                       <button
-                        onClick={() => alert('Download invoice PDF coming soon')}
+                        onClick={() => handleDownloadInvoice(request)}
                         className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
                       >
                         📄 Download Invoice

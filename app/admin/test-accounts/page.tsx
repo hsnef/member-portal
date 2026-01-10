@@ -112,9 +112,11 @@ export default function TestAccountsPage() {
     if (!confirm(
       'Delete ALL test data?\n\n' +
       'This will delete:\n' +
-      '- All payments by test accounts\n' +
+      '- All payments FOR test accounts\n' +
+      '- All payments CREATED BY test accounts\n' +
       '- All bookings by test accounts\n' +
       '- All event registrations by test accounts\n' +
+      '- All events CREATED BY test accounts\n' +
       '- All requests by test accounts\n\n' +
       'Member records will be kept but data will be cleaned.\n\n' +
       'This action cannot be undone!'
@@ -127,7 +129,44 @@ export default function TestAccountsPage() {
 
       const testMemberIds = testAccounts.map(a => a.id)
 
-      // Delete test payments
+      // Get auth_user_ids of test accounts for "created_by" cleanup
+      const testAuthUserIds = testAccounts
+        .filter(a => a.auth_user_id)
+        .map(a => a.auth_user_id!)
+
+      // 1. Delete event registrations FIRST (before deleting events)
+      // Delete registrations FOR test members
+      await supabase
+        .from('event_registrations')
+        .delete()
+        .in('member_id', testMemberIds)
+
+      // 2. Delete events CREATED BY test accounts (this also cascades to their registrations)
+      if (testAuthUserIds.length > 0) {
+        // First get events created by test users
+        const { data: testEvents } = await supabase
+          .from('events')
+          .select('id')
+          .in('created_by', testAuthUserIds)
+
+        if (testEvents && testEvents.length > 0) {
+          const testEventIds = testEvents.map(e => e.id)
+
+          // Delete all registrations for these events first
+          await supabase
+            .from('event_registrations')
+            .delete()
+            .in('event_id', testEventIds)
+
+          // Now delete the events
+          await supabase
+            .from('events')
+            .delete()
+            .in('id', testEventIds)
+        }
+      }
+
+      // 3. Delete test payments (FOR test accounts)
       const { error: paymentsError } = await supabase
         .from('payments')
         .delete()
@@ -135,7 +174,15 @@ export default function TestAccountsPage() {
 
       if (paymentsError) throw paymentsError
 
-      // Delete test booking items first (due to foreign key)
+      // 4. Delete payments CREATED BY test accounts (for any member)
+      if (testAuthUserIds.length > 0) {
+        await supabase
+          .from('payments')
+          .delete()
+          .in('created_by', testAuthUserIds)
+      }
+
+      // 5. Delete test booking items first (due to foreign key)
       const { data: bookings } = await supabase
         .from('service_bookings')
         .select('id')
@@ -155,19 +202,43 @@ export default function TestAccountsPage() {
           .in('id', bookingIds)
       }
 
-      // Delete test event registrations
-      await supabase
-        .from('event_registrations')
-        .delete()
-        .in('member_id', testMemberIds)
+      // 6. Delete bookings CREATED BY test accounts (staff creating bookings for members)
+      if (testAuthUserIds.length > 0) {
+        const { data: createdBookings } = await supabase
+          .from('service_bookings')
+          .select('id')
+          .in('created_by', testAuthUserIds)
 
-      // Delete test requests
+        if (createdBookings && createdBookings.length > 0) {
+          const createdBookingIds = createdBookings.map(b => b.id)
+
+          await supabase
+            .from('service_booking_items')
+            .delete()
+            .in('booking_id', createdBookingIds)
+
+          await supabase
+            .from('service_bookings')
+            .delete()
+            .in('id', createdBookingIds)
+        }
+      }
+
+      // 7. Delete test requests FOR test members
       await supabase
         .from('requests')
         .delete()
         .in('member_id', testMemberIds)
 
-      alert('All test data deleted successfully!')
+      // 8. Delete requests CREATED BY test accounts
+      if (testAuthUserIds.length > 0) {
+        await supabase
+          .from('requests')
+          .delete()
+          .in('created_by', testAuthUserIds)
+      }
+
+      alert('All test data deleted successfully!\n\nDeleted data FOR and CREATED BY test accounts.')
     } catch (error: any) {
       console.error('Error deleting test data:', error)
       alert(`Failed to delete test data: ${error.message}`)
@@ -321,11 +392,12 @@ export default function TestAccountsPage() {
                   If accounts show "Not Registered", register them using their email addresses above:
                 </p>
                 <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
-                  <li>test.manager@example.com - Office Manager (full admin access)</li>
-                  <li>test.staff@example.com - Office Staff (staff functions)</li>
-                  <li>test.lifetime@example.com - Lifetime Member</li>
-                  <li>test.annual@example.com - Annual Member</li>
-                  <li>test.community@example.com - Community Member (non-paid)</li>
+                  <li>dev-mp+testadmin@hsnef.org - Admin (full admin access)</li>
+                  <li>dev-mp+testmanager@hsnef.org - Office Manager (staff management)</li>
+                  <li>dev-mp+teststaff@hsnef.org - Office Staff (staff functions)</li>
+                  <li>dev-mp+testlifetime@hsnef.org - Lifetime Member</li>
+                  <li>dev-mp+testannual@hsnef.org - Annual Member</li>
+                  <li>dev-mp+testcommunity@hsnef.org - Community Member (non-paid)</li>
                 </ul>
                 <p className="mt-2">Use the "Reset Password" button to send registration/reset emails.</p>
               </div>
@@ -345,8 +417,14 @@ export default function TestAccountsPage() {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">3. Clean Test Data</h3>
                 <p>
-                  When you're done testing or want a fresh start, click "Clean Test Data" to remove all
-                  transactions created by test accounts. The member records will remain for future testing.
+                  When you're done testing or want a fresh start, click "Clean Test Data" to remove:
+                </p>
+                <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                  <li>All data FOR test accounts (payments, bookings, registrations, requests)</li>
+                  <li>All data CREATED BY test accounts (events, payments recorded by test staff, etc.)</li>
+                </ul>
+                <p className="mt-2">
+                  The member records will remain for future testing. This ensures all test data is cleanly removed.
                 </p>
               </div>
 

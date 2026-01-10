@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe/config'
 import { createClient } from '@/lib/supabase/server'
 import Stripe from 'stripe'
+import { sendEmail } from '@/lib/email/mailer'
+import { getPaymentFailureEmail, getPaymentSuccessEmail } from '@/lib/email/templates/payment'
+import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
 
@@ -64,7 +67,17 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
     memberId,
     membershipId,
     category,
+    purpose, // For donations: General, Building, Festival, etc.
+    requestId, // For service request payments
   } = metadata
+
+  // Build notes with relevant metadata
+  let notes = `Online payment via Stripe`
+  if (category === 'Donation' && purpose) {
+    notes = `Donation - ${purpose}`
+  } else if (paymentIntent.description) {
+    notes = `${notes} - ${paymentIntent.description}`
+  }
 
   try {
     // Insert payment record
@@ -78,7 +91,8 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
         payment_method: 'Online',
         category: category as any,
         stripe_payment_id: stripePaymentId,
-        notes: `Online payment via Stripe - ${paymentIntent.description || ''}`,
+        request_id: requestId || null,
+        notes,
       })
 
     if (paymentError) {
@@ -99,7 +113,84 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
       }
     }
 
+    // If this is a request payment, update request status
+    if (requestId) {
+      const { error: requestError } = await supabase
+        .from('requests')
+        .update({ status: 'Paid' })
+        .eq('id', requestId)
+
+      if (requestError) {
+        console.error('Error updating request status:', requestError)
+      }
+    }
+
     console.log(`Payment recorded successfully for member ${membershipId}`)
+
+    // Send payment success email notification
+    try {
+      const { data: member, error: memberError } = await supabase
+        .from('members')
+        .select('primary_email, first_name, last_name, business_name, member_class')
+        .eq('id', memberId)
+        .single()
+
+      if (memberError || !member) {
+        console.error('Could not find member for payment success notification:', memberError)
+      } else {
+        // Determine member name
+        const memberName = member.member_class === 'Personal'
+          ? `${member.first_name} ${member.last_name}`
+          : member.business_name || 'Member'
+
+        // Build receipt URL
+        const receiptUrl = `${TEMPLE_CONFIG.contact.memberPortal}/member/payments`
+
+        // Format payment date
+        const paymentDate = new Date().toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+
+        // Determine category display name
+        let categoryDisplay = category || 'Payment'
+        if (category === 'Donation' && purpose) {
+          categoryDisplay = `Donation - ${purpose}`
+        }
+
+        // Generate email content
+        const emailContent = getPaymentSuccessEmail({
+          memberName,
+          membershipId: membershipId || 'N/A',
+          amount: amount / 100, // Convert cents to dollars
+          category: categoryDisplay,
+          paymentDate,
+          receiptUrl,
+        })
+
+        // Send email notification
+        const emailResult = await sendEmail({
+          to: member.primary_email,
+          subject: emailContent.subject,
+          html: emailContent.html,
+          text: emailContent.text,
+          tags: [
+            { name: 'category', value: 'payment-success' },
+            { name: 'payment_type', value: category || 'unknown' },
+          ],
+        })
+
+        if (emailResult.success) {
+          console.log(`Payment confirmation email sent to ${member.primary_email}`)
+        } else {
+          console.error('Failed to send payment success email:', emailResult.error)
+        }
+      }
+    } catch (emailError) {
+      // Don't throw - email failure shouldn't break the payment flow
+      console.error('Error sending payment success notification:', emailError)
+    }
   } catch (error) {
     console.error('Error handling payment success:', error)
     throw error
@@ -107,12 +198,89 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
 }
 
 async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
+  const supabase = await createClient()
+
+  const {
+    id: stripePaymentId,
+    amount,
+    metadata,
+    last_payment_error,
+  } = paymentIntent
+
+  const {
+    memberId,
+    membershipId,
+    category,
+  } = metadata
+
   console.error('Payment failed:', {
-    paymentIntentId: paymentIntent.id,
-    memberId: paymentIntent.metadata.memberId,
-    amount: paymentIntent.amount,
-    lastError: paymentIntent.last_payment_error,
+    paymentIntentId: stripePaymentId,
+    memberId,
+    membershipId,
+    amount,
+    lastError: last_payment_error,
   })
 
-  // TODO: Optionally notify member or admin about failed payment
+  // Get member details to send email
+  try {
+    const { data: member, error: memberError } = await supabase
+      .from('members')
+      .select('primary_email, first_name, last_name, business_name, member_class')
+      .eq('id', memberId)
+      .single()
+
+    if (memberError || !member) {
+      console.error('Could not find member for payment failure notification:', memberError)
+      return
+    }
+
+    // Determine member name
+    const memberName = member.member_class === 'Personal'
+      ? `${member.first_name} ${member.last_name}`
+      : member.business_name || 'Member'
+
+    // Determine retry URL based on payment category
+    let retryUrl = `${TEMPLE_CONFIG.contact.memberPortal}/member`
+    if (category === 'Membership') {
+      retryUrl = `${TEMPLE_CONFIG.contact.memberPortal}/member/renew`
+    } else if (category === 'Donation') {
+      retryUrl = `${TEMPLE_CONFIG.contact.memberPortal}/member/donate`
+    } else if (category === 'Service' || category === 'Request') {
+      retryUrl = `${TEMPLE_CONFIG.contact.memberPortal}/member/requests`
+    }
+
+    // Get error message
+    const errorMessage = last_payment_error?.message ||
+      (last_payment_error?.decline_code ? `Card declined: ${last_payment_error.decline_code}` : undefined)
+
+    // Generate email content
+    const emailContent = getPaymentFailureEmail({
+      memberName,
+      membershipId: membershipId || 'N/A',
+      amount: amount / 100, // Convert cents to dollars
+      category: category || 'Payment',
+      errorMessage,
+      retryUrl,
+    })
+
+    // Send email notification
+    const emailResult = await sendEmail({
+      to: member.primary_email,
+      subject: emailContent.subject,
+      html: emailContent.html,
+      text: emailContent.text,
+      tags: [
+        { name: 'category', value: 'payment-failure' },
+        { name: 'payment_type', value: category || 'unknown' },
+      ],
+    })
+
+    if (emailResult.success) {
+      console.log(`Payment failure notification sent to ${member.primary_email}`)
+    } else {
+      console.error('Failed to send payment failure email:', emailResult.error)
+    }
+  } catch (error) {
+    console.error('Error sending payment failure notification:', error)
+  }
 }

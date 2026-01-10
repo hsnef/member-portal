@@ -11,7 +11,17 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
 
 const SUGGESTED_DONATIONS = [25, 51, 101, 251, 501, 1001]
 
-function DonationForm({ amount, setAmount }: { amount: number; setAmount: (amt: number) => void }) {
+function DonationForm({
+  amount,
+  setAmount,
+  purpose,
+  setPurpose
+}: {
+  amount: number
+  setAmount: (amt: number) => void
+  purpose: string
+  setPurpose: (purpose: string) => void
+}) {
   const router = useRouter()
   const stripe = useStripe()
   const elements = useElements()
@@ -20,7 +30,6 @@ function DonationForm({ amount, setAmount }: { amount: number; setAmount: (amt: 
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [customAmount, setCustomAmount] = useState('')
-  const [purpose, setPurpose] = useState('General')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,7 +50,7 @@ function DonationForm({ amount, setAmount }: { amount: number; setAmount: (amt: 
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/member/payment-success?type=donation&amount=${amount}`,
+          return_url: `${window.location.origin}/member/payment-success?type=donation&amount=${amount}&purpose=${encodeURIComponent(purpose)}`,
         },
       })
 
@@ -183,39 +192,73 @@ function DonateContent() {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [amount, setAmount] = useState(51)
+  const [purpose, setPurpose] = useState('General')
+  const [updatingPayment, setUpdatingPayment] = useState(false)
+
+  // Create payment intent
+  const createPaymentIntent = async (donationAmount: number, donationPurpose: string) => {
+    if (!member) return null
+
+    try {
+      const response = await fetch('/api/stripe/create-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: Math.round(donationAmount * 100), // Convert to cents
+          memberId: member.id,
+          category: 'Donation',
+          description: `Donation - ${donationPurpose}`,
+          metadata: {
+            purpose: donationPurpose,
+          },
+        }),
+      })
+
+      const data = await response.json()
+      return data.clientSecret || null
+    } catch (error) {
+      console.error('Error creating payment intent:', error)
+      return null
+    }
+  }
+
+  // Handle amount change - recreate payment intent
+  const handleAmountChange = async (newAmount: number) => {
+    setAmount(newAmount)
+    if (newAmount <= 0) return
+
+    setUpdatingPayment(true)
+    const newSecret = await createPaymentIntent(newAmount, purpose)
+    if (newSecret) {
+      setClientSecret(newSecret)
+    }
+    setUpdatingPayment(false)
+  }
+
+  // Handle purpose change - update metadata
+  const handlePurposeChange = async (newPurpose: string) => {
+    setPurpose(newPurpose)
+    // Recreate payment intent with new purpose metadata
+    setUpdatingPayment(true)
+    const newSecret = await createPaymentIntent(amount, newPurpose)
+    if (newSecret) {
+      setClientSecret(newSecret)
+    }
+    setUpdatingPayment(false)
+  }
 
   useEffect(() => {
     if (!member) return
 
-    // Create payment intent
-    const createPaymentIntent = async () => {
-      try {
-        const response = await fetch('/api/stripe/create-payment-intent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amount: amount * 100, // Convert to cents
-            memberId: member.id,
-            category: 'Donation',
-            description: 'Temple donation',
-            metadata: {
-              purpose: 'General',
-            },
-          }),
-        })
-
-        const data = await response.json()
-        if (data.clientSecret) {
-          setClientSecret(data.clientSecret)
-        }
-      } catch (error) {
-        console.error('Error creating payment intent:', error)
-      } finally {
-        setLoading(false)
+    const initializePayment = async () => {
+      const secret = await createPaymentIntent(amount, purpose)
+      if (secret) {
+        setClientSecret(secret)
       }
+      setLoading(false)
     }
 
-    createPaymentIntent()
+    initializePayment()
   }, [member])
 
   if (loading) {
@@ -276,9 +319,22 @@ function DonateContent() {
         </div>
 
         {/* Donation Form */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <Elements stripe={stripePromise} options={options}>
-            <DonationForm amount={amount} setAmount={setAmount} />
+        <div className="bg-white shadow rounded-lg p-6 relative">
+          {updatingPayment && (
+            <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-lg">
+              <div className="text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <p className="mt-2 text-sm text-gray-600">Updating...</p>
+              </div>
+            </div>
+          )}
+          <Elements stripe={stripePromise} options={options} key={clientSecret}>
+            <DonationForm
+              amount={amount}
+              setAmount={handleAmountChange}
+              purpose={purpose}
+              setPurpose={handlePurposeChange}
+            />
           </Elements>
         </div>
 
