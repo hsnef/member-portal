@@ -45,7 +45,7 @@ const memberSchema = z.object({
   city: z.string().optional().or(z.literal('')),
   state: z.string().optional().or(z.literal('')),
   zip: z.string().optional().or(z.literal('')),
-  country: z.string().optional().or(z.literal('USA')),
+  country: z.string().optional().or(z.literal('US')),
   mailing_address: z.string().optional().or(z.literal('')),
 }).refine(
   (data) => {
@@ -101,7 +101,8 @@ export default function NewMemberPage() {
       member_class: 'Personal',
       current_level: 'Annual',
       is_founding_member: false,
-      country: 'USA',
+      state: 'FL',
+      country: 'US',
     },
   })
 
@@ -112,10 +113,16 @@ export default function NewMemberPage() {
       setLoading(true)
       setError(null)
 
+      // Generate membership ID based on level
+      const prefix = data.current_level === 'Lifetime' ? '1' : data.current_level === 'Annual' ? '2' : '3'
+      const randomNum = Math.floor(Math.random() * 100000).toString().padStart(5, '0')
+      const membershipId = `${prefix}${randomNum}00`
+
       // Create member record
       const { data: memberData, error: memberError } = await supabase
         .from('members')
         .insert({
+          membership_id: membershipId,
           member_class: data.member_class,
           current_level: data.current_level,
           is_founding_member: data.is_founding_member,
@@ -149,7 +156,7 @@ export default function NewMemberPage() {
           city: data.city || null,
           state: data.state || null,
           zip: data.zip || null,
-          country: data.country || 'USA',
+          country: data.country || 'US',
           mailing_address: data.mailing_address || null,
 
           member_since: new Date().toISOString(),
@@ -530,7 +537,7 @@ export default function NewMemberPage() {
                     <input
                       type="text"
                       {...register('state')}
-                      placeholder="TX"
+                      placeholder="FL"
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
                     />
                   </div>

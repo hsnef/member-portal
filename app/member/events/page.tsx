@@ -13,6 +13,7 @@ interface Event {
   event_date: string
   event_time: string
   location: string
+  short_description: string | null
   description: string
   category: string
   max_capacity: number
@@ -24,6 +25,20 @@ interface Event {
   contact_phone?: string
   registration_count?: number
   is_registered?: boolean
+}
+
+// Helper function to strip HTML tags and get plain text
+function stripHtml(html: string): string {
+  if (!html) return ''
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()
+}
+
+// Get display description (prefer short_description, fallback to stripped description)
+function getDisplayDescription(event: Event): string {
+  if (event.short_description) {
+    return event.short_description
+  }
+  return stripHtml(event.description)
 }
 
 export default function MemberEventsPage() {
@@ -114,9 +129,29 @@ export default function MemberEventsPage() {
     }
   }
 
+  // Calculate price based on membership level
+  const getEventPrice = (event: Event): number => {
+    if (!member) return event.non_member_price
+    const isMember = member.current_level === 'Annual' || member.current_level === 'Lifetime'
+    return isMember ? event.member_price : event.non_member_price
+  }
+
   const handleRegister = async (eventId: string) => {
     if (!member) return
 
+    // Find the event to check if it's paid
+    const event = events.find(e => e.id === eventId)
+    if (!event) return
+
+    const price = getEventPrice(event)
+
+    // If event has a price, redirect to payment page
+    if (price > 0) {
+      router.push(`/member/events/${eventId}/payment`)
+      return
+    }
+
+    // Free event - register directly
     try {
       const response = await fetch('/api/events/register', {
         method: 'POST',
@@ -247,18 +282,23 @@ export default function MemberEventsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredEvents.map((event) => (
                 <div key={event.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                  {/* Event Image */}
-                  {event.image_url ? (
-                    <img
-                      src={event.image_url}
-                      alt={event.event_name}
-                      className="w-full h-48 object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-48 bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                      <span className="text-8xl">{getCategoryIcon(event.category)}</span>
-                    </div>
-                  )}
+                  {/* Event Image - Clickable */}
+                  <div
+                    onClick={() => router.push(`/member/events/${event.id}`)}
+                    className="cursor-pointer"
+                  >
+                    {event.image_url ? (
+                      <img
+                        src={event.image_url}
+                        alt={event.event_name}
+                        className="w-full h-48 object-cover hover:opacity-90 transition-opacity"
+                      />
+                    ) : (
+                      <div className="w-full h-48 bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center hover:opacity-90 transition-opacity">
+                        <span className="text-8xl">{getCategoryIcon(event.category)}</span>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Event Details */}
                   <div className="p-6">
@@ -273,7 +313,10 @@ export default function MemberEventsPage() {
                       )}
                     </div>
 
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    <h3
+                      onClick={() => router.push(`/member/events/${event.id}`)}
+                      className="text-xl font-bold text-gray-900 mb-2 hover:text-[#FF9933] cursor-pointer transition-colors"
+                    >
                       {event.event_name}
                     </h3>
 
@@ -297,9 +340,20 @@ export default function MemberEventsPage() {
                       </div>
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                      {event.description}
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                      {getDisplayDescription(event)}
                     </p>
+
+                    {/* View Details Link */}
+                    <button
+                      onClick={() => router.push(`/member/events/${event.id}`)}
+                      className="text-sm text-[#FF9933] hover:text-[#E68A2E] font-medium mb-4 inline-flex items-center"
+                    >
+                      View Details
+                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
 
                     {/* Price and Capacity */}
                     <div className="flex items-center justify-between mb-4 pb-4 border-b">
@@ -375,7 +429,9 @@ export default function MemberEventsPage() {
                         onClick={() => handleRegister(event.id)}
                         className="w-full px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
                       >
-                        Register Now
+                        {getEventPrice(event) > 0
+                          ? `Register - $${getEventPrice(event).toFixed(2)}`
+                          : 'Register (Free)'}
                       </button>
                     )}
                   </div>
