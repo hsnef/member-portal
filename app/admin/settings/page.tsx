@@ -75,14 +75,14 @@ export default function SettingsPage() {
       roles: ['Admin', 'Office Manager', 'Office Staff'],
     },
     {
-      title: 'Purohits Management',
+      title: 'Priests Management',
       description: 'Manage priest profiles and availability',
       icon: (
         <svg className="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
       ),
-      href: '/admin/purohits',
+      href: '/admin/settings/priests',
       roles: ['Admin', 'Office Manager', 'Office Staff'],
     },
     {
@@ -110,7 +110,7 @@ export default function SettingsPage() {
   ]
 
   return (
-    <ProtectedRoute requiredRoles={['Admin']}>
+    <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
       <AdminLayout>
         <div className="space-y-6">
           {/* Header */}

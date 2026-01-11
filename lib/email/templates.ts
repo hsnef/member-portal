@@ -367,7 +367,7 @@ export function bookingConfirmationEmail(
       <p style="margin: 0; color: #666; font-size: 14px;">
         <strong>📅 Date:</strong> ${bookingDate}<br>
         ${booking.booking_time ? `<strong>⏰ Time:</strong> ${booking.booking_time}<br>` : ''}
-        ${booking.purohit_name ? `<strong>🙏 Purohit:</strong> ${booking.purohit_name}<br>` : ''}
+        ${booking.purohit_name ? `<strong>🙏 Priest:</strong> ${booking.purohit_name}<br>` : ''}
         <strong>💰 Amount:</strong> $${booking.amount.toFixed(2)}
       </p>
     </div>
@@ -400,7 +400,7 @@ export function bookingConfirmationEmail(
   return {
     subject: `Booking Confirmed: ${booking.service_name}`,
     html: emailWrapper(content),
-    text: `Booking Confirmed!\n\nDear ${memberName},\n\nYour service booking has been confirmed:\n\n${booking.service_name}\nDate: ${bookingDate}${booking.booking_time ? `\nTime: ${booking.booking_time}` : ''}${booking.purohit_name ? `\nPurohit: ${booking.purohit_name}` : ''}\nAmount: $${booking.amount.toFixed(2)}\n\nBooking Reference: ${booking.booking_id.slice(0, 8).toUpperCase()}\n\nPlease arrive 10-15 minutes before your scheduled time.\n\nView bookings: ${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}/member/bookings`,
+    text: `Booking Confirmed!\n\nDear ${memberName},\n\nYour service booking has been confirmed:\n\n${booking.service_name}\nDate: ${bookingDate}${booking.booking_time ? `\nTime: ${booking.booking_time}` : ''}${booking.purohit_name ? `\nPriest: ${booking.purohit_name}` : ''}\nAmount: $${booking.amount.toFixed(2)}\n\nBooking Reference: ${booking.booking_id.slice(0, 8).toUpperCase()}\n\nPlease arrive 10-15 minutes before your scheduled time.\n\nView bookings: ${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}/member/bookings`,
   }
 }
 
