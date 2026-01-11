@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
-  const redirect = requestUrl.searchParams.get('redirect') || '/admin'
+  const redirect = requestUrl.searchParams.get('redirect') || '/member'
 
   // Decode redirect if it was double-encoded
   const decodedRedirect = decodeURIComponent(redirect)

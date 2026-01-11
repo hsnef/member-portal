@@ -18,7 +18,7 @@ function CallbackHandler() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const redirect = searchParams.get('redirect') || '/admin'
+        const redirect = searchParams.get('redirect') || '/member'
 
         // Log current URL for debugging
         console.log('[CallbackHandler] Full URL:', window.location.href)
