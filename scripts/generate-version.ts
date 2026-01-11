@@ -1,5 +1,5 @@
 import { execSync } from 'child_process'
-import { writeFileSync, mkdirSync } from 'fs'
+import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'fs'
 import { join } from 'path'
 
 /**
@@ -11,19 +11,29 @@ import { join } from 'path'
 const MAJOR_VERSION = 1
 
 try {
-  // Get git commit count (total commits in the repository)
-  // For Vercel/shallow clones, fetch unshallow first if possible
+  // Get git commit count - try multiple methods for CI compatibility
   let commitCount = '0'
+
+  // Method 1: Try git rev-list (works in full clones)
   try {
-    // Try to unshallow if this is a shallow clone (Vercel)
-    try {
-      execSync('git fetch --unshallow 2>/dev/null || true', { encoding: 'utf-8' })
-    } catch {
-      // Ignore errors - may already be full clone
-    }
-    commitCount = execSync('git rev-list --count HEAD', { encoding: 'utf-8' }).trim()
+    commitCount = execSync('git rev-list --count HEAD 2>/dev/null', { encoding: 'utf-8' }).trim()
   } catch {
-    commitCount = '0'
+    // Method 2: Read from .commit-count file (for shallow clones like Vercel)
+    const commitCountFile = join(process.cwd(), '.commit-count')
+    if (existsSync(commitCountFile)) {
+      commitCount = readFileSync(commitCountFile, 'utf-8').trim()
+      console.log(`   Using .commit-count file: ${commitCount} commits`)
+    }
+  }
+
+  // If git count returned a low number (shallow clone), prefer the file
+  const commitCountFile = join(process.cwd(), '.commit-count')
+  if (parseInt(commitCount) < 20 && existsSync(commitCountFile)) {
+    const fileCount = readFileSync(commitCountFile, 'utf-8').trim()
+    if (parseInt(fileCount) > parseInt(commitCount)) {
+      commitCount = fileCount
+      console.log(`   Shallow clone detected, using .commit-count: ${commitCount}`)
+    }
   }
 
   // Get current branch name - prefer Vercel env vars for CI builds
