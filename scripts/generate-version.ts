@@ -12,14 +12,35 @@ const MAJOR_VERSION = 1
 
 try {
   // Get git commit count (total commits in the repository)
-  const commitCount = execSync('git rev-list --count HEAD', { encoding: 'utf-8' }).trim()
-  
-  // Get current branch name
-  let branch = 'main'
+  // For Vercel/shallow clones, fetch unshallow first if possible
+  let commitCount = '0'
   try {
-    branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim()
+    // Try to unshallow if this is a shallow clone (Vercel)
+    try {
+      execSync('git fetch --unshallow 2>/dev/null || true', { encoding: 'utf-8' })
+    } catch {
+      // Ignore errors - may already be full clone
+    }
+    commitCount = execSync('git rev-list --count HEAD', { encoding: 'utf-8' }).trim()
   } catch {
-    // If not in a git repo or on detached HEAD, use default
+    commitCount = '0'
+  }
+
+  // Get current branch name - prefer Vercel env vars for CI builds
+  let branch = process.env.VERCEL_GIT_COMMIT_REF ||
+               process.env.GITHUB_REF_NAME ||
+               'main'
+
+  // If no env var, try git command
+  if (branch === 'main') {
+    try {
+      const gitBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim()
+      if (gitBranch && gitBranch !== 'HEAD') {
+        branch = gitBranch
+      }
+    } catch {
+      // Keep default
+    }
   }
 
   // Get latest commit hash (short)
