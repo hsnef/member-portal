@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { AuditLogTimeline } from '@/components/admin/AuditLogTimeline'
@@ -13,8 +13,10 @@ interface Member {
   name: string
 }
 
-export default function MemberAuditLogPage({ params }: { params: { id: string } }) {
+export default function MemberAuditLogPage() {
   const router = useRouter()
+  const params = useParams()
+  const memberId = memberId as string
   const [logs, setLogs] = useState<MemberAuditLog[]>([])
   const [member, setMember] = useState<Member | null>(null)
   const [loading, setLoading] = useState(true)
@@ -26,7 +28,7 @@ export default function MemberAuditLogPage({ params }: { params: { id: string } 
 
   useEffect(() => {
     fetchLogs()
-  }, [params.id, actionTypeFilter, creationSourceFilter, fromDate, toDate])
+  }, [memberId, actionTypeFilter, creationSourceFilter, fromDate, toDate])
 
   async function fetchLogs() {
     try {
@@ -40,7 +42,7 @@ export default function MemberAuditLogPage({ params }: { params: { id: string } 
       queryParams.append('limit', '100')
 
       // Fetch member info
-      const memberResponse = await fetch(`/api/members/${params.id}`)
+      const memberResponse = await fetch(`/api/members/${memberId}`)
       if (memberResponse.ok) {
         const memberData = await memberResponse.json()
         setMember({
@@ -51,7 +53,7 @@ export default function MemberAuditLogPage({ params }: { params: { id: string } 
       }
 
       // Fetch audit logs
-      const response = await fetch(`/api/members/${params.id}/audit-log?${queryParams.toString()}`)
+      const response = await fetch(`/api/members/${memberId}/audit-log?${queryParams.toString()}`)
 
       if (!response.ok) {
         throw new Error('Failed to fetch audit logs')
@@ -75,7 +77,7 @@ export default function MemberAuditLogPage({ params }: { params: { id: string } 
       if (fromDate) queryParams.append('fromDate', new Date(fromDate).toISOString())
       if (toDate) queryParams.append('toDate', new Date(toDate).toISOString())
 
-      const response = await fetch(`/api/members/${params.id}/audit-log/export?${queryParams.toString()}`)
+      const response = await fetch(`/api/members/${memberId}/audit-log/export?${queryParams.toString()}`)
 
       if (!response.ok) {
         throw new Error('Failed to export audit logs')
@@ -85,7 +87,7 @@ export default function MemberAuditLogPage({ params }: { params: { id: string } 
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `audit-log-${member?.membership_id || params.id}-${member?.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.csv`
+      a.download = `audit-log-${member?.membership_id || memberId}-${member?.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.csv`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -121,7 +123,7 @@ export default function MemberAuditLogPage({ params }: { params: { id: string } 
           <div className="flex justify-between items-start">
             <div>
               <button
-                onClick={() => router.push(`/admin/members/${params.id}`)}
+                onClick={() => router.push(`/admin/members/${memberId}`)}
                 className="text-sm text-[#FF9933] hover:text-[#FF8800] font-medium mb-2 flex items-center"
               >
                 <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
