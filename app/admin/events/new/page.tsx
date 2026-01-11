@@ -2,9 +2,17 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
+import ImageUpload from '@/components/ImageUpload'
+
+// Dynamic import for RichTextEditor to avoid SSR issues
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), {
+  ssr: false,
+  loading: () => <div className="h-64 bg-gray-100 rounded-md animate-pulse" />,
+})
 
 export default function NewEventPage() {
   const router = useRouter()
@@ -16,6 +24,7 @@ export default function NewEventPage() {
     event_date: '',
     event_time: '',
     location: '',
+    short_description: '',
     description: '',
     category: 'Festival',
     max_capacity: '',
@@ -40,6 +49,7 @@ export default function NewEventPage() {
           event_date: formData.event_date,
           event_time: formData.event_time,
           location: formData.location,
+          short_description: formData.short_description || null,
           description: formData.description,
           category: formData.category,
           max_capacity: formData.max_capacity ? parseInt(formData.max_capacity) : 0,
@@ -89,8 +99,22 @@ export default function NewEventPage() {
           {/* Form */}
           <div className="bg-white shadow rounded-lg p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Basic Information */}
+              {/* Event Image */}
               <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Event Image</h2>
+                <ImageUpload
+                  value={formData.image_url}
+                  onChange={(url) => setFormData({ ...formData, image_url: url })}
+                  label="Event Banner / Poster"
+                  aspectRatio="16/9"
+                />
+                <p className="mt-2 text-xs text-gray-500">
+                  Recommended size: 1200x675 pixels (16:9 ratio). This image will be displayed on the event listing and detail page.
+                </p>
+              </div>
+
+              {/* Basic Information */}
+              <div className="border-t pt-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
@@ -166,20 +190,46 @@ export default function NewEventPage() {
                       <option value="Other">Other</option>
                     </select>
                   </div>
+                </div>
+              </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description *
-                    </label>
-                    <textarea
-                      required
-                      rows={4}
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-                      placeholder="Provide details about the event..."
-                    />
-                  </div>
+              {/* Event Summary (Short Description) */}
+              <div className="border-t pt-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Event Summary</h2>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Short Description (for event cards)
+                  </label>
+                  <textarea
+                    rows={2}
+                    maxLength={200}
+                    value={formData.short_description}
+                    onChange={(e) => setFormData({ ...formData, short_description: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    placeholder="Brief summary shown on event listing cards (max 200 characters)"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    {formData.short_description.length}/200 characters. This appears on the event card in the events list.
+                  </p>
+                </div>
+              </div>
+
+              {/* Full Event Description (Rich Text) */}
+              <div className="border-t pt-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Full Event Description</h2>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Detailed Description (HTML supported) *
+                  </label>
+                  <RichTextEditor
+                    content={formData.description}
+                    onChange={(html) => setFormData({ ...formData, description: html })}
+                    placeholder="Enter the full event description with formatting..."
+                    minHeight="300px"
+                  />
+                  <p className="mt-2 text-xs text-gray-500">
+                    Use the toolbar to format text, add links, create lists, and more. This appears on the event detail page.
+                  </p>
                 </div>
               </div>
 
@@ -247,9 +297,9 @@ export default function NewEventPage() {
                 </div>
               </div>
 
-              {/* Contact & Additional Info */}
+              {/* Contact Information */}
               <div className="border-t pt-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact & Additional Info</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -275,20 +325,6 @@ export default function NewEventPage() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
                       placeholder="(904) 555-1234"
                     />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Event Image URL
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.image_url}
-                      onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-                      placeholder="https://example.com/event-image.jpg"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">Optional - URL to event poster or image</p>
                   </div>
                 </div>
               </div>

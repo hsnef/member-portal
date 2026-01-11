@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import {
-  isMemberApprovalRequired,
   getMembershipPricing,
   type MembershipPricing,
 } from '@/lib/utils/portalSettings'
@@ -20,22 +19,18 @@ type MembershipLevel = 'Community' | 'Annual' | 'Lifetime'
 
 export default function JoinPage() {
   const supabase = createClient()
-  const [approvalRequired, setApprovalRequired] = useState<boolean | null>(null)
   const [activeTerms, setActiveTerms] = useState<TermsContent | null>(null)
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [pricing, setPricing] = useState<MembershipPricing | null>(null)
 
-  // Check if approval is required, load active terms, and load pricing
-  // Load all settings in parallel for better performance
+  // Load active terms and pricing
   useEffect(() => {
     async function loadInitialData() {
       try {
-        const [required, terms, membershipPricing] = await Promise.all([
-          isMemberApprovalRequired(),
+        const [terms, membershipPricing] = await Promise.all([
           getActiveTerms(),
           getMembershipPricing(),
         ])
-        setApprovalRequired(required)
         setActiveTerms(terms)
         setPricing(membershipPricing)
       } catch (error) {
@@ -52,7 +47,6 @@ export default function JoinPage() {
   // Personal fields
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-  const [dateOfBirth, setDateOfBirth] = useState('')
   const [nakshatra, setNakshatra] = useState('')
   const [familyGotra, setFamilyGotra] = useState('')
 
@@ -60,7 +54,6 @@ export default function JoinPage() {
   const [includeSpouse, setIncludeSpouse] = useState(false)
   const [secondaryFirstName, setSecondaryFirstName] = useState('')
   const [secondaryLastName, setSecondaryLastName] = useState('')
-  const [secondaryDateOfBirth, setSecondaryDateOfBirth] = useState('')
   const [secondaryNakshatra, setSecondaryNakshatra] = useState('')
 
   // Business fields
@@ -93,7 +86,7 @@ export default function JoinPage() {
     setMessage(null)
 
     // Validation
-    if (memberClass === 'Personal' && (!firstName || !lastName)) {
+    if (!firstName || !lastName) {
       setMessage({ type: 'error', text: 'First and last name are required' })
       return
     }
@@ -116,145 +109,72 @@ export default function JoinPage() {
     try {
       setLoading(true)
 
-      // Check if auto-approval is enabled (approval NOT required)
-      const isAutoApproval = approvalRequired === false
+      // Generate membership ID based on level
+      const prefix = requestedLevel === 'Lifetime' ? '1' : requestedLevel === 'Annual' ? '2' : '3'
+      const randomNum = Math.floor(Math.random() * 100000).toString().padStart(5, '0')
+      const membershipId = `${prefix}${randomNum}00`
 
-      if (isAutoApproval) {
-        // AUTO-APPROVAL MODE: Create member directly
+      // Create member record directly (self-service auto-accept)
+      const { data: memberData, error: memberError } = await supabase.from('members').insert({
+        membership_id: membershipId,
+        member_class: memberClass,
+        current_level: requestedLevel,
 
-        // Generate membership ID based on level
-        const prefix = requestedLevel === 'Lifetime' ? '1' : requestedLevel === 'Annual' ? '2' : '3'
-        const randomNum = Math.floor(Math.random() * 100000).toString().padStart(5, '0')
-        const membershipId = `${prefix}${randomNum}00`
+        // Contact person (required for both Personal and Business)
+        first_name: firstName || null,
+        last_name: lastName || null,
+        nakshatra: nakshatra || null,
+        family_gotra: memberClass === 'Personal' ? (familyGotra || null) : null,
 
-        // Create member record directly
-        const { data: memberData, error: memberError } = await supabase.from('members').insert({
-          membership_id: membershipId,
-          member_class: memberClass,
-          current_level: requestedLevel,
+        // Spouse (Personal only)
+        secondary_first_name: memberClass === 'Personal' && includeSpouse ? secondaryFirstName : null,
+        secondary_last_name: memberClass === 'Personal' && includeSpouse ? secondaryLastName : null,
+        secondary_nakshatra: memberClass === 'Personal' && includeSpouse ? secondaryNakshatra : null,
 
-          // Personal
-          first_name: memberClass === 'Personal' ? firstName : null,
-          last_name: memberClass === 'Personal' ? lastName : null,
-          date_of_birth: dateOfBirth || null,
-          nakshatra: nakshatra || null,
-          family_gotra: familyGotra || null,
+        // Business
+        business_name: memberClass === 'Business' ? businessName : null,
+        business_ein: memberClass === 'Business' ? businessEin : null,
+        business_type: memberClass === 'Business' ? businessType : null,
 
-          // Spouse
-          secondary_first_name: includeSpouse ? secondaryFirstName : null,
-          secondary_last_name: includeSpouse ? secondaryLastName : null,
-          secondary_date_of_birth: includeSpouse ? secondaryDateOfBirth : null,
-          secondary_nakshatra: includeSpouse ? secondaryNakshatra : null,
+        // Contact
+        primary_email: primaryEmail,
+        primary_phone: primaryPhone || null,
+        secondary_email: secondaryEmail || null,
+        secondary_phone: secondaryPhone || null,
 
-          // Business
-          business_name: memberClass === 'Business' ? businessName : null,
-          business_ein: memberClass === 'Business' ? businessEin : null,
-          business_type: memberClass === 'Business' ? businessType : null,
+        // Address
+        address_line_1: addressLine1 || null,
+        address_line_2: addressLine2 || null,
+        city: city || null,
+        state: state || null,
+        zip: zip || null,
 
-          // Contact
-          primary_email: primaryEmail,
-          primary_phone: primaryPhone || null,
-          secondary_email: secondaryEmail || null,
-          secondary_phone: secondaryPhone || null,
+        // Additional
+        how_did_you_hear: howDidYouHear || null,
+      })
+      .select()
+      .single()
 
-          // Address
-          address_line_1: addressLine1 || null,
-          address_line_2: addressLine2 || null,
-          city: city || null,
-          state: state || null,
-          zip: zip || null,
+      if (memberError) {
+        console.error('Member creation error:', memberError)
+        setMessage({ type: 'error', text: memberError.message })
+        return
+      }
 
-          // Additional
-          how_did_you_hear: howDidYouHear || null,
-        })
-        .select()
-        .single()
-
-        if (memberError) {
-          console.error('Member creation error:', memberError)
-          setMessage({ type: 'error', text: memberError.message })
-          return
-        }
-
-        // Record terms acceptance
-        if (memberData && activeTerms) {
-          await recordTermsAcceptanceForMember({
-            memberId: memberData.id,
-            termsVersion: activeTerms.version,
-            termsContentId: activeTerms.id,
-            acceptanceMethod: 'registration',
-          })
-        }
-
-        setMessage({
-          type: 'success',
-          text: `Congratulations! Your membership has been approved. Your Membership ID is ${membershipId}. You can now login using the "Email Me a Link to Login" button.`,
-        })
-      } else {
-        // APPROVAL REQUIRED MODE: Submit to pending registrations
-
-        // Note: We record terms acceptance flag here
-        // Actual acceptance record with member_id will be created when office approves
-        const termsAcceptanceData = activeTerms ? {
-          terms_version: activeTerms.version,
-          terms_content_id: activeTerms.id,
-          terms_accepted: true,
-        } : {}
-
-        const { error } = await supabase.from('pending_member_registrations').insert({
-          member_class: memberClass,
-          requested_level: requestedLevel,
-
-          // Personal
-          first_name: memberClass === 'Personal' ? firstName : null,
-          last_name: memberClass === 'Personal' ? lastName : null,
-          date_of_birth: dateOfBirth || null,
-          nakshatra: nakshatra || null,
-          family_gotra: familyGotra || null,
-
-          // Spouse
-          secondary_first_name: includeSpouse ? secondaryFirstName : null,
-          secondary_last_name: includeSpouse ? secondaryLastName : null,
-          secondary_date_of_birth: includeSpouse ? secondaryDateOfBirth : null,
-          secondary_nakshatra: includeSpouse ? secondaryNakshatra : null,
-
-          // Business
-          business_name: memberClass === 'Business' ? businessName : null,
-          business_ein: memberClass === 'Business' ? businessEin : null,
-          business_type: memberClass === 'Business' ? businessType : null,
-
-          // Contact
-          primary_email: primaryEmail,
-          primary_phone: primaryPhone || null,
-          secondary_email: secondaryEmail || null,
-          secondary_phone: secondaryPhone || null,
-
-          // Address
-          address_line_1: addressLine1 || null,
-          address_line_2: addressLine2 || null,
-          city: city || null,
-          state: state || null,
-          zip: zip || null,
-
-          // Additional
-          how_did_you_hear: howDidYouHear || null,
-          notes: notes || null,
-
-          // Store terms acceptance info (will be used when creating member)
-          ...termsAcceptanceData,
-        })
-
-        if (error) {
-          console.error('Submission error:', error)
-          setMessage({ type: 'error', text: error.message })
-          return
-        }
-
-        setMessage({
-          type: 'success',
-          text: 'Application submitted successfully! Our team will review your application and contact you within 2-3 business days.',
+      // Record terms acceptance
+      if (memberData && activeTerms) {
+        await recordTermsAcceptanceForMember({
+          memberId: memberData.id,
+          termsVersion: activeTerms.version,
+          termsContentId: activeTerms.id,
+          acceptanceMethod: 'registration',
         })
       }
+
+      setMessage({
+        type: 'success',
+        text: `Welcome to HSNEF! Your Membership ID is ${membershipId}. You can now login using the "Email Me a Link to Login" option on the login page.`,
+      })
 
       // Reset form
       setFirstName('')
@@ -320,8 +240,8 @@ export default function JoinPage() {
                 <span className="text-xl font-bold text-white">H</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Join HSNEF</h1>
-                <p className="text-sm text-gray-600">Become a member today</p>
+                <h1 className="text-2xl font-bold text-gray-900">Become a Member</h1>
+                <p className="text-sm text-gray-600">Join the HSNEF community today</p>
               </div>
             </div>
             <Link
@@ -361,7 +281,7 @@ export default function JoinPage() {
 
         {/* Registration Form */}
         <div className="bg-white rounded-lg shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Membership Application</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Membership Registration</h2>
 
           {message && (
             <div
@@ -452,18 +372,6 @@ export default function JoinPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Date of Birth
-                      </label>
-                      <input
-                        type="date"
-                        value={dateOfBirth}
-                        onChange={(e) => setDateOfBirth(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
-                        disabled={loading}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
                         Nakshatra (Birth Star)
                       </label>
                       <input
@@ -474,7 +382,7 @@ export default function JoinPage() {
                         disabled={loading}
                       />
                     </div>
-                    <div className="md:col-span-2">
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Family Gotra
                       </label>
@@ -533,19 +441,7 @@ export default function JoinPage() {
                           disabled={loading}
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Date of Birth
-                        </label>
-                        <input
-                          type="date"
-                          value={secondaryDateOfBirth}
-                          onChange={(e) => setSecondaryDateOfBirth(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
-                          disabled={loading}
-                        />
-                      </div>
-                      <div>
+                      <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Nakshatra
                         </label>
@@ -607,6 +503,51 @@ export default function JoinPage() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
                       disabled={loading}
                       placeholder="e.g., Restaurant, Retail, Services"
+                    />
+                  </div>
+                </div>
+
+                {/* Contact Person for Business */}
+                <h4 className="text-md font-semibold text-gray-900 mt-6 mb-4">
+                  Contact Person
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      First Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      disabled={loading}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Last Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      disabled={loading}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nakshatra (Birth Star)
+                    </label>
+                    <input
+                      type="text"
+                      value={nakshatra}
+                      onChange={(e) => setNakshatra(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -815,15 +756,14 @@ export default function JoinPage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    <span>Submitting Application...</span>
+                    <span>Creating Membership...</span>
                   </div>
                 ) : (
-                  'Submit Application'
+                  'Become a Member'
                 )}
               </button>
               <p className="mt-4 text-center text-xs text-gray-500">
-                A member of our team will review your application and contact you within
-                2-3 business days.
+                Your membership will be activated immediately.
               </p>
             </div>
           </form>

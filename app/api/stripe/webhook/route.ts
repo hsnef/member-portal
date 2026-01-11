@@ -80,6 +80,25 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
   }
 
   try {
+    // Check if payment record already exists (to avoid duplicates from webhook + confirm-payment API)
+    const { data: existingPayment } = await supabase
+      .from('payments')
+      .select('id')
+      .eq('stripe_payment_intent_id', stripePaymentId)
+      .maybeSingle()
+
+    if (existingPayment) {
+      console.log(`Payment already recorded for ${stripePaymentId}, skipping webhook insert`)
+      return
+    }
+
+    // For Event payments, registration is handled by confirm-payment API which also creates payment
+    // So skip webhook processing for events to avoid duplication
+    if (category === 'Event') {
+      console.log(`Event payment ${stripePaymentId} will be processed by confirm-payment API`)
+      return
+    }
+
     // Insert payment record
     const { error: paymentError } = await supabase
       .from('payments')
@@ -247,6 +266,8 @@ async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
       retryUrl = `${TEMPLE_CONFIG.contact.memberPortal}/member/donate`
     } else if (category === 'Service' || category === 'Request') {
       retryUrl = `${TEMPLE_CONFIG.contact.memberPortal}/member/requests`
+    } else if (category === 'Event') {
+      retryUrl = `${TEMPLE_CONFIG.contact.memberPortal}/member/events`
     }
 
     // Get error message
