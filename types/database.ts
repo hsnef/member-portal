@@ -44,6 +44,8 @@ export type PaymentPurpose = 'Membership' | 'Event' | 'Donation' | 'Sponsorship'
 
 export type RequestStatus = 'Draft' | 'Sent' | 'Partially Paid' | 'Paid' | 'Cancelled' | 'Expired';
 
+export type ZelleRequestStatus = 'pending' | 'member_confirmed' | 'staff_confirmed' | 'auto_confirmed' | 'cancelled' | 'expired';
+
 export type UserRole = 'Member' | 'Office Staff' | 'Office Manager' | 'Admin';
 
 export type ActivityType = 'Visit' | 'Puja' | 'Event' | 'Donation' | 'Service' | 'Membership';
@@ -359,6 +361,39 @@ export interface PendingMemberRegistration {
   updated_at: string;
 }
 
+export interface ZellePaymentRequest {
+  id: string;
+  reference_code: string;
+  member_id: string | null;
+  amount: number;
+  purpose: PaymentPurpose;
+  description: string | null;
+  request_id: string | null;
+  event_registration_id: string | null;
+  service_booking_id: string | null;
+  status: ZelleRequestStatus;
+  member_confirmed_at: string | null;
+  member_zelle_reference: string | null;
+  staff_confirmed_at: string | null;
+  staff_confirmed_by: string | null;
+  staff_notes: string | null;
+  expires_at: string;
+  qr_token: string | null;
+  created_at: string;
+  created_by: string | null;
+  updated_at: string;
+  payment_id: string | null;
+}
+
+export interface ZelleSettings {
+  enabled: boolean;
+  zelle_email: string;
+  zelle_phone: string;
+  auto_confirm_threshold: number;
+  request_expiry_hours: number;
+  instructions: string;
+}
+
 // Database schema type for Supabase client
 export interface Database {
   public: {
@@ -524,6 +559,15 @@ export interface Database {
         };
         Update: Partial<PendingMemberRegistration>;
       };
+      zelle_payment_requests: {
+        Row: ZellePaymentRequest;
+        Insert: Omit<ZellePaymentRequest, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<ZellePaymentRequest>;
+      };
     };
     Views: {};
     Functions: {
@@ -560,6 +604,7 @@ export interface Database {
       payment_method: PaymentMethod;
       payment_purpose: PaymentPurpose;
       request_status: RequestStatus;
+      zelle_request_status: ZelleRequestStatus;
       user_role: UserRole;
       activity_type: ActivityType;
     };
