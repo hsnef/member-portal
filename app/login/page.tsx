@@ -7,7 +7,7 @@ import { isTraditionalLoginEnabled } from '@/lib/utils/portalSettings'
 
 function LoginForm() {
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirect') || '/admin'
+  const redirectTo = searchParams.get('redirect') || '/member'
 
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
