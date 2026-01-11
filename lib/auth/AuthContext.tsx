@@ -37,38 +37,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('auth_user_id', userId)
         .single()
 
-      // If no member found by auth_user_id, try to auto-link by email
+      // If no member found by auth_user_id, try to auto-link by email via server API
       if (memberResult.error && userEmail) {
-        console.log('[AuthContext] No member found by auth_user_id, trying email lookup:', userEmail)
+        console.log('[AuthContext] No member found by auth_user_id, trying server-side auto-link')
 
-        // Look for member with matching email but no auth_user_id
-        const emailLookup = await supabase
-          .from('members')
-          .select('*')
-          .eq('primary_email', userEmail)
-          .is('auth_user_id', null)
-          .single()
+        try {
+          // Call server API to link member (bypasses RLS)
+          const linkResponse = await fetch('/api/auth/link-member', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          })
 
-        if (!emailLookup.error && emailLookup.data) {
-          console.log('[AuthContext] Found unlinked member by email, auto-linking:', emailLookup.data.id)
+          if (linkResponse.ok) {
+            const linkData = await linkResponse.json()
+            console.log('[AuthContext] Server auto-link response:', linkData)
 
-          // Auto-link the member to this auth user
-          const { error: linkError } = await supabase
-            .from('members')
-            .update({ auth_user_id: userId })
-            .eq('id', emailLookup.data.id)
-
-          if (linkError) {
-            console.error('[AuthContext] Error auto-linking member:', linkError)
+            if (linkData.success) {
+              // Re-fetch the member with updated auth_user_id
+              memberResult = await supabase
+                .from('members')
+                .select('*')
+                .eq('auth_user_id', userId)
+                .single()
+              console.log('[AuthContext] Re-fetched member after linking:', memberResult.data?.id)
+            }
           } else {
-            console.log('[AuthContext] Successfully auto-linked member')
-            // Re-fetch the member with updated auth_user_id
-            memberResult = await supabase
-              .from('members')
-              .select('*')
-              .eq('auth_user_id', userId)
-              .single()
+            const errorData = await linkResponse.json().catch(() => ({}))
+            console.warn('[AuthContext] Server auto-link failed:', linkResponse.status, errorData)
           }
+        } catch (linkError) {
+          console.error('[AuthContext] Error calling link-member API:', linkError)
         }
       }
 

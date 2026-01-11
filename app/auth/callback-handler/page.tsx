@@ -80,19 +80,46 @@ function CallbackHandler() {
         if (code) {
           console.log('[CallbackHandler] Exchanging PKCE code for session')
 
-          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          try {
+            const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
 
-          if (exchangeError) {
-            console.error('[CallbackHandler] Error exchanging code:', exchangeError)
-            setError(exchangeError.message)
-            router.push(`/login?error=${encodeURIComponent(exchangeError.message)}`)
-            return
-          }
+            if (exchangeError) {
+              // Check if this is a PKCE error - if so, try to get session anyway
+              if (exchangeError.message.includes('PKCE') || exchangeError.message.includes('code verifier')) {
+                console.warn('[CallbackHandler] PKCE error, checking for existing session:', exchangeError.message)
+                // The session might have been established already, try to get it
+                const { data: { session: existingSession } } = await supabase.auth.getSession()
+                if (existingSession) {
+                  console.log('[CallbackHandler] Found existing session despite PKCE error')
+                  await trackLogin()
+                  router.push(redirect)
+                  return
+                }
+              }
+              console.error('[CallbackHandler] Error exchanging code:', exchangeError)
+              setError(exchangeError.message)
+              router.push(`/login?error=${encodeURIComponent(exchangeError.message)}`)
+              return
+            }
 
-          if (data.session) {
-            console.log('[CallbackHandler] Session established from code exchange')
-            await trackLogin()
-            router.push(redirect)
+            if (data.session) {
+              console.log('[CallbackHandler] Session established from code exchange')
+              await trackLogin()
+              router.push(redirect)
+              return
+            }
+          } catch (pkceError: any) {
+            console.error('[CallbackHandler] PKCE exchange exception:', pkceError)
+            // Try to recover by checking for existing session
+            const { data: { session: existingSession } } = await supabase.auth.getSession()
+            if (existingSession) {
+              console.log('[CallbackHandler] Recovered - found existing session')
+              await trackLogin()
+              router.push(redirect)
+              return
+            }
+            setError('Authentication failed. Please try logging in again.')
+            router.push(`/login?error=${encodeURIComponent('Authentication failed. Please try again.')}`)
             return
           }
         }
