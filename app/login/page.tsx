@@ -132,7 +132,8 @@ function LoginForm() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback-handler?redirect=${redirectTo}`,
+          // Use server-side callback which handles PKCE code exchange better
+          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
         },
       })
 

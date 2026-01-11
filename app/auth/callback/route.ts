@@ -2,29 +2,43 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 /**
- * Server-side callback handler for OAuth (uses ?code= parameter)
- * Magic links use hash fragments (#access_token=...) which are handled by client-side redirect
+ * Server-side callback handler for OAuth and magic links
+ * - OAuth uses ?code= parameter (exchanged server-side)
+ * - Magic links may use hash fragments (handled client-side via redirect)
  */
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
   const redirect = requestUrl.searchParams.get('redirect') || '/admin'
 
+  // Decode redirect if it was double-encoded
+  const decodedRedirect = decodeURIComponent(redirect)
+
+  console.log('[Auth Callback] URL:', requestUrl.toString())
+  console.log('[Auth Callback] Code:', code ? 'present' : 'absent')
+  console.log('[Auth Callback] Redirect:', decodedRedirect)
+
   // If no code, this might be a magic link (hash fragments are client-side only)
   // Return an HTML page that will handle the hash fragments client-side
   if (!code) {
+    console.log('[Auth Callback] No code - redirecting to client-side handler for hash fragments')
     const html = `
 <!DOCTYPE html>
 <html>
 <head>
   <title>Completing sign in...</title>
-  <meta http-equiv="refresh" content="0;url=/auth/callback-handler?redirect=${encodeURIComponent(redirect)}">
   <script>
+    // Debug logging
+    console.log('[Auth Callback HTML] Hash:', window.location.hash);
+    console.log('[Auth Callback HTML] Full URL:', window.location.href);
+
     // If hash exists, append it to the redirect URL
     if (window.location.hash) {
-      window.location.href = '/auth/callback-handler?redirect=${encodeURIComponent(redirect)}' + window.location.hash;
+      console.log('[Auth Callback HTML] Redirecting with hash');
+      window.location.href = '/auth/callback-handler?redirect=${encodeURIComponent(decodedRedirect)}' + window.location.hash;
     } else {
-      window.location.href = '/auth/callback-handler?redirect=${encodeURIComponent(redirect)}';
+      console.log('[Auth Callback HTML] No hash found, redirecting anyway');
+      window.location.href = '/auth/callback-handler?redirect=${encodeURIComponent(decodedRedirect)}';
     }
   </script>
 </head>
