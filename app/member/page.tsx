@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { MembershipPass } from '@/components/member/MembershipPass'
+import { ZellePendingPayments } from '@/components/zelle/ZellePendingPayments'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
-import { generateQRToken } from '@/lib/qr-token'
 import type { Member, FamilyMember, Membership, UserRole } from '@/types/database'
 
 export default function MemberDashboard() {
@@ -74,14 +74,16 @@ export default function MemberDashboard() {
           setUserRoles(roleData.map(r => r.role))
         }
 
-        // Generate QR token
-        const token = generateQRToken({
-          membershipId: memberData.membership_id,
-          memberId: memberData.id,
-          memberClass: memberData.member_class,
-          level: memberData.current_level,
-        })
-        setQrToken(token)
+        // Generate QR token via API (server-side only)
+        try {
+          const qrResponse = await fetch(`/api/members/${memberData.id}/qr-token`)
+          if (qrResponse.ok) {
+            const qrData = await qrResponse.json()
+            setQrToken(qrData.token)
+          }
+        } catch (qrError) {
+          console.error('Error fetching QR token:', qrError)
+        }
 
       } catch (err) {
         console.error('Error fetching member data:', err)
@@ -179,11 +181,11 @@ export default function MemberDashboard() {
       <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">My Membership</h1>
-                <p className="mt-1 text-sm text-gray-600">
+                <h1 className="text-2xl font-bold text-gray-900">My Membership</h1>
+                <p className="text-sm text-gray-600">
                   Welcome back, {member.member_class === 'Personal' ? member.first_name : member.business_name}!
                 </p>
               </div>
@@ -199,9 +201,9 @@ export default function MemberDashboard() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           {/* Membership Status Banner */}
-          <div className={`mb-8 rounded-lg p-4 ${
+          <div className={`mb-5 rounded-lg p-3 ${
             status.color === 'green' ? 'bg-green-50 border border-green-200' :
             status.color === 'yellow' ? 'bg-yellow-50 border border-yellow-200' :
             status.color === 'red' ? 'bg-red-50 border border-red-200' :
@@ -209,8 +211,8 @@ export default function MemberDashboard() {
           }`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-700">Membership Status</p>
-                <p className={`text-lg font-bold ${
+                <p className="text-xs font-medium text-gray-600">Membership Status</p>
+                <p className={`text-base font-bold ${
                   status.color === 'green' ? 'text-green-800' :
                   status.color === 'yellow' ? 'text-yellow-800' :
                   status.color === 'red' ? 'text-red-800' :
@@ -222,7 +224,7 @@ export default function MemberDashboard() {
               {member.current_level === 'Annual' && status.color !== 'green' && (
                 <button
                   onClick={() => router.push('/member/renew')}
-                  className="px-6 py-3 bg-[#FF9933] hover:bg-[#E68A2E] text-white font-semibold rounded-lg shadow-md transition-colors"
+                  className="px-4 py-2 bg-[#FF9933] hover:bg-[#E68A2E] text-white text-sm font-semibold rounded-md shadow-sm transition-colors"
                 >
                   Renew Membership
                 </button>
@@ -230,7 +232,7 @@ export default function MemberDashboard() {
               {member.current_level === 'Community' && (
                 <button
                   onClick={() => router.push('/member/renew')}
-                  className="px-6 py-3 bg-[#FF9933] hover:bg-[#E68A2E] text-white font-semibold rounded-lg shadow-md transition-colors"
+                  className="px-4 py-2 bg-[#FF9933] hover:bg-[#E68A2E] text-white text-sm font-semibold rounded-md shadow-sm transition-colors"
                 >
                   Upgrade Membership
                 </button>
@@ -239,8 +241,8 @@ export default function MemberDashboard() {
           </div>
 
           {/* Membership Pass */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Membership Pass</h2>
+          <div className="mb-5">
+            <h2 className="text-lg font-bold text-gray-900 mb-3">Membership Pass</h2>
             <MembershipPass
               member={member}
               familyMembers={familyMembers}
@@ -248,80 +250,85 @@ export default function MemberDashboard() {
             />
           </div>
 
+          {/* Pending Zelle Payments */}
+          <div className="mb-5">
+            <ZellePendingPayments memberId={member.id} compact />
+          </div>
+
           {/* Quick Actions Grid */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="mb-5">
+            <h2 className="text-lg font-bold text-gray-900 mb-3">Quick Actions</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               <button
                 onClick={() => router.push('/member/profile')}
-                className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
+                className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
               >
-                <div className="text-3xl mb-2">👤</div>
-                <h3 className="text-lg font-semibold text-gray-900">Edit Profile</h3>
-                <p className="text-sm text-gray-600 mt-1">Update your contact information</p>
+                <div className="text-2xl mb-1">👤</div>
+                <h3 className="text-sm font-semibold text-gray-900">Edit Profile</h3>
+                <p className="text-xs text-gray-600">Update contact info</p>
               </button>
 
               {member.member_class === 'Personal' && (
                 <button
                   onClick={() => router.push('/member/family')}
-                  className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
+                  className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
                 >
-                  <div className="text-3xl mb-2">👨‍👩‍👧‍👦</div>
-                  <h3 className="text-lg font-semibold text-gray-900">Manage Family</h3>
-                  <p className="text-sm text-gray-600 mt-1">Add or edit family members</p>
+                  <div className="text-2xl mb-1">👨‍👩‍👧‍👦</div>
+                  <h3 className="text-sm font-semibold text-gray-900">Manage Family</h3>
+                  <p className="text-xs text-gray-600">Add or edit members</p>
                 </button>
               )}
 
               <button
                 onClick={() => router.push('/member/payments')}
-                className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
+                className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
               >
-                <div className="text-3xl mb-2">💳</div>
-                <h3 className="text-lg font-semibold text-gray-900">Payment History</h3>
-                <p className="text-sm text-gray-600 mt-1">View past payments and receipts</p>
+                <div className="text-2xl mb-1">💳</div>
+                <h3 className="text-sm font-semibold text-gray-900">Payments</h3>
+                <p className="text-xs text-gray-600">View history & receipts</p>
               </button>
 
               <button
                 onClick={() => router.push('/member/events')}
-                className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
+                className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
               >
-                <div className="text-3xl mb-2">🎫</div>
-                <h3 className="text-lg font-semibold text-gray-900">Events</h3>
-                <p className="text-sm text-gray-600 mt-1">Register for upcoming events</p>
+                <div className="text-2xl mb-1">🎫</div>
+                <h3 className="text-sm font-semibold text-gray-900">Events</h3>
+                <p className="text-xs text-gray-600">Register for events</p>
               </button>
 
               <button
                 onClick={() => router.push('/member/donate')}
-                className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
+                className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
               >
-                <div className="text-3xl mb-2">🙏</div>
-                <h3 className="text-lg font-semibold text-gray-900">Donations</h3>
-                <p className="text-sm text-gray-600 mt-1">Make a donation to HSNEF</p>
+                <div className="text-2xl mb-1">🙏</div>
+                <h3 className="text-sm font-semibold text-gray-900">Donations</h3>
+                <p className="text-xs text-gray-600">Support HSNEF</p>
               </button>
 
               <button
                 onClick={() => router.push('/member/requests')}
-                className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
+                className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
               >
-                <div className="text-3xl mb-2">📋</div>
-                <h3 className="text-lg font-semibold text-gray-900">Service Requests</h3>
-                <p className="text-sm text-gray-600 mt-1">View your service requests and invoices</p>
+                <div className="text-2xl mb-1">📋</div>
+                <h3 className="text-sm font-semibold text-gray-900">Requests</h3>
+                <p className="text-xs text-gray-600">Service requests</p>
               </button>
 
               <button
                 onClick={() => router.push('/member/activity')}
-                className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
+                className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
               >
-                <div className="text-3xl mb-2">📊</div>
-                <h3 className="text-lg font-semibold text-gray-900">Activity</h3>
-                <p className="text-sm text-gray-600 mt-1">View your temple visits and services</p>
+                <div className="text-2xl mb-1">📊</div>
+                <h3 className="text-sm font-semibold text-gray-900">Activity</h3>
+                <p className="text-xs text-gray-600">Visits & services</p>
               </button>
             </div>
           </div>
 
           {/* Recent Activity Placeholder */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
+          <div className="bg-white rounded-lg shadow p-4">
+            <h2 className="text-base font-bold text-gray-900 mb-2">Recent Activity</h2>
             <p className="text-gray-500 text-sm">
               No recent activity. Your temple visits and service bookings will appear here.
             </p>

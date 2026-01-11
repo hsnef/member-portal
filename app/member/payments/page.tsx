@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { ZellePendingPayments } from '@/components/zelle/ZellePendingPayments'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import { downloadReceipt, generateReceipt } from '@/lib/pdf/receipt'
@@ -307,6 +308,13 @@ export default function MemberPaymentsPage() {
               )}
             </div>
           </div>
+
+          {/* Pending Zelle Payments */}
+          {member && (
+            <div className="mb-6">
+              <ZellePendingPayments memberId={member.id} />
+            </div>
+          )}
 
           {/* Payments List */}
           <div className="bg-white shadow rounded-lg overflow-hidden">
