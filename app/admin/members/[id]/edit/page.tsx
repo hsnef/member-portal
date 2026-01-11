@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
+import { PhoneInput, EINInput, ZipInput } from '@/components/ui/FormattedInputs'
 import type { Member, MemberClass, MembershipLevel, Nakshatra } from '@/types/database'
 
 // Validation schema (same as add member)
@@ -126,7 +127,7 @@ export default function EditMemberPage() {
           is_founding_member: data.is_founding_member,
           first_name: data.first_name || '',
           last_name: data.last_name || '',
-          profile_name: data.profile_name || '',
+          profile_name: data.member_profile_name || '',
           nakshatra: data.nakshatra || '',
           family_gotra: data.family_gotra || '',
           secondary_first_name: data.secondary_first_name || '',
@@ -175,7 +176,7 @@ export default function EditMemberPage() {
           // Personal fields
           first_name: data.first_name || null,
           last_name: data.last_name || null,
-          profile_name: data.profile_name || null,
+          member_profile_name: data.profile_name || null,
           nakshatra: (data.nakshatra as Nakshatra) || null,
           family_gotra: data.family_gotra || null,
 
@@ -417,10 +418,8 @@ export default function EditMemberPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       EIN (Tax ID)
                     </label>
-                    <input
-                      type="text"
+                    <EINInput
                       {...register('business_ein')}
-                      placeholder="XX-XXXXXXX"
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
                     />
                   </div>
@@ -450,10 +449,8 @@ export default function EditMemberPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Primary Phone
                   </label>
-                  <input
-                    type="tel"
+                  <PhoneInput
                     {...register('primary_phone')}
-                    placeholder="(555) 123-4567"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
                   />
                 </div>
@@ -462,10 +459,8 @@ export default function EditMemberPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Secondary Phone
                   </label>
-                  <input
-                    type="tel"
+                  <PhoneInput
                     {...register('primary_phone_2')}
-                    placeholder="(555) 123-4567"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
                   />
                 </div>
@@ -536,10 +531,8 @@ export default function EditMemberPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Phone
                     </label>
-                    <input
-                      type="tel"
+                    <PhoneInput
                       {...register('secondary_phone')}
-                      placeholder="(555) 123-4567"
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
                     />
                   </div>
@@ -602,10 +595,8 @@ export default function EditMemberPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       ZIP Code
                     </label>
-                    <input
-                      type="text"
+                    <ZipInput
                       {...register('zip')}
-                      placeholder="75001"
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
                     />
                   </div>

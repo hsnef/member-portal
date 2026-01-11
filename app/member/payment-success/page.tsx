@@ -8,12 +8,50 @@ function PaymentSuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [countdown, setCountdown] = useState(5)
+  const [confirmingPayment, setConfirmingPayment] = useState(true)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
 
   const type = searchParams.get('type') || 'payment'
   const amount = searchParams.get('amount')
   const level = searchParams.get('level')
+  const paymentIntent = searchParams.get('payment_intent')
 
+  // Confirm payment and save to database
   useEffect(() => {
+    const confirmPayment = async () => {
+      if (!paymentIntent) {
+        setConfirmingPayment(false)
+        return
+      }
+
+      try {
+        const response = await fetch('/api/stripe/confirm-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentIntentId: paymentIntent }),
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          console.error('Payment confirmation error:', data)
+          setPaymentError(data.error || 'Failed to confirm payment')
+        }
+      } catch (err) {
+        console.error('Error confirming payment:', err)
+        setPaymentError('Failed to confirm payment')
+      } finally {
+        setConfirmingPayment(false)
+      }
+    }
+
+    confirmPayment()
+  }, [paymentIntent])
+
+  // Start countdown only after payment is confirmed
+  useEffect(() => {
+    if (confirmingPayment) return
+
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -26,7 +64,20 @@ function PaymentSuccessContent() {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [router])
+  }, [router, confirmingPayment])
+
+  // Show loading while confirming payment
+  if (confirmingPayment) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-900">Confirming your payment...</h2>
+          <p className="text-gray-600 mt-2">Please wait while we verify your payment.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -37,6 +88,13 @@ function PaymentSuccessContent() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
+
+        {/* Error Message if any */}
+        {paymentError && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 text-left">
+            <p className="text-sm text-yellow-800">Note: {paymentError}. Your payment was successful but there may be a delay in recording it.</p>
+          </div>
+        )}
 
         {/* Success Message */}
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h1>

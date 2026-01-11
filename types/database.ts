@@ -60,7 +60,7 @@ export interface Member {
   is_founding_member: boolean;
 
   // Personal fields
-  profile_name: string | null;
+  member_profile_name: string | null;
   first_name: string | null;
   last_name: string | null;
   nakshatra: Nakshatra | null;

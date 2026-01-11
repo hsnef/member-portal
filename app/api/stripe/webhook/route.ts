@@ -104,12 +104,11 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
       .from('payments')
       .insert({
         member_id: memberId,
-        membership_id: membershipId,
         amount: amount / 100, // Convert cents to dollars
         payment_date: new Date().toISOString(),
-        payment_method: 'Online',
-        category: category as any,
-        stripe_payment_id: stripePaymentId,
+        method: 'Stripe',
+        purpose: category || 'Donation',
+        stripe_payment_intent_id: stripePaymentId,
         request_id: requestId || null,
         notes,
       })

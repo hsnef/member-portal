@@ -14,11 +14,11 @@ interface Payment {
   id: string
   amount: number
   payment_date: string
-  payment_method: PaymentMethod
-  category: PaymentPurpose
+  method: PaymentMethod
+  purpose: PaymentPurpose
   check_number?: string
-  transaction_id?: string
-  stripe_payment_id?: string
+  zelle_reference?: string
+  stripe_payment_intent_id?: string
   notes?: string
 }
 
@@ -73,10 +73,10 @@ export default function MemberPaymentsPage() {
         : undefined,
       amount: payment.amount,
       paymentDate: payment.payment_date,
-      paymentMethod: payment.payment_method,
-      category: payment.category,
+      paymentMethod: payment.method,
+      category: payment.purpose,
       checkNumber: payment.check_number,
-      transactionId: payment.transaction_id,
+      transactionId: payment.stripe_payment_intent_id,
       notes: payment.notes,
     })
   }
@@ -90,7 +90,7 @@ export default function MemberPaymentsPage() {
   // Calculate totals
   const totalPaid = filteredPayments.reduce((sum, p) => sum + p.amount, 0)
   const donationsTotal = filteredPayments
-    .filter((p) => p.category === 'Donation')
+    .filter((p) => p.purpose === 'Donation')
     .reduce((sum, p) => sum + p.amount, 0)
 
   const getCategoryColor = (category: PaymentPurpose) => {
@@ -112,10 +112,10 @@ export default function MemberPaymentsPage() {
     const headers = ['Date', 'Category', 'Amount', 'Method', 'Check/Transaction', 'Notes']
     const rows = filteredPayments.map(p => [
       new Date(p.payment_date).toLocaleDateString(),
-      p.category,
+      p.purpose,
       `$${p.amount.toFixed(2)}`,
-      p.payment_method,
-      p.check_number || p.transaction_id || '',
+      p.method,
+      p.check_number || p.stripe_payment_intent_id || '',
       p.notes || ''
     ])
 
@@ -159,10 +159,10 @@ export default function MemberPaymentsPage() {
           : undefined,
         amount: payment.amount,
         paymentDate: payment.payment_date,
-        paymentMethod: payment.payment_method,
-        category: payment.category,
+        paymentMethod: payment.method,
+        category: payment.purpose,
         checkNumber: payment.check_number,
-        transactionId: payment.transaction_id,
+        transactionId: payment.stripe_payment_intent_id,
         notes: payment.notes,
       }
 
@@ -217,8 +217,8 @@ export default function MemberPaymentsPage() {
       finalPdf.line(20, 65, 190, 65)
       finalPdf.text(`Member: ${memberName}`, 20, 75)
       finalPdf.text(`ID: ${member.membership_id}`, 20, 82)
-      finalPdf.text(`Category: ${payment.category}`, 20, 95)
-      finalPdf.text(`Method: ${payment.payment_method}`, 20, 102)
+      finalPdf.text(`Category: ${payment.purpose}`, 20, 95)
+      finalPdf.text(`Method: ${payment.method}`, 20, 102)
       finalPdf.setFontSize(14)
       finalPdf.setFont('helvetica', 'bold')
       finalPdf.text(`Amount: $${payment.amount.toFixed(2)}`, 20, 115)
@@ -340,8 +340,8 @@ export default function MemberPaymentsPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getCategoryColor(payment.category)}`}>
-                            {payment.category}
+                          <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getCategoryColor(payment.purpose)}`}>
+                            {payment.purpose}
                           </span>
                           <span className="text-sm text-gray-500">
                             {new Date(payment.payment_date).toLocaleDateString('en-US', {
@@ -357,12 +357,12 @@ export default function MemberPaymentsPage() {
                         </p>
 
                         <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span>Payment Method: {payment.payment_method}</span>
+                          <span>Payment Method: {payment.method}</span>
                           {payment.check_number && (
                             <span>Check #{payment.check_number}</span>
                           )}
-                          {payment.transaction_id && (
-                            <span>TXN: {payment.transaction_id}</span>
+                          {payment.stripe_payment_intent_id && (
+                            <span>TXN: {payment.stripe_payment_intent_id}</span>
                           )}
                         </div>
 

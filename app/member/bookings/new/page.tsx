@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/auth/AuthContext'
+import { formatPhoneNumber } from '@/lib/utils/formatters'
 
 interface Service {
   id: string
@@ -331,7 +332,8 @@ export default function NewBookingPage() {
                     <input
                       type="tel"
                       value={requesterPhone}
-                      onChange={(e) => setRequesterPhone(e.target.value)}
+                      onChange={(e) => setRequesterPhone(formatPhoneNumber(e.target.value))}
+                      placeholder="(555) 123-4567"
                       className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
                       required
                     />

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
+import { formatPhoneNumber, formatZipCode } from '@/lib/utils/formatters'
 import type { Member, Nakshatra } from '@/types/database'
 
 const NAKSHATRAS: Nakshatra[] = [
@@ -104,6 +105,21 @@ export default function MemberProfilePage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
+
+    // Format phone fields
+    if (name === 'primary_phone' || name === 'primary_phone_2' || name === 'secondary_phone') {
+      const formatted = formatPhoneNumber(value)
+      setFormData((prev) => ({ ...prev, [name]: formatted }))
+      return
+    }
+
+    // Format ZIP field
+    if (name === 'zip') {
+      const formatted = formatZipCode(value)
+      setFormData((prev) => ({ ...prev, [name]: formatted }))
+      return
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 

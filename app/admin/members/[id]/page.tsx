@@ -18,6 +18,8 @@ export default function MemberDetailPage() {
   const [memberships, setMemberships] = useState<Membership[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [sendingEmail, setSendingEmail] = useState(false)
+  const [emailMessage, setEmailMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   const supabase = createClient()
 
@@ -88,6 +90,40 @@ export default function MemberDetailPage() {
         return 'bg-gray-500 text-white'
       default:
         return 'bg-gray-200 text-gray-800'
+    }
+  }
+
+  const handleSendInvitation = async () => {
+    if (!member) return
+
+    try {
+      setSendingEmail(true)
+      setEmailMessage(null)
+
+      const response = await fetch('/api/members/send-invitation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId: member.id }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send invitation')
+      }
+
+      setEmailMessage({ type: 'success', text: 'Invitation email sent successfully!' })
+
+      // Clear message after 5 seconds
+      setTimeout(() => setEmailMessage(null), 5000)
+    } catch (err) {
+      console.error('Error sending invitation:', err)
+      setEmailMessage({
+        type: 'error',
+        text: err instanceof Error ? err.message : 'Failed to send invitation email'
+      })
+    } finally {
+      setSendingEmail(false)
     }
   }
 
@@ -171,12 +207,21 @@ export default function MemberDetailPage() {
                 Edit
               </Link>
               <button
-                className="px-4 py-2 bg-gradient-to-r from-[#FF9933] to-[#800000] text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
+                onClick={handleSendInvitation}
+                disabled={sendingEmail}
+                className="px-4 py-2 bg-gradient-to-r from-[#FF9933] to-[#800000] text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Send Email
+                {sendingEmail ? 'Sending...' : 'Send Email'}
               </button>
             </div>
           </div>
+
+          {/* Email Message */}
+          {emailMessage && (
+            <div className={`p-4 rounded-md ${emailMessage.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+              {emailMessage.text}
+            </div>
+          )}
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -198,10 +243,10 @@ export default function MemberDetailPage() {
                         <label className="block text-sm font-medium text-gray-500">Last Name</label>
                         <p className="mt-1 text-gray-900">{member.last_name || 'N/A'}</p>
                       </div>
-                      {member.profile_name && (
+                      {member.member_profile_name && (
                         <div className="md:col-span-2">
                           <label className="block text-sm font-medium text-gray-500">Profile Name</label>
-                          <p className="mt-1 text-gray-900">{member.profile_name}</p>
+                          <p className="mt-1 text-gray-900">{member.member_profile_name}</p>
                         </div>
                       )}
                       {member.nakshatra && (
