@@ -7,7 +7,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
 
-interface Purohit {
+interface Priest {
   id: string
   name: string
   bio?: string
@@ -19,19 +19,19 @@ interface Purohit {
   created_at: string
 }
 
-export default function PurohitsPage() {
+export default function PriestsPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  const [purohits, setPurohits] = useState<Purohit[]>([])
+  const [priests, setPriests] = useState<Priest[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all')
 
   useEffect(() => {
-    fetchPurohits()
+    fetchPriests()
   }, [filter])
 
-  const fetchPurohits = async () => {
+  const fetchPriests = async () => {
     try {
       setLoading(true)
       let query = supabase
@@ -48,31 +48,31 @@ export default function PurohitsPage() {
       const { data, error } = await query
 
       if (error) throw error
-      setPurohits(data || [])
+      setPriests(data || [])
     } catch (error) {
-      console.error('Error fetching purohits:', error)
+      console.error('Error fetching priests:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleToggleActive = async (purohit: Purohit) => {
+  const handleToggleActive = async (priest: Priest) => {
     try {
       const { error } = await supabase
         .from('purohits')
-        .update({ is_active: !purohit.is_active })
-        .eq('id', purohit.id)
+        .update({ is_active: !priest.is_active })
+        .eq('id', priest.id)
 
       if (error) throw error
-      fetchPurohits()
+      fetchPriests()
     } catch (error) {
-      console.error('Error toggling purohit status:', error)
+      console.error('Error toggling priest status:', error)
       alert('Failed to update status')
     }
   }
 
-  const handleDelete = async (purohit: Purohit) => {
-    if (!confirm(`Are you sure you want to delete "${purohit.name}"? This action cannot be undone.`)) {
+  const handleDelete = async (priest: Priest) => {
+    if (!confirm(`Are you sure you want to delete "${priest.name}"? This action cannot be undone.`)) {
       return
     }
 
@@ -80,13 +80,13 @@ export default function PurohitsPage() {
       const { error } = await supabase
         .from('purohits')
         .delete()
-        .eq('id', purohit.id)
+        .eq('id', priest.id)
 
       if (error) throw error
-      alert('Purohit deleted successfully')
-      fetchPurohits()
+      alert('Priest deleted successfully')
+      fetchPriests()
     } catch (error: any) {
-      console.error('Error deleting purohit:', error)
+      console.error('Error deleting priest:', error)
       alert(`Failed to delete: ${error.message}`)
     }
   }
@@ -98,16 +98,16 @@ export default function PurohitsPage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Purohit Management</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Priests Management</h1>
               <p className="mt-1 text-sm text-gray-600">
                 Manage priests available for service bookings
               </p>
             </div>
             <Link
-              href="/admin/purohits/new"
+              href="/admin/settings/priests/new"
               className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
             >
-              + Add Purohit
+              + Add Priest
             </Link>
           </div>
 
@@ -122,7 +122,7 @@ export default function PurohitsPage() {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                All ({purohits.length})
+                All ({priests.length})
               </button>
               <button
                 onClick={() => setFilter('active')}
@@ -147,14 +147,14 @@ export default function PurohitsPage() {
             </div>
           </div>
 
-          {/* Purohits List */}
+          {/* Priests List */}
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
-                <p className="mt-4 text-gray-600">Loading purohits...</p>
+                <p className="mt-4 text-gray-600">Loading priests...</p>
               </div>
-            ) : purohits.length === 0 ? (
+            ) : priests.length === 0 ? (
               <div className="text-center py-12">
                 <svg
                   className="mx-auto h-12 w-12 text-gray-400"
@@ -169,16 +169,16 @@ export default function PurohitsPage() {
                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                   />
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No purohits found</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No priests found</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Get started by adding a new purohit
+                  Get started by adding a new priest
                 </p>
                 <div className="mt-6">
                   <Link
-                    href="/admin/purohits/new"
+                    href="/admin/settings/priests/new"
                     className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold inline-block"
                   >
-                    + Add Purohit
+                    + Add Priest
                   </Link>
                 </div>
               </div>
@@ -208,57 +208,57 @@ export default function PurohitsPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {purohits.map((purohit) => (
-                      <tr key={purohit.id} className="hover:bg-gray-50">
+                    {priests.map((priest) => (
+                      <tr key={priest.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          #{purohit.display_order}
+                          #{priest.display_order}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{purohit.name}</div>
-                          {purohit.bio && (
+                          <div className="text-sm font-medium text-gray-900">{priest.name}</div>
+                          {priest.bio && (
                             <div className="text-sm text-gray-500 max-w-md truncate">
-                              {purohit.bio.substring(0, 80)}...
+                              {priest.bio.substring(0, 80)}...
                             </div>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {purohit.email && (
-                            <div className="text-sm text-gray-900">{purohit.email}</div>
+                          {priest.email && (
+                            <div className="text-sm text-gray-900">{priest.email}</div>
                           )}
-                          {purohit.phone && (
-                            <div className="text-sm text-gray-500">{purohit.phone}</div>
+                          {priest.phone && (
+                            <div className="text-sm text-gray-500">{priest.phone}</div>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {purohit.specialties || '—'}
+                          {priest.specialties || '—'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                              purohit.is_active
+                              priest.is_active
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-gray-100 text-gray-800'
                             }`}
                           >
-                            {purohit.is_active ? 'Active' : 'Inactive'}
+                            {priest.is_active ? 'Active' : 'Inactive'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex justify-end gap-2">
                             <button
-                              onClick={() => router.push(`/admin/purohits/${purohit.id}/edit`)}
+                              onClick={() => router.push(`/admin/settings/priests/${priest.id}/edit`)}
                               className="text-[#FF9933] hover:text-[#E68A2E]"
                             >
                               Edit
                             </button>
                             <button
-                              onClick={() => handleToggleActive(purohit)}
+                              onClick={() => handleToggleActive(priest)}
                               className="text-blue-600 hover:text-blue-900"
                             >
-                              {purohit.is_active ? 'Deactivate' : 'Activate'}
+                              {priest.is_active ? 'Deactivate' : 'Activate'}
                             </button>
                             <button
-                              onClick={() => handleDelete(purohit)}
+                              onClick={() => handleDelete(priest)}
                               className="text-red-600 hover:text-red-900"
                             >
                               Delete

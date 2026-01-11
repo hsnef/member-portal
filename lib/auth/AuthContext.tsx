@@ -151,10 +151,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign out
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setMember(null)
-    setRoles([])
+    try {
+      await supabase.auth.signOut()
+      setUser(null)
+      setMember(null)
+      setRoles([])
+      // Redirect to home page after sign out
+      window.location.href = '/'
+    } catch (error) {
+      console.error('[AuthContext] Sign out error:', error)
+      // Still redirect even if there's an error
+      window.location.href = '/'
+    }
   }
 
   // Check if user has specific role
