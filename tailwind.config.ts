@@ -9,6 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Legacy colors (for backward compatibility)
         background: "var(--background)",
         foreground: "var(--foreground)",
         saffron: {
@@ -37,6 +38,35 @@ const config: Config = {
           800: '#660000',
           900: '#4D0000',
         },
+        // Theme system colors
+        'theme-bg': {
+          primary: 'var(--theme-bg-primary)',
+          secondary: 'var(--theme-bg-secondary)',
+        },
+        'theme-text': {
+          primary: 'var(--theme-text-primary)',
+          secondary: 'var(--theme-text-secondary)',
+        },
+        'theme-accent': {
+          primary: 'var(--theme-accent-primary)',
+          secondary: 'var(--theme-accent-secondary)',
+        },
+        'theme-border': 'var(--theme-border)',
+      },
+      fontFamily: {
+        'theme-header': 'var(--theme-font-header)',
+        'theme-body': 'var(--theme-font-body)',
+      },
+      borderRadius: {
+        'theme-card': 'var(--theme-border-radius-card)',
+        'theme-button': 'var(--theme-border-radius-button)',
+      },
+      boxShadow: {
+        'theme-card': 'var(--theme-shadow-card)',
+      },
+      spacing: {
+        'theme-card': 'var(--theme-spacing-card)',
+        'theme-section': 'var(--theme-spacing-section)',
       },
     },
   },

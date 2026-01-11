@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { formatLoginMethod, formatLocation, formatUserAgent } from '@/lib/login-audit-log/utils'
@@ -26,8 +26,10 @@ interface Member {
   name: string
 }
 
-export default function MemberLoginActivityPage({ params }: { params: { id: string } }) {
+export default function MemberLoginActivityPage() {
   const router = useRouter()
+  const params = useParams()
+  const memberId = memberId as string
   const [logs, setLogs] = useState<LoginLog[]>([])
   const [member, setMember] = useState<Member | null>(null)
   const [loading, setLoading] = useState(true)
@@ -40,7 +42,7 @@ export default function MemberLoginActivityPage({ params }: { params: { id: stri
 
   useEffect(() => {
     fetchLogs()
-  }, [params.id, loginMethodFilter, successFilter, fromDate, toDate])
+  }, [memberId, loginMethodFilter, successFilter, fromDate, toDate])
 
   async function fetchLogs() {
     try {
@@ -55,7 +57,7 @@ export default function MemberLoginActivityPage({ params }: { params: { id: stri
       if (toDate) queryParams.append('toDate', new Date(toDate).toISOString())
       queryParams.append('limit', '100')
 
-      const response = await fetch(`/api/members/${params.id}/login-activity?${queryParams.toString()}`)
+      const response = await fetch(`/api/members/${memberId}/login-activity?${queryParams.toString()}`)
 
       if (!response.ok) {
         throw new Error('Failed to fetch login activity')
@@ -76,7 +78,7 @@ export default function MemberLoginActivityPage({ params }: { params: { id: stri
       setExporting(true)
 
       const queryParams = new URLSearchParams()
-      queryParams.append('memberId', params.id)
+      queryParams.append('memberId', memberId)
       if (loginMethodFilter !== 'All') queryParams.append('loginMethod', loginMethodFilter)
       if (successFilter === 'Success') queryParams.append('success', 'true')
       if (successFilter === 'Failed') queryParams.append('success', 'false')
@@ -93,7 +95,7 @@ export default function MemberLoginActivityPage({ params }: { params: { id: stri
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `login-activity-${member?.membership_id || params.id}-${new Date().toISOString().split('T')[0]}.csv`
+      a.download = `login-activity-${member?.membership_id || memberId}-${new Date().toISOString().split('T')[0]}.csv`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -127,7 +129,7 @@ export default function MemberLoginActivityPage({ params }: { params: { id: stri
           <div className="flex justify-between items-start">
             <div>
               <button
-                onClick={() => router.push(`/admin/members/${params.id}`)}
+                onClick={() => router.push(`/admin/members/${memberId}`)}
                 className="text-sm text-[#FF9933] hover:text-[#FF8800] font-medium mb-2 flex items-center"
               >
                 <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
