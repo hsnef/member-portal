@@ -16,6 +16,8 @@ interface Event {
   short_description: string | null
   description: string
   category: string
+  rsvp_enabled: boolean
+  is_payable: boolean
   max_capacity: number
   member_price: number
   non_member_price: number
@@ -110,10 +112,14 @@ function EventDetailContent() {
   const handleRegister = async () => {
     if (!member || !event) return
 
-    const price = getEventPrice()
+    // Check if RSVP is enabled
+    if (!event.rsvp_enabled) {
+      alert('Registration is not available for this event.')
+      return
+    }
 
-    // If event has a price, redirect to payment page
-    if (price > 0) {
+    // If event is payable, redirect to payment page
+    if (event.is_payable) {
       router.push(`/member/events/${eventId}/payment`)
       return
     }
@@ -417,6 +423,14 @@ function EventDetailContent() {
                   </button>
                 )}
               </div>
+            ) : !event.rsvp_enabled ? (
+              /* RSVP Disabled - Informational Event */
+              <div className="text-center py-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-blue-800 font-medium">No Registration Required</p>
+                  <p className="text-sm text-blue-600 mt-1">This is an informational event. All are welcome to attend!</p>
+                </div>
+              </div>
             ) : isRegistrationClosed() ? (
               <button
                 disabled
@@ -439,9 +453,9 @@ function EventDetailContent() {
               >
                 {registering
                   ? 'Registering...'
-                  : price > 0
+                  : event.is_payable
                     ? `Register Now - $${price.toFixed(2)}`
-                    : 'Register Now (Free)'}
+                    : 'RSVP Now (Free)'}
               </button>
             )}
           </div>

@@ -254,8 +254,8 @@ export default function MembersPage() {
                                   ? `${member.first_name || ''} ${member.last_name || ''}`
                                   : member.business_name}
                               </div>
-                              {member.profile_name && (
-                                <div className="text-sm text-gray-500">{member.profile_name}</div>
+                              {member.member_profile_name && (
+                                <div className="text-sm text-gray-500">{member.member_profile_name}</div>
                               )}
                             </div>
                             {member.is_test_member && (

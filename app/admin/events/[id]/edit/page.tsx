@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
@@ -15,11 +15,14 @@ const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), {
   loading: () => <div className="h-64 bg-gray-100 rounded-md animate-pulse" />,
 })
 
-export default function NewEventPage() {
+export default function EditEventPage() {
   const router = useRouter()
+  const params = useParams()
+  const eventId = params.id as string
   const supabase = createClient()
 
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({
     event_name: '',
     event_date: '',
@@ -34,20 +37,64 @@ export default function NewEventPage() {
     member_price: '',
     non_member_price: '',
     registration_deadline: '',
-    status: 'Draft' as 'Draft' | 'Published',
+    status: 'Draft' as 'Draft' | 'Published' | 'Cancelled' | 'Completed',
     image_url: '',
     contact_email: '',
     contact_phone: '',
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+  useEffect(() => {
+    fetchEvent()
+  }, [eventId])
 
+  const fetchEvent = async () => {
     try {
       const { data, error } = await supabase
         .from('events')
-        .insert({
+        .select('*')
+        .eq('id', eventId)
+        .single()
+
+      if (error) throw error
+
+      if (data) {
+        setFormData({
+          event_name: data.event_name || '',
+          event_date: data.event_date || '',
+          event_time: data.event_time || '',
+          location: data.location || '',
+          short_description: data.short_description || '',
+          description: data.description || '',
+          category: data.category || 'Festival',
+          rsvp_enabled: data.rsvp_enabled ?? true,
+          is_payable: data.is_payable ?? false,
+          max_capacity: data.max_capacity?.toString() || '',
+          member_price: data.member_price?.toString() || '',
+          non_member_price: data.non_member_price?.toString() || '',
+          registration_deadline: data.registration_deadline || '',
+          status: data.status || 'Draft',
+          image_url: data.image_url || '',
+          contact_email: data.contact_email || '',
+          contact_phone: data.contact_phone || '',
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching event:', error)
+      alert('Failed to load event')
+      router.push('/admin/events')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update({
           event_name: formData.event_name,
           event_date: formData.event_date,
           event_time: formData.event_time,
@@ -66,19 +113,33 @@ export default function NewEventPage() {
           contact_email: formData.contact_email || null,
           contact_phone: formData.contact_phone || null,
         })
-        .select()
-        .single()
+        .eq('id', eventId)
 
       if (error) throw error
 
-      alert('Event created successfully!')
+      alert('Event updated successfully!')
       router.push('/admin/events')
     } catch (error) {
-      console.error('Error creating event:', error)
-      alert('Failed to create event')
+      console.error('Error updating event:', error)
+      alert('Failed to update event')
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
+        <AdminLayout>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+              <p className="mt-4 text-gray-600">Loading event...</p>
+            </div>
+          </div>
+        </AdminLayout>
+      </ProtectedRoute>
+    )
   }
 
   return (
@@ -88,9 +149,9 @@ export default function NewEventPage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Create New Event</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Edit Event</h1>
               <p className="mt-1 text-sm text-gray-600">
-                Add a new event for members to register
+                Update event details
               </p>
             </div>
             <button
@@ -442,7 +503,7 @@ export default function NewEventPage() {
               {/* Status */}
               <div className="border-t pt-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Publication Status</h2>
-                <div className="flex items-center gap-6">
+                <div className="flex flex-wrap items-center gap-6">
                   <label className="flex items-center">
                     <input
                       type="radio"
@@ -452,7 +513,7 @@ export default function NewEventPage() {
                       className="mr-2"
                     />
                     <span className="text-sm font-medium text-gray-700">
-                      Save as Draft (not visible to members)
+                      Draft (not visible to members)
                     </span>
                   </label>
                   <label className="flex items-center">
@@ -464,7 +525,31 @@ export default function NewEventPage() {
                       className="mr-2"
                     />
                     <span className="text-sm font-medium text-gray-700">
-                      Publish Now (visible to members)
+                      Published (visible to members)
+                    </span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      value="Cancelled"
+                      checked={formData.status === 'Cancelled'}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Cancelled' })}
+                      className="mr-2"
+                    />
+                    <span className="text-sm font-medium text-red-600">
+                      Cancelled
+                    </span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      value="Completed"
+                      checked={formData.status === 'Completed'}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Completed' })}
+                      className="mr-2"
+                    />
+                    <span className="text-sm font-medium text-blue-600">
+                      Completed
                     </span>
                   </label>
                 </div>
@@ -481,10 +566,10 @@ export default function NewEventPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={saving}
                   className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
                 >
-                  {loading ? 'Creating...' : 'Create Event'}
+                  {saving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>

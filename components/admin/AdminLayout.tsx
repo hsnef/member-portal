@@ -343,7 +343,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-medium text-gray-700">
-                    {member?.profile_name || member?.first_name || user?.email}
+                    {member?.member_profile_name || member?.first_name || user?.email}
                   </p>
                   <p className="text-xs text-gray-500">
                     {member?.membership_id || roles.join(', ') || 'Member'}

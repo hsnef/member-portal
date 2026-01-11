@@ -4,16 +4,16 @@
  * Update MAJOR_VERSION in scripts/generate-version.ts to change major version
  */
 
-export const APP_VERSION = '1.0.32'
+export const APP_VERSION = '1.0.36'
 export const MAJOR_VERSION = 1
 export const MINOR_VERSION = 0
-export const PATCH_VERSION = 32
-export const COMMIT_COUNT = '32'
-export const COMMIT_HASH = '3739d02'
+export const PATCH_VERSION = 36
+export const COMMIT_COUNT = '36'
+export const COMMIT_HASH = '3be88d2'
 export const COMMIT_DATE = '2026-01-11'
 export const BUILD_DATE = '2026-01-11'
-export const BUILD_TIME = '2026-01-11T13:16:26.229Z'
-export const BRANCH = 'feature/theme-system'
+export const BUILD_TIME = '2026-01-11T16:17:25.470Z'
+export const BRANCH = 'dev'
 
 /**
  * Get formatted version string

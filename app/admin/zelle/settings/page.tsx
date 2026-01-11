@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
+import { formatPhoneNumber } from '@/lib/utils/formatters'
 
 interface ZelleSettingsData {
   enabled: boolean
@@ -304,8 +305,8 @@ export default function ZelleSettingsPage() {
                   <input
                     type="tel"
                     value={settings.phone}
-                    onChange={(e) => setSettings(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="555-123-4567"
+                    onChange={(e) => setSettings(prev => ({ ...prev, phone: formatPhoneNumber(e.target.value) }))}
+                    placeholder="(555) 123-4567"
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
                   />
                 </div>

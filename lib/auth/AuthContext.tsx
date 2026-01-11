@@ -7,13 +7,16 @@ import type { UserRole, Member } from '@/types/database'
 
 interface AuthContextType {
   user: User | null
-  member: Member | null
+  member: Member | null              // Active member (backward compatibility)
+  members: Member[]                  // All linked members
+  activeMemberId: string | null      // Currently active member ID
   roles: UserRole[]
   loading: boolean
   signOut: () => Promise<void>
   hasRole: (role: UserRole) => boolean
   hasAnyRole: (roles: UserRole[]) => boolean
   refreshMember: () => Promise<void>
+  setActiveMember: (memberId: string) => void  // Switch between memberships
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -21,28 +24,33 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 // Create supabase client outside component to avoid recreating on every render
 const supabase = createClient()
 
+// localStorage key for persisting active membership selection
+const ACTIVE_MEMBER_STORAGE_KEY = 'hsnef_active_member_id'
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [member, setMember] = useState<Member | null>(null)
+  const [members, setMembers] = useState<Member[]>([])
+  const [activeMemberId, setActiveMemberId] = useState<string | null>(null)
   const [roles, setRoles] = useState<UserRole[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Fetch member and roles for the authenticated user
+  // Fetch member(s) and roles for the authenticated user
+  // Supports multiple memberships per email
   const fetchMemberAndRoles = async (userId: string, userEmail?: string) => {
     try {
-      // First try to fetch member by auth_user_id
-      let memberResult = await supabase
+      // Fetch ALL members linked to this auth_user_id
+      let membersResult = await supabase
         .from('members')
         .select('*')
         .eq('auth_user_id', userId)
-        .single()
 
-      // If no member found by auth_user_id, try to auto-link by email via server API
-      if (memberResult.error && userEmail) {
-        console.log('[AuthContext] No member found by auth_user_id, trying server-side auto-link')
+      // If no members found, try to auto-link by email via server API
+      if ((!membersResult.data || membersResult.data.length === 0) && userEmail) {
+        console.log('[AuthContext] No members found by auth_user_id, trying server-side auto-link')
 
         try {
-          // Call server API to link member (bypasses RLS)
+          // Call server API to link member(s) (bypasses RLS)
           const linkResponse = await fetch('/api/auth/link-member', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -53,13 +61,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log('[AuthContext] Server auto-link response:', linkData)
 
             if (linkData.success) {
-              // Re-fetch the member with updated auth_user_id
-              memberResult = await supabase
+              // Re-fetch all members with updated auth_user_id
+              membersResult = await supabase
                 .from('members')
                 .select('*')
                 .eq('auth_user_id', userId)
-                .single()
-              console.log('[AuthContext] Re-fetched member after linking:', memberResult.data?.id)
+              console.log('[AuthContext] Re-fetched members after linking:', membersResult.data?.length)
             }
           } else {
             const errorData = await linkResponse.json().catch(() => ({}))
@@ -76,12 +83,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .select('role')
         .eq('user_id', userId)
 
-      // Handle member result
-      if (memberResult.error) {
-        console.error('[AuthContext] Error fetching member:', memberResult.error)
+      // Handle members result
+      if (membersResult.error || !membersResult.data || membersResult.data.length === 0) {
+        console.log('[AuthContext] No members found')
+        setMembers([])
         setMember(null)
+        setActiveMemberId(null)
       } else {
-        setMember(memberResult.data)
+        const allMembers = membersResult.data
+        setMembers(allMembers)
+
+        // Determine active member:
+        // 1. Check localStorage for saved preference
+        // 2. Fall back to first member
+        let savedMemberId: string | null = null
+        try {
+          savedMemberId = localStorage.getItem(ACTIVE_MEMBER_STORAGE_KEY)
+        } catch {
+          // localStorage may not be available (SSR)
+        }
+
+        const savedMember = savedMemberId
+          ? allMembers.find(m => m.id === savedMemberId)
+          : null
+
+        const activeM = savedMember || allMembers[0]
+        setActiveMemberId(activeM.id)
+        setMember(activeM)  // backward compatibility
+
+        console.log('[AuthContext] Loaded', allMembers.length, 'member(s), active:', activeM.membership_id)
       }
 
       // Handle roles result
@@ -93,7 +123,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error('[AuthContext] Error in fetchMemberAndRoles:', error)
+      setMembers([])
       setMember(null)
+      setActiveMemberId(null)
       setRoles([])
     }
   }
@@ -140,6 +172,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchMemberAndRoles(session.user.id, session.user.email)
       } else {
         setMember(null)
+        setMembers([])
+        setActiveMemberId(null)
         setRoles([])
       }
       setLoading(false)
@@ -155,13 +189,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await supabase.auth.signOut()
       setUser(null)
       setMember(null)
+      setMembers([])
+      setActiveMemberId(null)
       setRoles([])
+      // Clear saved membership selection
+      try {
+        localStorage.removeItem(ACTIVE_MEMBER_STORAGE_KEY)
+      } catch {
+        // localStorage may not be available
+      }
       // Redirect to home page after sign out
       window.location.href = '/'
     } catch (error) {
       console.error('[AuthContext] Sign out error:', error)
+      // Clear state and localStorage even on error
+      try {
+        localStorage.removeItem(ACTIVE_MEMBER_STORAGE_KEY)
+      } catch {
+        // localStorage may not be available
+      }
       // Still redirect even if there's an error
       window.location.href = '/'
+    }
+  }
+
+  // Switch to a different membership
+  const setActiveMember = (memberId: string) => {
+    const newActive = members.find(m => m.id === memberId)
+    if (newActive) {
+      setActiveMemberId(memberId)
+      setMember(newActive)  // backward compatibility
+      try {
+        localStorage.setItem(ACTIVE_MEMBER_STORAGE_KEY, memberId)
+      } catch {
+        // localStorage may not be available
+      }
+      console.log('[AuthContext] Switched to member:', newActive.membership_id)
     }
   }
 
@@ -185,12 +248,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value: AuthContextType = {
     user,
     member,
+    members,
+    activeMemberId,
     roles,
     loading,
     signOut,
     hasRole,
     hasAnyRole,
     refreshMember,
+    setActiveMember,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

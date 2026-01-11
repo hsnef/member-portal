@@ -13,6 +13,7 @@ import {
   type TermsContent,
 } from '@/lib/utils/termsService'
 import TermsCheckbox from '@/components/TermsCheckbox'
+import { formatPhoneNumber, formatEIN, formatZipCode } from '@/lib/utils/formatters'
 
 type MemberClass = 'Personal' | 'Business'
 type MembershipLevel = 'Community' | 'Annual' | 'Lifetime'
@@ -486,7 +487,7 @@ export default function JoinPage() {
                     <input
                       type="text"
                       value={businessEin}
-                      onChange={(e) => setBusinessEin(e.target.value)}
+                      onChange={(e) => setBusinessEin(formatEIN(e.target.value))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
                       disabled={loading}
                       placeholder="XX-XXXXXXX"
@@ -578,7 +579,7 @@ export default function JoinPage() {
                   <input
                     type="tel"
                     value={primaryPhone}
-                    onChange={(e) => setPrimaryPhone(e.target.value)}
+                    onChange={(e) => setPrimaryPhone(formatPhoneNumber(e.target.value))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
                     disabled={loading}
                     placeholder="(555) 123-4567"
@@ -603,9 +604,10 @@ export default function JoinPage() {
                   <input
                     type="tel"
                     value={secondaryPhone}
-                    onChange={(e) => setSecondaryPhone(e.target.value)}
+                    onChange={(e) => setSecondaryPhone(formatPhoneNumber(e.target.value))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
                     disabled={loading}
+                    placeholder="(555) 123-4567"
                   />
                 </div>
               </div>
@@ -668,7 +670,7 @@ export default function JoinPage() {
                     <input
                       type="text"
                       value={zip}
-                      onChange={(e) => setZip(e.target.value)}
+                      onChange={(e) => setZip(formatZipCode(e.target.value))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
                       disabled={loading}
                       placeholder="32092"

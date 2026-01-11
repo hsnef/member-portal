@@ -60,7 +60,7 @@ export function registrationInvitationEmail(
   member: Member,
   invitationLink: string
 ): { subject: string; html: string; text: string } {
-  const memberName = member.profile_name || `${member.first_name} ${member.last_name}` || member.business_name
+  const memberName = member.member_profile_name || `${member.first_name} ${member.last_name}` || member.business_name
 
   const content = `
     <h2 style="color: #FF9933; margin-top: 0;">Welcome to HSNEF!</h2>
@@ -91,7 +91,7 @@ export function paymentReceiptEmail(
   member: Member,
   receipt: Receipt
 ): { subject: string; html: string; text: string } {
-  const memberName = member.profile_name || `${member.first_name} ${member.last_name}` || member.business_name
+  const memberName = member.member_profile_name || `${member.first_name} ${member.last_name}` || member.business_name
 
   const content = `
     <h2 style="color: #FF9933; margin-top: 0;">Payment Receipt</h2>
@@ -139,7 +139,7 @@ export function paymentRequestEmail(
   request: Request,
   paymentLink: string
 ): { subject: string; html: string; text: string } {
-  const memberName = member.profile_name || `${member.first_name} ${member.last_name}` || member.business_name
+  const memberName = member.member_profile_name || `${member.first_name} ${member.last_name}` || member.business_name
 
   const content = `
     <h2 style="color: #FF9933; margin-top: 0;">Payment Request</h2>
@@ -191,7 +191,7 @@ export function renewalReminderEmail(
   year: number,
   renewalLink: string
 ): { subject: string; html: string; text: string } {
-  const memberName = member.profile_name || `${member.first_name} ${member.last_name}`
+  const memberName = member.member_profile_name || `${member.first_name} ${member.last_name}`
 
   const content = `
     <h2 style="color: #FF9933; margin-top: 0;">Membership Renewal Reminder</h2>
@@ -480,7 +480,7 @@ export function requestStatusUpdateEmail(
 
 // Welcome email after successful registration
 export function welcomeEmail(member: Member): { subject: string; html: string; text: string } {
-  const memberName = member.profile_name || `${member.first_name} ${member.last_name}` || member.business_name
+  const memberName = member.member_profile_name || `${member.first_name} ${member.last_name}` || member.business_name
 
   const content = `
     <h2 style="color: #FF9933; margin-top: 0;">Welcome to HSNEF!</h2>

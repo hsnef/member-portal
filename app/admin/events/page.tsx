@@ -17,6 +17,8 @@ interface Event {
   location: string
   description: string
   category: string
+  rsvp_enabled: boolean
+  is_payable: boolean
   max_capacity: number
   member_price: number
   non_member_price: number
@@ -240,6 +242,21 @@ export default function EventsPage() {
                           {event.is_test_event && (
                             <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
                               🧪 TEST
+                            </span>
+                          )}
+                          {!event.rsvp_enabled && (
+                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">
+                              Info Only
+                            </span>
+                          )}
+                          {event.rsvp_enabled && event.is_payable && (
+                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+                              Paid
+                            </span>
+                          )}
+                          {event.rsvp_enabled && !event.is_payable && (
+                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-50 text-green-700">
+                              Free
                             </span>
                           )}
                         </div>

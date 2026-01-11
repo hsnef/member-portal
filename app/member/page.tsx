@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { MembershipPass } from '@/components/member/MembershipPass'
+import { MembershipSwitcher } from '@/components/member/MembershipSwitcher'
 import { ZellePendingPayments } from '@/components/zelle/ZellePendingPayments'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
@@ -189,14 +190,17 @@ export default function MemberDashboard() {
                   Welcome back, {member.member_class === 'Personal' ? member.first_name : member.business_name}!
                 </p>
               </div>
-              {hasAdminAccess && (
-                <button
-                  onClick={() => router.push('/admin')}
-                  className="text-sm text-[#FF9933] hover:text-[#E68A2E] font-medium"
-                >
-                  Admin Portal →
-                </button>
-              )}
+              <div className="flex items-center gap-3">
+                <MembershipSwitcher />
+                {hasAdminAccess && (
+                  <button
+                    onClick={() => router.push('/admin')}
+                    className="text-sm text-[#FF9933] hover:text-[#E68A2E] font-medium"
+                  >
+                    Admin Portal →
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -16,6 +16,8 @@ interface Event {
   short_description: string | null
   description: string
   category: string
+  rsvp_enabled: boolean
+  is_payable: boolean
   max_capacity: number
   member_price: number
   non_member_price: number
@@ -143,10 +145,14 @@ export default function MemberEventsPage() {
     const event = events.find(e => e.id === eventId)
     if (!event) return
 
-    const price = getEventPrice(event)
+    // Check if RSVP is enabled
+    if (!event.rsvp_enabled) {
+      alert('Registration is not available for this event.')
+      return
+    }
 
-    // If event has a price, redirect to payment page
-    if (price > 0) {
+    // If event is payable, redirect to payment page
+    if (event.is_payable) {
       router.push(`/member/events/${eventId}/payment`)
       return
     }
@@ -410,6 +416,17 @@ export default function MemberEventsPage() {
                           </button>
                         )}
                       </div>
+                    ) : !event.rsvp_enabled ? (
+                      /* RSVP Disabled - Informational Event */
+                      <div className="text-center py-2">
+                        <p className="text-sm text-gray-500 italic">No registration required</p>
+                        <button
+                          onClick={() => router.push(`/member/events/${event.id}`)}
+                          className="mt-2 text-sm text-[#FF9933] hover:text-[#E68A2E] font-medium"
+                        >
+                          View Event Details →
+                        </button>
+                      </div>
                     ) : isRegistrationClosed(event) ? (
                       <button
                         disabled
@@ -429,9 +446,9 @@ export default function MemberEventsPage() {
                         onClick={() => handleRegister(event.id)}
                         className="w-full px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
                       >
-                        {getEventPrice(event) > 0
+                        {event.is_payable
                           ? `Register - $${getEventPrice(event).toFixed(2)}`
-                          : 'Register (Free)'}
+                          : 'RSVP Now (Free)'}
                       </button>
                     )}
                   </div>

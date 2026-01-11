@@ -12,7 +12,7 @@ export function formatFieldName(fieldName: string): string {
     member_class: 'Member Class',
     current_level: 'Membership Level',
     is_founding_member: 'Founding Member',
-    profile_name: 'Profile Name',
+    member_profile_name: 'Profile Name',
     nakshatra: 'Nakshatra',
     family_gotra: 'Gotra',
     secondary_first_name: 'Secondary First Name',

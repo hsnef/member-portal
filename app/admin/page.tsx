@@ -97,7 +97,7 @@ export default function AdminDashboard() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
             <p className="mt-1 text-sm text-gray-600">
-              Welcome back, {member?.profile_name || member?.first_name || 'Admin'}!
+              Welcome back, {member?.member_profile_name || member?.first_name || 'Admin'}!
             </p>
           </div>
 
