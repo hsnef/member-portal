@@ -8,6 +8,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { getActiveThemeName, getTheme, applyTheme } from '../utils/themeManager'
+import { DEFAULT_THEME_NAME } from '../themes/built-in'
 import type { Theme } from '../types'
 
 interface ThemeContextValue {
@@ -37,20 +38,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         await applyTheme(themeName)
       } else {
         // Fallback to default theme
-        const defaultTheme = await getTheme('default')
+        const defaultTheme = await getTheme(DEFAULT_THEME_NAME)
         if (defaultTheme) {
           setActiveTheme(defaultTheme)
-          await applyTheme('default')
+          await applyTheme(DEFAULT_THEME_NAME)
         }
       }
     } catch (error) {
       console.error('Error loading theme:', error)
       // Fallback to default theme
       try {
-        const defaultTheme = await getTheme('default')
+        const defaultTheme = await getTheme(DEFAULT_THEME_NAME)
         if (defaultTheme) {
           setActiveTheme(defaultTheme)
-          await applyTheme('default')
+          await applyTheme(DEFAULT_THEME_NAME)
         }
       } catch (fallbackError) {
         console.error('Error loading default theme:', fallbackError)

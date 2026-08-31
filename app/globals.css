@@ -2,47 +2,226 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Legacy variables (for backward compatibility) */
-  --background: #fffaf5;
-  --foreground: #1a1a1a;
-  --saffron: #ff9933;
-  --maroon: #800000;
+/* ---------------------------------------------------------------------------
+   HSNEF design system tokens.
 
-  /* Theme system variables (default theme values) */
-  --theme-bg-primary: #fffaf5;
+   Two token families live here and BOTH are load-bearing:
+
+   1. --theme-*  The runtime theming contract. ThemeProvider overrides these at
+                 runtime from the active theme (Settings -> Appearance). Never
+                 remove one; the theme validator requires them.
+
+   2. Design system tokens (--canvas, --ink, --saffron, ...). Tailwind maps its
+      colour classes onto these (bg-saffron, text-ink, border-line, ...).
+
+   The seven tokens that overlap semantically are ALIASED to their --theme-*
+   counterpart, so switching a theme at runtime still moves the design system.
+   Tokens with no theme equivalent (marigold, tulsi, lotus, the -soft ramps,
+   shadows) are literal and stay constant across themes.
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* ---- Legacy (kept for backward compatibility) ---- */
+  --background: #fffbf4;
+  --foreground: #2b2018;
+  --saffron-legacy: #c75b12;
+  --maroon: #7b2d26;
+
+  /* ---- Runtime theming contract (HSNEF values) ---- */
+  --theme-bg-primary: #fffbf4;
   --theme-bg-secondary: #ffffff;
-  --theme-text-primary: #1a1a1a;
-  --theme-text-secondary: #666666;
-  --theme-accent-primary: #FF9933;
-  --theme-accent-secondary: #800000;
-  --theme-border: #e5e5e5;
-  --theme-border-radius-card: 8px;
-  --theme-border-radius-button: 6px;
-  --theme-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --theme-text-primary: #2b2018;
+  --theme-text-secondary: #6a5b4b;
+  --theme-accent-primary: #c75b12;
+  --theme-accent-secondary: #7b2d26;
+  --theme-border: #f1e6d5;
+  --theme-border-radius-card: 18px;
+  --theme-border-radius-button: 13px;
+  --theme-shadow-card: 0 1px 2px rgba(74, 47, 22, 0.04), 0 8px 24px -12px rgba(74, 47, 22, 0.14);
   --theme-spacing-card: 24px;
   --theme-spacing-section: 32px;
-  --theme-font-header: Arial, Helvetica, sans-serif;
-  --theme-font-body: Arial, Helvetica, sans-serif;
+  --theme-font-header: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --theme-font-body: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+
+  /* ---- Surfaces (canvas/surface follow the active theme) ---- */
+  --canvas: var(--theme-bg-primary);
+  --canvas-deep: #fdf3e5;
+  --surface: var(--theme-bg-secondary);
+  --surface-sunk: #faf5ec;
+
+  /* ---- Lines ---- */
+  --line: var(--theme-border);
+  --line-strong: #e2d1b7;
+
+  /* ---- Ink ---- */
+  --ink: var(--theme-text-primary);
+  --ink-2: var(--theme-text-secondary);
+  --ink-3: #9b8c7a;
+  --ink-inverse: #fffbf4;
+
+  /* ---- Accent family — every hue sits in the warm half of the wheel ---- */
+  --saffron: var(--theme-accent-primary);
+  --saffron-hover: #a94a0c;
+  --saffron-soft: #fdefe2;
+  --saffron-ring: #f0bb8a;
+  --marigold: #f5a524;
+  --marigold-ink: #a06c05;
+  --marigold-soft: #fef4de;
+  --kumkum: var(--theme-accent-secondary);
+  --kumkum-ink: #7b2d26;
+  --kumkum-soft: #f8ece9;
+  --tulsi: #4e7a63;
+  --tulsi-ink: #3d6350;
+  --tulsi-soft: #eaf2ec;
+  --lotus: #b0526b;
+  --lotus-ink: #97425a;
+  --lotus-soft: #fbecef;
+  --copper: #a8541f;
+  --copper-ink: #8d4415;
+  --copper-soft: #fbeee4;
+  --sandal: #7a6a45;
+  --sandal-ink: #665839;
+  --sandal-soft: #f4efe1;
+  --gold: #c9962c;
+
+  /* ---- Semantic ---- */
+  --success: #4e7a63;
+  --success-soft: #eaf2ec;
+  --warning: #a06c05;
+  --warning-soft: #fef4de;
+  --danger: #b23a2e;
+  --danger-soft: #fbebe8;
+  --neutral: #6a5b4b;
+  --neutral-soft: #f4ede3;
+
+  /* ---- Elevation — layered, warm-tinted, never grey ---- */
+  --shadow-xs: 0 1px 2px rgba(74, 47, 22, 0.05);
+  --shadow-card: 0 1px 2px rgba(74, 47, 22, 0.04), 0 8px 24px -12px rgba(74, 47, 22, 0.14);
+  --shadow-lift: 0 2px 4px rgba(74, 47, 22, 0.05), 0 20px 40px -16px rgba(74, 47, 22, 0.22);
+  --shadow-glow: 0 8px 28px -10px rgba(199, 91, 18, 0.4);
 }
 
-/* Dark mode support (legacy) */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1a1a1a;
-    --foreground: #fffaf5;
+/* Theme-specific overrides are injected at runtime by ThemeProvider as
+   [data-theme="<name>"] { ... }, which lands after this file and wins. */
+
+body {
+  background-color: var(--canvas);
+  color: var(--ink);
+  font-family: var(--theme-font-body);
+  font-size: 16.5px;
+  line-height: 1.6;
+  font-feature-settings: 'ss01', 'cv01';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Serif is reserved for voice moments — page titles, greetings, amounts of
+   consequence. Instrument Serif ships a single weight, so we lock it and
+   disable synthetic bolding. Never apply font-bold to it. */
+.font-display,
+.font-serif {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400 !important;
+  letter-spacing: -0.015em;
+  font-synthesis-weight: none;
+}
+
+/* Aligned figures everywhere money and IDs appear */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: var(--saffron-ring);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 3px solid var(--saffron-ring);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* ---- Temple-derived surface treatments ---- */
+
+/* Fine dotted grid, like rangoli guide points */
+.hs-dots {
+  background-image: radial-gradient(circle at 1px 1px, rgba(199, 91, 18, 0.09) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+/* Woven sandal-thread texture for hero panels */
+.hs-weave {
+  background-image:
+    repeating-linear-gradient(45deg, rgba(199, 91, 18, 0.045) 0 1px, transparent 1px 11px),
+    repeating-linear-gradient(-45deg, rgba(123, 45, 38, 0.035) 0 1px, transparent 1px 11px);
+}
+
+/* Scalloped torana edge used along the top of ceremonial surfaces */
+.hs-scallop {
+  -webkit-mask-image: radial-gradient(9px at 9px 100%, transparent 98%, #000 100%);
+  mask-image: radial-gradient(9px at 9px 100%, transparent 98%, #000 100%);
+  -webkit-mask-size: 18px 12px;
+  mask-size: 18px 12px;
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+}
+
+/* Hairline gold rule with a diamond at centre */
+.hs-rule {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line-strong) 20%, var(--line-strong) 80%, transparent);
+}
+
+.hs-rule::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: var(--gold);
+}
+
+/* Warm, slim scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--saffron-ring);
+  background-clip: content-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
   }
 }
 
-/* Theme-specific overrides (applied via data-theme attribute) */
-[data-theme] {
-  /* Theme variables are applied via ThemeProvider */
-}
-
-body {
-  color: var(--theme-text-primary);
-  background: var(--theme-bg-primary);
-  font-family: var(--theme-font-body);
+@media print {
+  .hs-no-print {
+    display: none !important;
+  }
 }
 
 @layer utilities {
