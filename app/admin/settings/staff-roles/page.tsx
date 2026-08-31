@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
 
 type UserRole = 'Admin' | 'Office Manager' | 'Office Staff'
@@ -294,7 +293,7 @@ export default function StaffRolesPage() {
 
   return (
     <ProtectedRoute requiredRoles={['Admin']}>
-      <AdminLayout>
+      <>
         <div className="space-y-6">
           {/* Header */}
           <div>
@@ -358,7 +357,7 @@ export default function StaffRolesPage() {
                     <button
                       key={member.id}
                       onClick={() => setSelectedMember(member)}
-                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${
+                      className={`w-full px-4 py-3 text-left hover:bg-transparent border-b border-gray-100 last:border-b-0 ${
                         selectedMember?.id === member.id ? 'bg-orange-50' : ''
                       }`}
                     >
@@ -388,7 +387,7 @@ export default function StaffRolesPage() {
 
               {/* Selected Member & Role Selection */}
               {selectedMember && (
-                <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+                <div className="bg-transparent rounded-lg p-4 space-y-4">
                   <div>
                     <p className="text-sm text-gray-600">Selected Member:</p>
                     <p className="font-semibold text-gray-900">
@@ -481,7 +480,7 @@ export default function StaffRolesPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-transparent">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Member
@@ -502,7 +501,7 @@ export default function StaffRolesPage() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {staffMembers.map((staff) => (
-                      <tr key={staff.user_id} className="hover:bg-gray-50">
+                      <tr key={staff.user_id} className="hover:bg-transparent">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="text-sm font-medium text-gray-900">
@@ -587,7 +586,7 @@ export default function StaffRolesPage() {
             </ul>
           </div>
         </div>
-      </AdminLayout>
+      </>
     </ProtectedRoute>
   )
 }

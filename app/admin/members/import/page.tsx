@@ -3,8 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Papa from 'papaparse'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
 import { parseAddress, parsePhone, isValidEmail, parseDate } from '@/lib/utils/addressParser'
 import {
@@ -560,254 +558,252 @@ export default function ImportMembersPage() {
   const invalidCount = parsedMembers.length - validCount
 
   return (
-    <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-      <AdminLayout>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Import Members from CSV</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Upload a CSV file to bulk import member data
-              </p>
+    <>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Import Members from CSV</h1>
+            <p className="mt-1 text-sm text-gray-600">
+              Upload a CSV file to bulk import member data
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => router.push('/admin/members/import-history')}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent text-sm"
+            >
+              Import History
+            </button>
+            <button
+              onClick={() => router.push('/admin/members')}
+              className="text-sm text-gray-600 hover:text-gray-900"
+            >
+              ← Back to Members
+            </button>
+          </div>
+        </div>
+
+        {/* Instructions */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="text-sm font-semibold text-blue-900 mb-2">CSV Format Instructions</h3>
+          <ul className="text-sm text-blue-800 space-y-1">
+            <li>• <strong>Required columns:</strong> Member_First_Name, Member_Last_Name</li>
+            <li>• <strong>Member_Number:</strong> Leave blank to auto-generate, or provide 8-digit format XXYYZZZZ</li>
+            <li>• <strong>Member_Type:</strong> Community, Annual, or Lifetime (defaults to Community)</li>
+            <li>• <strong>Member_Class:</strong> Personal or Business (defaults to Personal)</li>
+            <li>• <strong>Address:</strong> Provide individual fields (Address_1, City, State, Zip) OR use Mailing_Address (will be auto-parsed)</li>
+            <li>• <strong>Family Members:</strong> Include Primary, Secondary, and up to 4 children with their details</li>
+            <li>• <strong>Business_Name:</strong> For Business class, defaults to First_Name + Last_Name if blank</li>
+          </ul>
+        </div>
+
+        {/* File Upload */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Upload CSV File
+          </label>
+          <input
+            type="file"
+            accept=".csv"
+            onChange={handleFileUpload}
+            className="block w-full text-sm text-gray-500
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-md file:border-0
+              file:text-sm file:font-semibold
+              file:bg-saffron file:text-white
+              hover:file:bg-saffron-hover
+              cursor-pointer"
+          />
+          {file && (
+            <p className="mt-2 text-sm text-gray-600">
+              Selected: {file.name} ({Math.round(file.size / 1024)} KB)
+            </p>
+          )}
+        </div>
+
+        {/* Preview */}
+        {parsedMembers.length > 0 && !importResults && (
+          <>
+            <div className="bg-white shadow rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Preview ({parsedMembers.length} members)
+                </h2>
+                <div className="flex gap-4">
+                  <span className="text-sm text-green-600 font-medium">
+                    ✓ {validCount} Valid
+                  </span>
+                  {invalidCount > 0 && (
+                    <span className="text-sm text-red-600 font-medium">
+                      ✗ {invalidCount} Invalid
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-transparent sticky top-0">
+                    <tr>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Member #</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Profile Name</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Class</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Family</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">City/State</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Errors</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {parsedMembers.map((member, idx) => (
+                      <tr key={idx} className={member.isValid ? '' : 'bg-red-50'}>
+                        <td className="px-3 py-2 text-sm">
+                          {member.isValid ? (
+                            <span className="text-green-600">✓</span>
+                          ) : (
+                            <span className="text-red-600">✗</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-sm text-gray-900">
+                          {member.membership_id || (
+                            <span className="text-gray-400 text-xs">Auto-gen</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-sm text-gray-900">
+                          {member.member_profile_name || (
+                            member.business_name ? member.business_name : 'N/A'
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-sm">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            member.current_level === 'Lifetime' ? 'bg-amber-100 text-amber-800' :
+                            member.current_level === 'Annual' ? 'bg-blue-100 text-blue-800' :
+                            'bg-green-100 text-green-800'
+                          }`}>
+                            {member.current_level}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-sm">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            member.member_class === 'Business' ? 'bg-purple-100 text-purple-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {member.member_class}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-sm text-gray-600">
+                          {member.family_members.length} member{member.family_members.length !== 1 ? 's' : ''}
+                          {member.family_members.length > 0 && (
+                            <div className="text-xs text-gray-500">
+                              {member.family_members.filter(fm => fm.relationship === 'Primary').length > 0 && 'P'}
+                              {member.family_members.filter(fm => fm.relationship === 'Secondary').length > 0 && '+S'}
+                              {member.family_members.filter(fm => fm.relationship === 'Child').length > 0 && ` +${member.family_members.filter(fm => fm.relationship === 'Child').length}C`}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-sm text-gray-600">
+                          {member.city && member.state ? `${member.city}, ${member.state}` : member.city || member.state || 'N/A'}
+                        </td>
+                        <td className="px-3 py-2 text-sm text-red-600 max-w-xs">
+                          {member.errors.join(', ')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div className="flex gap-3">
+
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => {
+                  setFile(null)
+                  setParsedMembers([])
+                }}
+                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleImport}
+                disabled={importing || validCount === 0}
+                className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+              >
+                {importing ? 'Importing...' : `Import ${validCount} Valid Members`}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Import Results */}
+        {importResults && (
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Import Results</h2>
+
+            {importResults.batchNumber && (
+              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-900">
+                  <strong>Batch ID:</strong> {importResults.batchNumber}
+                </p>
+                <p className="text-xs text-blue-700 mt-1">
+                  You can revert this import from the Import History page if needed.
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm text-green-600 font-medium">Successful</p>
+                <p className="text-3xl font-bold text-green-900">{importResults.success}</p>
+              </div>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-600 font-medium">Failed</p>
+                <p className="text-3xl font-bold text-red-900">{importResults.failed}</p>
+              </div>
+            </div>
+
+            {importResults.errors.length > 0 && (
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold text-red-900 mb-2">Errors:</h3>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-h-48 overflow-y-auto">
+                  {importResults.errors.map((error, idx) => (
+                    <p key={idx} className="text-sm text-red-800 mb-1">
+                      {error}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-4">
               <button
                 onClick={() => router.push('/admin/members/import-history')}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm"
+                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
               >
-                Import History
+                View Import History
               </button>
               <button
                 onClick={() => router.push('/admin/members')}
-                className="text-sm text-gray-600 hover:text-gray-900"
+                className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
               >
-                ← Back to Members
+                View Members
+              </button>
+              <button
+                onClick={() => {
+                  setFile(null)
+                  setParsedMembers([])
+                  setImportResults(null)
+                }}
+                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
+              >
+                Import Another File
               </button>
             </div>
           </div>
-
-          {/* Instructions */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-blue-900 mb-2">CSV Format Instructions</h3>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• <strong>Required columns:</strong> Member_First_Name, Member_Last_Name</li>
-              <li>• <strong>Member_Number:</strong> Leave blank to auto-generate, or provide 8-digit format XXYYZZZZ</li>
-              <li>• <strong>Member_Type:</strong> Community, Annual, or Lifetime (defaults to Community)</li>
-              <li>• <strong>Member_Class:</strong> Personal or Business (defaults to Personal)</li>
-              <li>• <strong>Address:</strong> Provide individual fields (Address_1, City, State, Zip) OR use Mailing_Address (will be auto-parsed)</li>
-              <li>• <strong>Family Members:</strong> Include Primary, Secondary, and up to 4 children with their details</li>
-              <li>• <strong>Business_Name:</strong> For Business class, defaults to First_Name + Last_Name if blank</li>
-            </ul>
-          </div>
-
-          {/* File Upload */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Upload CSV File
-            </label>
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleFileUpload}
-              className="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-md file:border-0
-                file:text-sm file:font-semibold
-                file:bg-saffron file:text-white
-                hover:file:bg-saffron-hover
-                cursor-pointer"
-            />
-            {file && (
-              <p className="mt-2 text-sm text-gray-600">
-                Selected: {file.name} ({Math.round(file.size / 1024)} KB)
-              </p>
-            )}
-          </div>
-
-          {/* Preview */}
-          {parsedMembers.length > 0 && !importResults && (
-            <>
-              <div className="bg-white shadow rounded-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Preview ({parsedMembers.length} members)
-                  </h2>
-                  <div className="flex gap-4">
-                    <span className="text-sm text-green-600 font-medium">
-                      ✓ {validCount} Valid
-                    </span>
-                    {invalidCount > 0 && (
-                      <span className="text-sm text-red-600 font-medium">
-                        ✗ {invalidCount} Invalid
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto max-h-96 overflow-y-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50 sticky top-0">
-                      <tr>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Member #</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Profile Name</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Class</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Family</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">City/State</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Errors</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {parsedMembers.map((member, idx) => (
-                        <tr key={idx} className={member.isValid ? '' : 'bg-red-50'}>
-                          <td className="px-3 py-2 text-sm">
-                            {member.isValid ? (
-                              <span className="text-green-600">✓</span>
-                            ) : (
-                              <span className="text-red-600">✗</span>
-                            )}
-                          </td>
-                          <td className="px-3 py-2 text-sm text-gray-900">
-                            {member.membership_id || (
-                              <span className="text-gray-400 text-xs">Auto-gen</span>
-                            )}
-                          </td>
-                          <td className="px-3 py-2 text-sm text-gray-900">
-                            {member.member_profile_name || (
-                              member.business_name ? member.business_name : 'N/A'
-                            )}
-                          </td>
-                          <td className="px-3 py-2 text-sm">
-                            <span className={`px-2 py-1 text-xs rounded-full ${
-                              member.current_level === 'Lifetime' ? 'bg-amber-100 text-amber-800' :
-                              member.current_level === 'Annual' ? 'bg-blue-100 text-blue-800' :
-                              'bg-green-100 text-green-800'
-                            }`}>
-                              {member.current_level}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2 text-sm">
-                            <span className={`px-2 py-1 text-xs rounded-full ${
-                              member.member_class === 'Business' ? 'bg-purple-100 text-purple-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {member.member_class}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2 text-sm text-gray-600">
-                            {member.family_members.length} member{member.family_members.length !== 1 ? 's' : ''}
-                            {member.family_members.length > 0 && (
-                              <div className="text-xs text-gray-500">
-                                {member.family_members.filter(fm => fm.relationship === 'Primary').length > 0 && 'P'}
-                                {member.family_members.filter(fm => fm.relationship === 'Secondary').length > 0 && '+S'}
-                                {member.family_members.filter(fm => fm.relationship === 'Child').length > 0 && ` +${member.family_members.filter(fm => fm.relationship === 'Child').length}C`}
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-3 py-2 text-sm text-gray-600">
-                            {member.city && member.state ? `${member.city}, ${member.state}` : member.city || member.state || 'N/A'}
-                          </td>
-                          <td className="px-3 py-2 text-sm text-red-600 max-w-xs">
-                            {member.errors.join(', ')}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-4">
-                <button
-                  onClick={() => {
-                    setFile(null)
-                    setParsedMembers([])
-                  }}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleImport}
-                  disabled={importing || validCount === 0}
-                  className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
-                >
-                  {importing ? 'Importing...' : `Import ${validCount} Valid Members`}
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* Import Results */}
-          {importResults && (
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Import Results</h2>
-
-              {importResults.batchNumber && (
-                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-900">
-                    <strong>Batch ID:</strong> {importResults.batchNumber}
-                  </p>
-                  <p className="text-xs text-blue-700 mt-1">
-                    You can revert this import from the Import History page if needed.
-                  </p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p className="text-sm text-green-600 font-medium">Successful</p>
-                  <p className="text-3xl font-bold text-green-900">{importResults.success}</p>
-                </div>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-sm text-red-600 font-medium">Failed</p>
-                  <p className="text-3xl font-bold text-red-900">{importResults.failed}</p>
-                </div>
-              </div>
-
-              {importResults.errors.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-red-900 mb-2">Errors:</h3>
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-h-48 overflow-y-auto">
-                    {importResults.errors.map((error, idx) => (
-                      <p key={idx} className="text-sm text-red-800 mb-1">
-                        {error}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-end gap-4">
-                <button
-                  onClick={() => router.push('/admin/members/import-history')}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                >
-                  View Import History
-                </button>
-                <button
-                  onClick={() => router.push('/admin/members')}
-                  className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
-                >
-                  View Members
-                </button>
-                <button
-                  onClick={() => {
-                    setFile(null)
-                    setParsedMembers([])
-                    setImportResults(null)
-                  }}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                >
-                  Import Another File
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </AdminLayout>
-    </ProtectedRoute>
+        )}
+      </div>
+    </>
   )
 }

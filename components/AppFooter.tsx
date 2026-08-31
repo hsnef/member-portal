@@ -1,28 +1,36 @@
 'use client'
 
+/**
+ * Footer for PUBLIC pages only (login, join, register, terms, unauthorized...).
+ *
+ * Inside /member and /admin, PortalShell renders its own footer with the same
+ * version and deployment strings, so this one hides itself there rather than
+ * double-rendering.
+ */
+
+import { usePathname } from 'next/navigation'
 import { getVersionString, getDeploymentDateString } from '@/lib/constants/version'
+import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 
 export function AppFooter() {
-  const version = getVersionString()
-  const deploymentDate = getDeploymentDateString()
+  const pathname = usePathname() ?? ''
+
+  // PortalShell owns the footer in the authenticated sections.
+  if (pathname.startsWith('/member') || pathname.startsWith('/admin')) return null
 
   return (
-    <footer className="mt-auto py-6 px-4 sm:px-6 lg:px-8 border-t border-gray-200 bg-gray-50">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col items-center gap-3 text-center">
-          {/* Main copyright */}
-          <p className="text-sm text-gray-600">
-            Copyright &copy; 2026, Hindu Society of Northeast Florida, Inc. All Rights Reserved.
+    <footer className="mt-auto border-t border-line bg-surface px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-content">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <p className="text-[13.5px] text-ink-2">
+            Copyright &copy; {new Date().getFullYear()}, {TEMPLE_CONFIG.name}, Inc. All Rights
+            Reserved.
           </p>
-
-          {/* Nonprofit status */}
-          <p className="text-xs text-gray-500">
-            A Florida based 501(c)(3) Nonprofit Organization
+          <p className="text-[12px] text-ink-3">
+            A Florida based {TEMPLE_CONFIG.taxExemptStatus}
           </p>
-
-          {/* Version info */}
-          <p className="text-xs text-gray-400">
-            Version {version} &bull; Deployed {deploymentDate}
+          <p className="tnum text-[12px] text-ink-3">
+            Version {getVersionString()} &bull; Deployed {getDeploymentDateString()}
           </p>
         </div>
       </div>

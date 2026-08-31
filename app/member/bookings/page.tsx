@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/auth/AuthContext'
 
@@ -98,8 +97,8 @@ export default function MemberBookingsPage() {
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 py-8">
+    <>
+      <div className="bg-transparent py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
@@ -304,7 +303,7 @@ export default function MemberBookingsPage() {
                   )}
 
                   {booking.status === 'Completed' && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-md p-3 mb-4">
+                    <div className="bg-transparent border border-gray-200 rounded-md p-3 mb-4">
                       <p className="text-sm text-gray-800">
                         ✓ Services completed. Thank you for your booking!
                       </p>
@@ -334,6 +333,6 @@ export default function MemberBookingsPage() {
           )}
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

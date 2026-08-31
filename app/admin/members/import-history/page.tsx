@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
 
 interface ImportBatch {
@@ -117,157 +115,155 @@ export default function ImportHistoryPage() {
   }
 
   return (
-    <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-      <AdminLayout>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Import History</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                View and manage bulk member imports
-              </p>
-            </div>
-            <button
-              onClick={() => router.push('/admin/members/import')}
-              className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
-            >
-              New Import
-            </button>
+    <>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Import History</h1>
+            <p className="mt-1 text-sm text-gray-600">
+              View and manage bulk member imports
+            </p>
           </div>
-
-          {/* Import Batches List */}
-          <div className="bg-white shadow rounded-lg overflow-hidden">
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-                <p className="mt-4 text-gray-600">Loading import history...</p>
-              </div>
-            ) : batches.length === 0 ? (
-              <div className="text-center py-12">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No imports yet</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Get started by importing your first CSV file
-                </p>
-                <div className="mt-6">
-                  <button
-                    onClick={() => router.push('/admin/members/import')}
-                    className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
-                  >
-                    Import CSV
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Batch ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        File Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Imported By
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Records
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {batches.map((batch) => (
-                      <tr key={batch.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-medium text-gray-900">
-                          {batch.batch_number}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {batch.file_name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {batch.imported_by_name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(batch.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <div className="space-y-1">
-                            <div className="text-green-600">✓ {batch.successful_records} success</div>
-                            {batch.failed_records > 0 && (
-                              <div className="text-red-600">✗ {batch.failed_records} failed</div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(batch.status)}`}>
-                            {batch.status}
-                          </span>
-                          {batch.status === 'Reverted' && batch.reverted_at && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              by {batch.reverted_by_name}
-                              <br />
-                              on {new Date(batch.reverted_at).toLocaleDateString()}
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          {batch.status === 'Completed' && (
-                            <button
-                              onClick={() => handleRevert(batch)}
-                              disabled={reverting === batch.id}
-                              className="text-red-600 hover:text-red-900 disabled:text-gray-400 disabled:cursor-not-allowed"
-                            >
-                              {reverting === batch.id ? 'Reverting...' : 'Revert'}
-                            </button>
-                          )}
-                          {batch.status === 'Reverted' && (
-                            <span className="text-gray-400">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* Info Box */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-amber-900 mb-2">⚠️ Important Information</h3>
-            <ul className="text-sm text-amber-800 space-y-1">
-              <li>• Reverting an import will <strong>permanently delete</strong> all members imported in that batch</li>
-              <li>• This action cannot be undone - make sure to verify before reverting</li>
-              <li>• Only members from the specific import batch will be deleted</li>
-              <li>• Manually added members are never affected by import reverts</li>
-            </ul>
-          </div>
+          <button
+            onClick={() => router.push('/admin/members/import')}
+            className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
+          >
+            New Import
+          </button>
         </div>
-      </AdminLayout>
-    </ProtectedRoute>
+
+        {/* Import Batches List */}
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
+              <p className="mt-4 text-gray-600">Loading import history...</p>
+            </div>
+          ) : batches.length === 0 ? (
+            <div className="text-center py-12">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No imports yet</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Get started by importing your first CSV file
+              </p>
+              <div className="mt-6">
+                <button
+                  onClick={() => router.push('/admin/members/import')}
+                  className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
+                >
+                  Import CSV
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-transparent">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Batch ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      File Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Imported By
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Records
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {batches.map((batch) => (
+                    <tr key={batch.id} className="hover:bg-transparent">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-medium text-gray-900">
+                        {batch.batch_number}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {batch.file_name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {batch.imported_by_name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(batch.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <div className="space-y-1">
+                          <div className="text-green-600">✓ {batch.successful_records} success</div>
+                          {batch.failed_records > 0 && (
+                            <div className="text-red-600">✗ {batch.failed_records} failed</div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(batch.status)}`}>
+                          {batch.status}
+                        </span>
+                        {batch.status === 'Reverted' && batch.reverted_at && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            by {batch.reverted_by_name}
+                            <br />
+                            on {new Date(batch.reverted_at).toLocaleDateString()}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        {batch.status === 'Completed' && (
+                          <button
+                            onClick={() => handleRevert(batch)}
+                            disabled={reverting === batch.id}
+                            className="text-red-600 hover:text-red-900 disabled:text-gray-400 disabled:cursor-not-allowed"
+                          >
+                            {reverting === batch.id ? 'Reverting...' : 'Revert'}
+                          </button>
+                        )}
+                        {batch.status === 'Reverted' && (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Info Box */}
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <h3 className="text-sm font-semibold text-amber-900 mb-2">⚠️ Important Information</h3>
+          <ul className="text-sm text-amber-800 space-y-1">
+            <li>• Reverting an import will <strong>permanently delete</strong> all members imported in that batch</li>
+            <li>• This action cannot be undone - make sure to verify before reverting</li>
+            <li>• Only members from the specific import batch will be deleted</li>
+            <li>• Manually added members are never affected by import reverts</li>
+          </ul>
+        </div>
+      </div>
+    </>
   )
 }

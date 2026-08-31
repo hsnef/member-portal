@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { createClient } from '@/lib/supabase/client'
 
 export default function BookingPaymentSuccessPage() {
@@ -91,21 +90,21 @@ export default function BookingPaymentSuccessPage() {
 
   if (loading) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <>
+        <div className="bg-transparent flex items-center justify-center">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Verifying payment...</p>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   if (error) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 py-8">
+      <>
+        <div className="bg-transparent py-8">
           <div className="max-w-2xl mx-auto px-4">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
               <h2 className="text-xl font-semibold text-red-800 mb-2">Payment Verification Error</h2>
@@ -122,13 +121,13 @@ export default function BookingPaymentSuccessPage() {
             </div>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 py-8">
+    <>
+      <div className="bg-transparent py-8">
         <div className="max-w-2xl mx-auto px-4">
           {/* Success Message */}
           <div className="bg-white shadow rounded-lg p-8 text-center">
@@ -191,7 +190,7 @@ export default function BookingPaymentSuccessPage() {
               </button>
               <button
                 onClick={() => router.push('/member/bookings')}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-semibold"
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent font-semibold"
               >
                 View All Bookings
               </button>
@@ -236,6 +235,6 @@ export default function BookingPaymentSuccessPage() {
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

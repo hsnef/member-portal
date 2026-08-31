@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { getMembershipPricing, type MembershipPricing } from '@/lib/utils/portalSettings'
 
@@ -102,7 +101,7 @@ function RenewMembershipForm({
             <button
               type="button"
               onClick={() => router.push('/member')}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
             >
               Cancel
             </button>
@@ -199,7 +198,7 @@ function RenewMembershipContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex items-center justify-center bg-transparent">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading payment form...</p>
@@ -210,7 +209,7 @@ function RenewMembershipContent() {
 
   if (!clientSecret || !pricing) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex items-center justify-center bg-transparent">
         <div className="text-center max-w-md">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Unable to Initialize Payment</h2>
           <p className="text-gray-600 mb-6">
@@ -238,7 +237,7 @@ function RenewMembershipContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="bg-transparent py-12 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -301,8 +300,8 @@ function RenewMembershipContent() {
 
 export default function RenewMembershipPage() {
   return (
-    <ProtectedRoute>
+    <>
       <RenewMembershipContent />
-    </ProtectedRoute>
+    </>
   )
 }

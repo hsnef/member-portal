@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { AuditLogTimeline } from '@/components/admin/AuditLogTimeline'
 import type { MemberAuditLog } from '@/types/database'
 
@@ -129,170 +127,168 @@ export default function GlobalAuditLogsPage() {
   const mostActiveStaff = Object.entries(staffActivity).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
 
   return (
-    <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-      <AdminLayout>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Member Audit Logs</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                View complete history of member record changes
-              </p>
-            </div>
+    <>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Member Audit Logs</h1>
+            <p className="mt-1 text-sm text-gray-600">
+              View complete history of member record changes
+            </p>
           </div>
+        </div>
 
-          {/* Stats Dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Total Changes</p>
-              <p className="text-2xl font-bold text-gray-900">{totalChanges}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Changes This Month</p>
-              <p className="text-2xl font-bold text-blue-600">{thisMonth}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Member Creations</p>
-              <p className="text-2xl font-bold text-green-600">{createdCount}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">ID Changes</p>
-              <p className="text-2xl font-bold text-purple-600">{idChangesCount}</p>
-            </div>
-          </div>
-
-          {/* Filters */}
+        {/* Stats Dashboard */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white p-4 rounded-lg shadow">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {/* Search */}
-              <div>
-                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-                  Search
-                </label>
-                <input
-                  type="text"
-                  id="search"
-                  placeholder="Member name, ID, staff..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                />
-              </div>
+            <p className="text-sm text-gray-600">Total Changes</p>
+            <p className="text-2xl font-bold text-gray-900">{totalChanges}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow">
+            <p className="text-sm text-gray-600">Changes This Month</p>
+            <p className="text-2xl font-bold text-blue-600">{thisMonth}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow">
+            <p className="text-sm text-gray-600">Member Creations</p>
+            <p className="text-2xl font-bold text-green-600">{createdCount}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow">
+            <p className="text-sm text-gray-600">ID Changes</p>
+            <p className="text-2xl font-bold text-purple-600">{idChangesCount}</p>
+          </div>
+        </div>
 
-              {/* Action Type Filter */}
-              <div>
-                <label htmlFor="actionType" className="block text-sm font-medium text-gray-700 mb-1">
-                  Action Type
-                </label>
-                <select
-                  id="actionType"
-                  value={actionTypeFilter}
-                  onChange={(e) => setActionTypeFilter(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                >
-                  <option value="All">All Actions</option>
-                  <option value="CREATED">Created</option>
-                  <option value="MEMBERSHIP_ID_CHANGED">ID Changed</option>
-                  <option value="FIELD_UPDATED">Field Updated</option>
-                  <option value="BULK_UPDATE">Bulk Update</option>
-                </select>
-              </div>
-
-              {/* Creation Source Filter */}
-              <div>
-                <label htmlFor="creationSource" className="block text-sm font-medium text-gray-700 mb-1">
-                  Creation Source
-                </label>
-                <select
-                  id="creationSource"
-                  value={creationSourceFilter}
-                  onChange={(e) => setCreationSourceFilter(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                >
-                  <option value="All">All Sources</option>
-                  <option value="AUTO_IMPORT">Auto Import</option>
-                  <option value="SELF_REGISTRATION">Self Registration</option>
-                  <option value="OFFICE_STAFF">Office Staff</option>
-                  <option value="OFFICE_MANAGER">Office Manager</option>
-                  <option value="ADMIN">Admin</option>
-                </select>
-              </div>
-
-              {/* From Date */}
-              <div>
-                <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
-                  From Date
-                </label>
-                <input
-                  type="date"
-                  id="fromDate"
-                  value={fromDate}
-                  onChange={(e) => setFromDate(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                />
-              </div>
-
-              {/* To Date */}
-              <div>
-                <label htmlFor="toDate" className="block text-sm font-medium text-gray-700 mb-1">
-                  To Date
-                </label>
-                <input
-                  type="date"
-                  id="toDate"
-                  value={toDate}
-                  onChange={(e) => setToDate(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                />
-              </div>
+        {/* Filters */}
+        <div className="bg-white p-4 rounded-lg shadow">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {/* Search */}
+            <div>
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                Search
+              </label>
+              <input
+                type="text"
+                id="search"
+                placeholder="Member name, ID, staff..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+              />
             </div>
 
-            {/* Clear Filters */}
-            {(searchTerm || actionTypeFilter !== 'All' || creationSourceFilter !== 'All' || fromDate || toDate) && (
-              <div className="mt-3">
-                <button
-                  onClick={() => {
-                    setSearchTerm('')
-                    setActionTypeFilter('All')
-                    setCreationSourceFilter('All')
-                    setFromDate('')
-                    setToDate('')
-                  }}
-                  className="text-sm text-saffron hover:text-[#FF8800] font-medium"
-                >
-                  Clear all filters
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Timeline */}
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="px-6 py-4 bg-gradient-to-r from-orange-500 to-red-600">
-              <h2 className="text-xl font-semibold text-white">All Member Changes</h2>
+            {/* Action Type Filter */}
+            <div>
+              <label htmlFor="actionType" className="block text-sm font-medium text-gray-700 mb-1">
+                Action Type
+              </label>
+              <select
+                id="actionType"
+                value={actionTypeFilter}
+                onChange={(e) => setActionTypeFilter(e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+              >
+                <option value="All">All Actions</option>
+                <option value="CREATED">Created</option>
+                <option value="MEMBERSHIP_ID_CHANGED">ID Changed</option>
+                <option value="FIELD_UPDATED">Field Updated</option>
+                <option value="BULK_UPDATE">Bulk Update</option>
+              </select>
             </div>
 
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-                <p className="mt-4 text-gray-600">Loading audit logs...</p>
-              </div>
-            ) : (
-              <div className="p-6">
-                <AuditLogTimeline auditLogs={filteredLogs} showMemberName={true} />
-              </div>
-            )}
+            {/* Creation Source Filter */}
+            <div>
+              <label htmlFor="creationSource" className="block text-sm font-medium text-gray-700 mb-1">
+                Creation Source
+              </label>
+              <select
+                id="creationSource"
+                value={creationSourceFilter}
+                onChange={(e) => setCreationSourceFilter(e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+              >
+                <option value="All">All Sources</option>
+                <option value="AUTO_IMPORT">Auto Import</option>
+                <option value="SELF_REGISTRATION">Self Registration</option>
+                <option value="OFFICE_STAFF">Office Staff</option>
+                <option value="OFFICE_MANAGER">Office Manager</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
+
+            {/* From Date */}
+            <div>
+              <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
+                From Date
+              </label>
+              <input
+                type="date"
+                id="fromDate"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+              />
+            </div>
+
+            {/* To Date */}
+            <div>
+              <label htmlFor="toDate" className="block text-sm font-medium text-gray-700 mb-1">
+                To Date
+              </label>
+              <input
+                type="date"
+                id="toDate"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+              />
+            </div>
           </div>
 
-          {/* Result Count */}
-          {!loading && filteredLogs.length > 0 && (
-            <div className="text-sm text-gray-600">
-              Showing {filteredLogs.length} of {logs.length} audit entries
+          {/* Clear Filters */}
+          {(searchTerm || actionTypeFilter !== 'All' || creationSourceFilter !== 'All' || fromDate || toDate) && (
+            <div className="mt-3">
+              <button
+                onClick={() => {
+                  setSearchTerm('')
+                  setActionTypeFilter('All')
+                  setCreationSourceFilter('All')
+                  setFromDate('')
+                  setToDate('')
+                }}
+                className="text-sm text-saffron hover:text-[#FF8800] font-medium"
+              >
+                Clear all filters
+              </button>
             </div>
           )}
         </div>
-      </AdminLayout>
-    </ProtectedRoute>
+
+        {/* Timeline */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 bg-gradient-to-r from-orange-500 to-red-600">
+            <h2 className="text-xl font-semibold text-white">All Member Changes</h2>
+          </div>
+
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
+              <p className="mt-4 text-gray-600">Loading audit logs...</p>
+            </div>
+          ) : (
+            <div className="p-6">
+              <AuditLogTimeline auditLogs={filteredLogs} showMemberName={true} />
+            </div>
+          )}
+        </div>
+
+        {/* Result Count */}
+        {!loading && filteredLogs.length > 0 && (
+          <div className="text-sm text-gray-600">
+            Showing {filteredLogs.length} of {logs.length} audit entries
+          </div>
+        )}
+      </div>
+    </>
   )
 }

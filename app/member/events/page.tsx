@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import { getTestAuthUserIds, isTestIsolationMode } from '@/lib/utils/testDataFiltering'
@@ -234,8 +233,8 @@ export default function MemberEventsPage() {
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+    <>
+      <div className="bg-transparent">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -401,7 +400,7 @@ export default function MemberEventsPage() {
                               </button>
                               <button
                                 onClick={() => setCancelConfirmId(null)}
-                                className="flex-1 px-3 py-1.5 border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50"
+                                className="flex-1 px-3 py-1.5 border border-gray-300 text-gray-700 rounded text-sm hover:bg-transparent"
                               >
                                 Keep Registration
                               </button>
@@ -458,6 +457,6 @@ export default function MemberEventsPage() {
           )}
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

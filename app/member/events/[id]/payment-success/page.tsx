@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -84,7 +83,7 @@ function PaymentSuccessContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex items-center justify-center bg-transparent">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Processing your registration...</p>
@@ -95,7 +94,7 @@ function PaymentSuccessContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex items-center justify-center bg-transparent">
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Registration Issue</h2>
@@ -116,7 +115,7 @@ function PaymentSuccessContent() {
 
   if (!registrationComplete || !event) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex items-center justify-center bg-transparent">
         <div className="text-center">
           <p className="text-gray-600">Unable to process registration</p>
           <Link
@@ -138,7 +137,7 @@ function PaymentSuccessContent() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="bg-transparent py-12 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Success Message */}
         <div className="bg-white shadow rounded-lg p-8 text-center">
@@ -154,7 +153,7 @@ function PaymentSuccessContent() {
           </p>
 
           {/* Event Details */}
-          <div className="bg-gray-50 rounded-lg p-6 text-left mb-8">
+          <div className="bg-transparent rounded-lg p-6 text-left mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Event Details</h3>
             <div className="space-y-3">
               <div>
@@ -195,7 +194,7 @@ function PaymentSuccessContent() {
             </Link>
             <Link
               href="/member/dashboard"
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
             >
               Go to Dashboard
             </Link>
@@ -213,8 +212,8 @@ function PaymentSuccessContent() {
 
 export default function EventPaymentSuccessPage() {
   return (
-    <ProtectedRoute>
+    <>
       <PaymentSuccessContent />
-    </ProtectedRoute>
+    </>
   )
 }

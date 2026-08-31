@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 
 function PaymentSuccessContent() {
   const router = useRouter()
@@ -69,7 +68,7 @@ function PaymentSuccessContent() {
   // Show loading while confirming payment
   if (confirmingPayment) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="bg-transparent flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-900">Confirming your payment...</h2>
@@ -80,7 +79,7 @@ function PaymentSuccessContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="bg-transparent flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
         {/* Success Icon */}
         <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
@@ -132,7 +131,7 @@ function PaymentSuccessContent() {
           </button>
           <button
             onClick={() => router.push('/member/payments')}
-            className="w-full px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+            className="w-full px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
           >
             View Payment History
           </button>
@@ -149,14 +148,14 @@ function PaymentSuccessContent() {
 
 export default function PaymentSuccessPage() {
   return (
-    <ProtectedRoute>
+    <>
       <Suspense fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex items-center justify-center bg-transparent">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
         </div>
       }>
         <PaymentSuccessContent />
       </Suspense>
-    </ProtectedRoute>
+    </>
   )
 }

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 
@@ -60,7 +59,7 @@ function RequestPaymentForm({ request }: { request: RequestDetails }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Request Summary */}
-      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+      <div className="bg-transparent rounded-lg p-4 border border-gray-200">
         <h3 className="text-sm font-medium text-gray-700 mb-3">Payment Summary</h3>
         <div className="space-y-2">
           <div className="flex justify-between">
@@ -90,7 +89,7 @@ function RequestPaymentForm({ request }: { request: RequestDetails }) {
         <button
           type="button"
           onClick={() => router.push('/member/requests')}
-          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
         >
           Cancel
         </button>
@@ -182,7 +181,7 @@ function RequestPaymentContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex items-center justify-center bg-transparent">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading payment form...</p>
@@ -193,7 +192,7 @@ function RequestPaymentContent() {
 
   if (error || !request || !clientSecret) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex items-center justify-center bg-transparent">
         <div className="text-center max-w-md">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Unable to Process Payment</h2>
           <p className="text-gray-600 mb-6">
@@ -221,7 +220,7 @@ function RequestPaymentContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="bg-transparent py-12 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -297,8 +296,8 @@ function RequestPaymentContent() {
 
 export default function RequestPaymentPage() {
   return (
-    <ProtectedRoute>
+    <>
       <RequestPaymentContent />
-    </ProtectedRoute>
+    </>
   )
 }

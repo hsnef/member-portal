@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { MembershipPass } from '@/components/member/MembershipPass'
 import { MembershipSwitcher } from '@/components/member/MembershipSwitcher'
 import { ZellePendingPayments } from '@/components/zelle/ZellePendingPayments'
@@ -151,21 +150,21 @@ export default function MemberDashboard() {
 
   if (loading) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <>
+        <div className="flex items-center justify-center bg-transparent">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading your membership...</p>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   if (!member) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <>
+        <div className="flex items-center justify-center bg-transparent">
           <div className="text-center max-w-md">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">No Membership Found</h1>
             <p className="text-gray-600 mb-6">
@@ -173,13 +172,13 @@ export default function MemberDashboard() {
             </p>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+    <>
+      <div className="bg-transparent">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -339,6 +338,6 @@ export default function MemberDashboard() {
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

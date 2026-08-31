@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -191,7 +190,7 @@ function EventDetailContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex items-center justify-center bg-transparent">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading event details...</p>
@@ -202,7 +201,7 @@ function EventDetailContent() {
 
   if (error || !event) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex items-center justify-center bg-transparent">
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Event Not Found</h2>
@@ -228,7 +227,7 @@ function EventDetailContent() {
   const price = getEventPrice()
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-transparent">
       {/* Hero Section with Event Image */}
       <div className="relative">
         {event.image_url ? (
@@ -348,7 +347,7 @@ function EventDetailContent() {
           {/* Registration Info */}
           {event.max_capacity > 0 && (
             <div className="px-6 md:px-8 pb-4">
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-transparent rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Registration</span>
                   <span className="text-sm font-semibold text-gray-900">
@@ -387,7 +386,7 @@ function EventDetailContent() {
           )}
 
           {/* Action Buttons */}
-          <div className="p-6 md:p-8 bg-gray-50 border-t">
+          <div className="p-6 md:p-8 bg-transparent border-t">
             {event.is_registered ? (
               <div className="space-y-4">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
@@ -467,8 +466,8 @@ function EventDetailContent() {
 
 export default function EventDetailPage() {
   return (
-    <ProtectedRoute>
+    <>
       <EventDetailContent />
-    </ProtectedRoute>
+    </>
   )
 }

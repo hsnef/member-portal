@@ -2,8 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
 import { formatPhoneNumber } from '@/lib/utils/formatters'
 
@@ -60,189 +58,187 @@ export default function NewPriestPage() {
   }
 
   return (
-    <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-      <AdminLayout>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Add New Priest</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Add a new priest to the system
-              </p>
-            </div>
-            <button
-              onClick={() => router.push('/admin/settings/priests')}
-              className="text-sm text-gray-600 hover:text-gray-900"
-            >
-              &larr; Back to Priests
-            </button>
+    <>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Add New Priest</h1>
+            <p className="mt-1 text-sm text-gray-600">
+              Add a new priest to the system
+            </p>
+          </div>
+          <button
+            onClick={() => router.push('/admin/settings/priests')}
+            className="text-sm text-gray-600 hover:text-gray-900"
+          >
+            &larr; Back to Priests
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-6">
+          {/* Name */}
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+              required
+            />
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-6">
-            {/* Name */}
+          {/* Bio */}
+          <div>
+            <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
+              Biography
+            </label>
+            <textarea
+              id="bio"
+              rows={4}
+              value={formData.bio}
+              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+              placeholder="Brief introduction and qualifications..."
+            />
+          </div>
+
+          {/* Contact Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Name <span className="text-red-500">*</span>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                Phone
               </label>
               <input
-                type="text"
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                type="tel"
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: formatPhoneNumber(e.target.value) })}
+                placeholder="(555) 123-4567"
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                required
               />
             </div>
 
-            {/* Bio */}
             <div>
-              <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
-                Biography
-              </label>
-              <textarea
-                id="bio"
-                rows={4}
-                value={formData.bio}
-                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                placeholder="Brief introduction and qualifications..."
-              />
-            </div>
-
-            {/* Contact Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: formatPhoneNumber(e.target.value) })}
-                  placeholder="(555) 123-4567"
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                />
-              </div>
-            </div>
-
-            {/* Specialties */}
-            <div>
-              <label htmlFor="specialties" className="block text-sm font-medium text-gray-700 mb-1">
-                Specialties
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
               </label>
               <input
-                type="text"
-                id="specialties"
-                value={formData.specialties}
-                onChange={(e) => setFormData({ ...formData, specialties: e.target.value })}
+                type="email"
+                id="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                placeholder="e.g., Vedic rituals, Havans, Weddings"
+              />
+            </div>
+          </div>
+
+          {/* Specialties */}
+          <div>
+            <label htmlFor="specialties" className="block text-sm font-medium text-gray-700 mb-1">
+              Specialties
+            </label>
+            <input
+              type="text"
+              id="specialties"
+              value={formData.specialties}
+              onChange={(e) => setFormData({ ...formData, specialties: e.target.value })}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+              placeholder="e.g., Vedic rituals, Havans, Weddings"
+            />
+          </div>
+
+          {/* URLs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="picture_url" className="block text-sm font-medium text-gray-700 mb-1">
+                Picture URL
+              </label>
+              <input
+                type="url"
+                id="picture_url"
+                value={formData.picture_url}
+                onChange={(e) => setFormData({ ...formData, picture_url: e.target.value })}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                placeholder="https://..."
               />
             </div>
 
-            {/* URLs */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="picture_url" className="block text-sm font-medium text-gray-700 mb-1">
-                  Picture URL
-                </label>
-                <input
-                  type="url"
-                  id="picture_url"
-                  value={formData.picture_url}
-                  onChange={(e) => setFormData({ ...formData, picture_url: e.target.value })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                  placeholder="https://..."
-                />
-              </div>
+            <div>
+              <label htmlFor="profile_url" className="block text-sm font-medium text-gray-700 mb-1">
+                Profile URL
+              </label>
+              <input
+                type="url"
+                id="profile_url"
+                value={formData.profile_url}
+                onChange={(e) => setFormData({ ...formData, profile_url: e.target.value })}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                placeholder="https://..."
+              />
+            </div>
+          </div>
 
-              <div>
-                <label htmlFor="profile_url" className="block text-sm font-medium text-gray-700 mb-1">
-                  Profile URL
-                </label>
-                <input
-                  type="url"
-                  id="profile_url"
-                  value={formData.profile_url}
-                  onChange={(e) => setFormData({ ...formData, profile_url: e.target.value })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                  placeholder="https://..."
-                />
-              </div>
+          {/* Display Order & Active */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="display_order" className="block text-sm font-medium text-gray-700 mb-1">
+                Display Order
+              </label>
+              <input
+                type="number"
+                id="display_order"
+                value={formData.display_order}
+                onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                min="0"
+              />
+              <p className="mt-1 text-xs text-gray-500">Lower numbers appear first</p>
             </div>
 
-            {/* Display Order & Active */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="display_order" className="block text-sm font-medium text-gray-700 mb-1">
-                  Display Order
-                </label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Status
+              </label>
+              <div className="flex items-center mt-3">
                 <input
-                  type="number"
-                  id="display_order"
-                  value={formData.display_order}
-                  onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                  min="0"
+                  type="checkbox"
+                  id="is_active"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  className="h-4 w-4 text-saffron focus:ring-saffron-ring border-gray-300 rounded"
                 />
-                <p className="mt-1 text-xs text-gray-500">Lower numbers appear first</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
+                <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">
+                  Active (available for booking)
                 </label>
-                <div className="flex items-center mt-3">
-                  <input
-                    type="checkbox"
-                    id="is_active"
-                    checked={formData.is_active}
-                    onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="h-4 w-4 text-saffron focus:ring-saffron-ring border-gray-300 rounded"
-                  />
-                  <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">
-                    Active (available for booking)
-                  </label>
-                </div>
               </div>
             </div>
+          </div>
 
-            {/* Actions */}
-            <div className="flex justify-end gap-4 pt-4 border-t">
-              <button
-                type="button"
-                onClick={() => router.push('/admin/settings/priests')}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
-              >
-                {saving ? 'Saving...' : 'Add Priest'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </AdminLayout>
-    </ProtectedRoute>
+          {/* Actions */}
+          <div className="flex justify-end gap-4 pt-4 border-t">
+            <button
+              type="button"
+              onClick={() => router.push('/admin/settings/priests')}
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+            >
+              {saving ? 'Saving...' : 'Add Priest'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
   )
 }

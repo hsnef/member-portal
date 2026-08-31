@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { ZellePaymentOption } from '@/components/zelle/ZellePaymentOption'
 import { ZelleInstructions } from '@/components/zelle/ZelleInstructions'
@@ -190,7 +189,7 @@ function DonationForm({
             <button
               type="button"
               onClick={() => router.push('/member')}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
             >
               Cancel
             </button>
@@ -393,7 +392,7 @@ function DonateContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex items-center justify-center bg-transparent">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading donation form...</p>
@@ -405,7 +404,7 @@ function DonateContent() {
   // Zelle success state
   if (zelleSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="bg-transparent flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center">
           <div className="bg-white rounded-xl shadow-lg p-8">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -433,7 +432,7 @@ function DonateContent() {
   // Check for errors on card payment init
   if (paymentMethod === 'card' && !clientSecret && !loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex items-center justify-center bg-transparent">
         <div className="text-center max-w-md">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Unable to Initialize Payment</h2>
           <p className="text-gray-600 mb-6">
@@ -442,7 +441,7 @@ function DonateContent() {
           <div className="flex gap-3 justify-center">
             <button
               onClick={() => router.push('/member')}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
             >
               Go Back
             </button>
@@ -471,7 +470,7 @@ function DonateContent() {
   } : undefined
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="bg-transparent py-12 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -683,8 +682,8 @@ function DonateContent() {
 
 export default function DonatePage() {
   return (
-    <ProtectedRoute>
+    <>
       <DonateContent />
-    </ProtectedRoute>
+    </>
   )
 }

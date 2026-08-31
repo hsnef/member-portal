@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import { downloadInvoice } from '@/lib/pdf/invoice'
@@ -90,12 +89,12 @@ export default function MemberRequestsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Draft': return 'text-gray-600 bg-gray-50 border-gray-200'
+      case 'Draft': return 'text-gray-600 bg-transparent border-gray-200'
       case 'Sent': return 'text-blue-600 bg-blue-50 border-blue-200'
       case 'Paid': return 'text-green-600 bg-green-50 border-green-200'
       case 'Completed': return 'text-purple-600 bg-purple-50 border-purple-200'
       case 'Cancelled': return 'text-red-600 bg-red-50 border-red-200'
-      default: return 'text-gray-600 bg-gray-50 border-gray-200'
+      default: return 'text-gray-600 bg-transparent border-gray-200'
     }
   }
 
@@ -116,8 +115,8 @@ export default function MemberRequestsPage() {
   const pendingAmount = filteredRequests.filter(r => r.status === 'Sent').reduce((sum, r) => sum + r.amount, 0)
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+    <>
+      <div className="bg-transparent">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -244,7 +243,7 @@ export default function MemberRequestsPage() {
                       )}
                       <button
                         onClick={() => handleDownloadInvoice(request)}
-                        className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                        className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
                       >
                         📄 Download Invoice
                       </button>
@@ -256,6 +255,6 @@ export default function MemberRequestsPage() {
           )}
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

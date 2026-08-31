@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { formatLoginMethod, formatLocation, formatUserAgent } from '@/lib/login-audit-log/utils'
 
 interface LoginLog {
@@ -123,7 +122,7 @@ export default function MemberLoginActivityPage() {
 
   return (
     <ProtectedRoute requiredRoles={['Admin', 'Office Manager']}>
-      <AdminLayout>
+      <>
         <div className="space-y-6">
           {/* Header */}
           <div className="flex justify-between items-start">
@@ -288,7 +287,7 @@ export default function MemberLoginActivityPage() {
             ) : (
               <div className="divide-y divide-gray-200">
                 {logs.map((log) => (
-                  <div key={log.id} className="px-6 py-4 hover:bg-gray-50">
+                  <div key={log.id} className="px-6 py-4 hover:bg-transparent">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3">
@@ -380,7 +379,7 @@ export default function MemberLoginActivityPage() {
             </div>
           )}
         </div>
-      </AdminLayout>
+      </>
     </ProtectedRoute>
   )
 }
