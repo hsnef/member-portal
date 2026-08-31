@@ -94,7 +94,7 @@ function PaymentForm({ event, amount }: { event: Event; amount: number }) {
           <div className="pt-4 border-t">
             <div className="flex justify-between items-center">
               <p className="text-lg font-semibold text-gray-900">Amount Due</p>
-              <p className="text-2xl font-bold text-[#FF9933]">${amount.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-saffron">${amount.toFixed(2)}</p>
             </div>
           </div>
         </div>
@@ -123,7 +123,7 @@ function PaymentForm({ event, amount }: { event: Event; amount: number }) {
         <button
           type="submit"
           disabled={!stripe || loading}
-          className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+          className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
         >
           {loading ? 'Processing...' : `Pay $${amount.toFixed(2)}`}
         </button>
@@ -229,7 +229,7 @@ function EventPaymentContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading payment form...</p>
         </div>
       </div>
@@ -245,7 +245,7 @@ function EventPaymentContent() {
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => router.push('/member/events')}
-            className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+            className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
           >
             Back to Events
           </button>
@@ -261,7 +261,7 @@ function EventPaymentContent() {
           <p className="text-gray-600">Unable to load payment form</p>
           <button
             onClick={() => router.push('/member/events')}
-            className="mt-4 px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+            className="mt-4 px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
           >
             Back to Events
           </button>
@@ -277,7 +277,7 @@ function EventPaymentContent() {
     appearance: {
       theme: 'stripe' as const,
       variables: {
-        colorPrimary: '#FF9933',
+        colorPrimary: '#c75b12',
       },
     },
   }

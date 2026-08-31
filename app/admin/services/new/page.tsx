@@ -103,7 +103,7 @@ export default function NewServicePage() {
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   required
                 />
               </div>
@@ -117,7 +117,7 @@ export default function NewServicePage() {
                   id="display_name"
                   value={formData.display_name}
                   onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
 
@@ -130,7 +130,7 @@ export default function NewServicePage() {
                   rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   placeholder="Service details and what's included..."
                 />
               </div>
@@ -143,7 +143,7 @@ export default function NewServicePage() {
                   id="category"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value as 'Puja' | 'Other' })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 >
                   <option value="Puja">Puja</option>
                   <option value="Other">Other</option>
@@ -174,7 +174,7 @@ export default function NewServicePage() {
                         step="0.01"
                         value={formData.price_member_temple}
                         onChange={(e) => setFormData({ ...formData, price_member_temple: e.target.value })}
-                        className="block w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="block w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                         placeholder="0.00"
                       />
                     </div>
@@ -192,7 +192,7 @@ export default function NewServicePage() {
                         step="0.01"
                         value={formData.price_community_temple}
                         onChange={(e) => setFormData({ ...formData, price_community_temple: e.target.value })}
-                        className="block w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="block w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                         placeholder="0.00"
                       />
                     </div>
@@ -214,7 +214,7 @@ export default function NewServicePage() {
                         step="0.01"
                         value={formData.price_member_external}
                         onChange={(e) => setFormData({ ...formData, price_member_external: e.target.value })}
-                        className="block w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="block w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                         placeholder="0.00"
                       />
                     </div>
@@ -232,7 +232,7 @@ export default function NewServicePage() {
                         step="0.01"
                         value={formData.price_community_external}
                         onChange={(e) => setFormData({ ...formData, price_community_external: e.target.value })}
-                        className="block w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="block w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                         placeholder="0.00"
                       />
                     </div>
@@ -254,7 +254,7 @@ export default function NewServicePage() {
                   id="duration_minutes"
                   value={formData.duration_minutes}
                   onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   placeholder="e.g., 60"
                 />
               </div>
@@ -268,7 +268,7 @@ export default function NewServicePage() {
                   rows={3}
                   value={formData.preparation_notes}
                   onChange={(e) => setFormData({ ...formData, preparation_notes: e.target.value })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   placeholder="What members need to prepare for this service..."
                 />
               </div>
@@ -285,7 +285,7 @@ export default function NewServicePage() {
                     id="is_active"
                     checked={formData.is_active}
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="h-4 w-4 text-[#FF9933] focus:ring-[#FF9933] border-gray-300 rounded"
+                    className="h-4 w-4 text-saffron focus:ring-saffron-ring border-gray-300 rounded"
                   />
                   <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">
                     Active (available for booking)
@@ -298,7 +298,7 @@ export default function NewServicePage() {
                     id="is_temple_only"
                     checked={formData.is_temple_only}
                     onChange={(e) => setFormData({ ...formData, is_temple_only: e.target.checked })}
-                    className="h-4 w-4 text-[#FF9933] focus:ring-[#FF9933] border-gray-300 rounded"
+                    className="h-4 w-4 text-saffron focus:ring-saffron-ring border-gray-300 rounded"
                   />
                   <label htmlFor="is_temple_only" className="ml-2 text-sm text-gray-700">
                     Temple only (cannot be performed at external locations)
@@ -311,7 +311,7 @@ export default function NewServicePage() {
                     id="requires_appointment"
                     checked={formData.requires_appointment}
                     onChange={(e) => setFormData({ ...formData, requires_appointment: e.target.checked })}
-                    className="h-4 w-4 text-[#FF9933] focus:ring-[#FF9933] border-gray-300 rounded"
+                    className="h-4 w-4 text-saffron focus:ring-saffron-ring border-gray-300 rounded"
                   />
                   <label htmlFor="requires_appointment" className="ml-2 text-sm text-gray-700">
                     Requires appointment/booking
@@ -328,7 +328,7 @@ export default function NewServicePage() {
                   id="display_order"
                   value={formData.display_order}
                   onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   min="0"
                 />
                 <p className="mt-1 text-xs text-gray-500">Lower numbers appear first</p>
@@ -347,7 +347,7 @@ export default function NewServicePage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+                className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
               >
                 {saving ? 'Saving...' : 'Add Service'}
               </button>

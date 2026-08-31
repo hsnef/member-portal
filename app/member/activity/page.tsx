@@ -122,7 +122,7 @@ export default function MemberActivityPage() {
       <ProtectedRoute>
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading activity...</p>
           </div>
         </div>
@@ -182,7 +182,7 @@ export default function MemberActivityPage() {
                 <select
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent text-sm"
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent text-sm"
                 >
                   {availableYears.map((year) => (
                     <option key={year} value={year}>{year}</option>
@@ -194,7 +194,7 @@ export default function MemberActivityPage() {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value as ActivityType | 'All')}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent text-sm"
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent text-sm"
                 >
                   <option value="All">All Activities</option>
                   <option value="Visit">Temple Visits</option>

@@ -208,7 +208,7 @@ export default function MemberFamilyPage() {
       <ProtectedRoute>
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading family members...</p>
           </div>
         </div>
@@ -238,7 +238,7 @@ export default function MemberFamilyPage() {
               {!showForm && familyMembers.length < 4 && (
                 <button
                   onClick={handleAddNew}
-                  className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+                  className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
                 >
                   + Add Family Member
                 </button>
@@ -277,7 +277,7 @@ export default function MemberFamilyPage() {
                       value={editingMember.first_name}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -290,7 +290,7 @@ export default function MemberFamilyPage() {
                       value={editingMember.last_name}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -301,7 +301,7 @@ export default function MemberFamilyPage() {
                       name="relationship"
                       value={editingMember.relationship}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     >
                       {RELATIONSHIPS.map((r) => (
                         <option key={r} value={r}>{r}</option>
@@ -317,7 +317,7 @@ export default function MemberFamilyPage() {
                       name="date_of_birth"
                       value={editingMember.date_of_birth}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -328,7 +328,7 @@ export default function MemberFamilyPage() {
                       name="nakshatra"
                       value={editingMember.nakshatra}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     >
                       <option value="">Select Nakshatra</option>
                       {NAKSHATRAS.map((n) => (
@@ -345,7 +345,7 @@ export default function MemberFamilyPage() {
                       name="email"
                       value={editingMember.email}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -361,7 +361,7 @@ export default function MemberFamilyPage() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+                    className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
                   >
                     {saving ? 'Saving...' : editingMember.id ? 'Update' : 'Add'}
                   </button>
@@ -381,7 +381,7 @@ export default function MemberFamilyPage() {
               {!showForm && (
                 <button
                   onClick={handleAddNew}
-                  className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+                  className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
                 >
                   Add Your First Family Member
                 </button>
@@ -467,7 +467,7 @@ export default function MemberFamilyPage() {
                 <div className="text-center pt-4">
                   <button
                     onClick={handleAddNew}
-                    className="text-[#FF9933] hover:text-[#E68A2E] font-medium"
+                    className="text-saffron hover:text-saffron-hover font-medium"
                   >
                     + Add Another Family Member ({4 - familyMembers.length} remaining)
                   </button>

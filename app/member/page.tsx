@@ -154,7 +154,7 @@ export default function MemberDashboard() {
       <ProtectedRoute>
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading your membership...</p>
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function MemberDashboard() {
                 {hasAdminAccess && (
                   <button
                     onClick={() => router.push('/admin')}
-                    className="text-sm text-[#FF9933] hover:text-[#E68A2E] font-medium"
+                    className="text-sm text-saffron hover:text-saffron-hover font-medium"
                   >
                     Admin Portal →
                   </button>
@@ -228,7 +228,7 @@ export default function MemberDashboard() {
               {member.current_level === 'Annual' && status.color !== 'green' && (
                 <button
                   onClick={() => router.push('/member/renew')}
-                  className="px-4 py-2 bg-[#FF9933] hover:bg-[#E68A2E] text-white text-sm font-semibold rounded-md shadow-sm transition-colors"
+                  className="px-4 py-2 bg-saffron hover:bg-saffron-hover text-white text-sm font-semibold rounded-md shadow-sm transition-colors"
                 >
                   Renew Membership
                 </button>
@@ -236,7 +236,7 @@ export default function MemberDashboard() {
               {member.current_level === 'Community' && (
                 <button
                   onClick={() => router.push('/member/renew')}
-                  className="px-4 py-2 bg-[#FF9933] hover:bg-[#E68A2E] text-white text-sm font-semibold rounded-md shadow-sm transition-colors"
+                  className="px-4 py-2 bg-saffron hover:bg-saffron-hover text-white text-sm font-semibold rounded-md shadow-sm transition-colors"
                 >
                   Upgrade Membership
                 </button>

@@ -71,7 +71,7 @@ export default function MemberPassPage() {
       <ProtectedRoute>
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 to-white">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading pass...</p>
           </div>
         </div>
@@ -87,7 +87,7 @@ export default function MemberPassPage() {
             <p className="text-gray-600">No membership found</p>
             <button
               onClick={() => router.push('/member')}
-              className="mt-4 text-[#FF9933] hover:underline"
+              className="mt-4 text-saffron hover:underline"
             >
               Go to Dashboard
             </button>

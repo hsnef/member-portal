@@ -66,7 +66,7 @@ function VerifyQRContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Verifying QR code...</p>
         </div>
       </div>
@@ -129,7 +129,7 @@ function VerifyQRContent() {
 
               <div>
                 <p className="text-sm text-gray-500 uppercase tracking-wide mb-1">Membership ID</p>
-                <p className="text-2xl font-mono font-bold text-[#FF9933]">{member.membership_id}</p>
+                <p className="text-2xl font-mono font-bold text-saffron">{member.membership_id}</p>
               </div>
 
               <div>
@@ -169,7 +169,7 @@ function VerifyQRContent() {
                 <div className="space-y-2">
                   {familyMembers.map((family) => (
                     <div key={family.id} className="flex items-center py-2 border-b border-gray-100 last:border-0">
-                      <div className="w-3 h-3 bg-[#FF9933] rounded-full mr-3"></div>
+                      <div className="w-3 h-3 bg-saffron rounded-full mr-3"></div>
                       <div className="flex-1">
                         <p className="font-medium text-gray-900">
                           {family.first_name} {family.last_name}
@@ -247,7 +247,7 @@ export default function VerifyQRPage() {
     <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
       <Suspense fallback={
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
         </div>
       }>
         <VerifyQRContent />

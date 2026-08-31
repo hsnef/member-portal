@@ -95,7 +95,7 @@ export default function RequestPaymentSuccessPage() {
       <ProtectedRoute>
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Verifying your payment...</p>
           </div>
         </div>
@@ -113,7 +113,7 @@ export default function RequestPaymentSuccessPage() {
             <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={() => router.push('/member/requests')}
-              className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
             >
               Back to Requests
             </button>
@@ -185,7 +185,7 @@ export default function RequestPaymentSuccessPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => router.push('/member/requests')}
-              className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
             >
               View My Requests
             </button>

@@ -301,7 +301,7 @@ export default function PendingRegistrationsPage() {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
               >
                 <option value="All">All Applications</option>
                 <option value="Pending">Pending Review</option>
@@ -322,7 +322,7 @@ export default function PendingRegistrationsPage() {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading applications...</p>
               </div>
             ) : registrations.length === 0 ? (
@@ -415,7 +415,7 @@ export default function PendingRegistrationsPage() {
                           )}
                           <button
                             onClick={() => setSelectedRegistration(registration)}
-                            className="text-[#FF9933] hover:text-[#FF8800]"
+                            className="text-saffron hover:text-[#FF8800]"
                           >
                             View Details
                           </button>
@@ -559,7 +559,7 @@ export default function PendingRegistrationsPage() {
                           setMembershipId(getNextMembershipId(selectedRegistration.requested_level))
                           setShowApprovalModal(true)
                         }}
-                        className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#FF8800]"
+                        className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-[#FF8800]"
                       >
                         Approve Application
                       </button>
@@ -585,7 +585,7 @@ export default function PendingRegistrationsPage() {
                       type="text"
                       value={membershipId}
                       onChange={(e) => setMembershipId(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       placeholder="10000100"
                       disabled={processing}
                     />
@@ -603,7 +603,7 @@ export default function PendingRegistrationsPage() {
                       value={reviewNotes}
                       onChange={(e) => setReviewNotes(e.target.value)}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       disabled={processing}
                     />
                   </div>

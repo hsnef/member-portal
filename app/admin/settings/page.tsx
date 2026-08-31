@@ -144,7 +144,7 @@ export default function SettingsPage() {
           </div>
 
           {/* System Information */}
-          <div className="bg-gradient-to-r from-[#FF9933] to-[#800000] rounded-lg shadow-lg p-6 text-white">
+          <div className="bg-kumkum rounded-lg shadow-lg p-6 text-white">
             <h2 className="text-2xl font-bold mb-2">HSNEF Member Portal</h2>
             <p className="text-white/90">Hindu Society of North East Florida</p>
             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
@@ -180,7 +180,7 @@ export default function SettingsPage() {
                     {category.title}
                   </h3>
                   <p className="text-sm text-gray-600">{category.description}</p>
-                  <div className="mt-4 text-sm text-[#FF9933] font-medium">
+                  <div className="mt-4 text-sm text-saffron font-medium">
                     Configure →
                   </div>
                 </button>

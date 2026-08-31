@@ -117,7 +117,7 @@ export default function MemberBookingsPage() {
             </div>
             <Link
               href="/member/bookings/new"
-              className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+              className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
             >
               + New Booking
             </Link>
@@ -130,7 +130,7 @@ export default function MemberBookingsPage() {
                 onClick={() => setFilter('all')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   filter === 'all'
-                    ? 'bg-[#FF9933] text-white'
+                    ? 'bg-saffron text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -140,7 +140,7 @@ export default function MemberBookingsPage() {
                 onClick={() => setFilter('pending')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   filter === 'pending'
-                    ? 'bg-[#FF9933] text-white'
+                    ? 'bg-saffron text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -150,7 +150,7 @@ export default function MemberBookingsPage() {
                 onClick={() => setFilter('approved')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   filter === 'approved'
-                    ? 'bg-[#FF9933] text-white'
+                    ? 'bg-saffron text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -160,7 +160,7 @@ export default function MemberBookingsPage() {
                 onClick={() => setFilter('paid')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   filter === 'paid'
-                    ? 'bg-[#FF9933] text-white'
+                    ? 'bg-saffron text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -170,7 +170,7 @@ export default function MemberBookingsPage() {
                 onClick={() => setFilter('completed')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   filter === 'completed'
-                    ? 'bg-[#FF9933] text-white'
+                    ? 'bg-saffron text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -182,7 +182,7 @@ export default function MemberBookingsPage() {
           {/* Bookings List */}
           {loading ? (
             <div className="bg-white shadow rounded-lg p-12 text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
               <p className="mt-4 text-gray-600">Loading bookings...</p>
             </div>
           ) : bookings.length === 0 ? (
@@ -207,7 +207,7 @@ export default function MemberBookingsPage() {
               <div className="mt-6">
                 <Link
                   href="/member/bookings/new"
-                  className="inline-flex items-center px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+                  className="inline-flex items-center px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
                 >
                   + New Booking
                 </Link>
@@ -240,7 +240,7 @@ export default function MemberBookingsPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-[#FF9933]">
+                      <p className="text-2xl font-bold text-saffron">
                         ${booking.total_amount.toFixed(2)}
                       </p>
                     </div>

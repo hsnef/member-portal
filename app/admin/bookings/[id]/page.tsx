@@ -254,7 +254,7 @@ export default function AdminBookingDetailPage() {
       <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
         <AdminLayout>
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading booking details...</p>
           </div>
         </AdminLayout>
@@ -399,7 +399,7 @@ export default function AdminBookingDetailPage() {
                         )}
                       </h3>
                     </div>
-                    <p className="text-lg font-semibold text-[#FF9933] ml-4">
+                    <p className="text-lg font-semibold text-saffron ml-4">
                       ${item.price.toFixed(2)}
                     </p>
                   </div>
@@ -483,7 +483,7 @@ export default function AdminBookingDetailPage() {
           <div className="bg-white shadow rounded-lg p-6">
             <div className="flex justify-between items-center">
               <span className="text-xl font-semibold text-gray-900">Total Amount</span>
-              <span className="text-3xl font-bold text-[#FF9933]">
+              <span className="text-3xl font-bold text-saffron">
                 ${booking.total_amount.toFixed(2)}
               </span>
             </div>
@@ -506,7 +506,7 @@ export default function AdminBookingDetailPage() {
                   value={approvalNotes}
                   onChange={(e) => setApprovalNotes(e.target.value)}
                   rows={3}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   placeholder="Any notes or instructions for the member..."
                 />
               </div>
@@ -546,7 +546,7 @@ export default function AdminBookingDetailPage() {
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                   rows={3}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   placeholder="Reason for rejection..."
                   required
                 />

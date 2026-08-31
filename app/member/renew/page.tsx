@@ -69,12 +69,12 @@ function RenewMembershipForm({
               onClick={() => onLevelChange(level)}
               className={`p-6 border-2 rounded-lg transition-all ${
                 selectedLevel === level
-                  ? 'border-[#FF9933] bg-orange-50'
+                  ? 'border-saffron bg-orange-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
               <h4 className="text-xl font-bold text-gray-900 mb-2 capitalize">{level} Membership</h4>
-              <p className="text-3xl font-bold text-[#FF9933] mb-2">
+              <p className="text-3xl font-bold text-saffron mb-2">
                 {pricing[level].displayPrice}
               </p>
               <p className="text-sm text-gray-600">
@@ -109,7 +109,7 @@ function RenewMembershipForm({
             <button
               type="submit"
               disabled={!stripe || loading}
-              className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
             >
               {loading ? 'Processing...' : `Pay $${amount.toFixed(2)}`}
             </button>
@@ -201,7 +201,7 @@ function RenewMembershipContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading payment form...</p>
         </div>
       </div>
@@ -218,7 +218,7 @@ function RenewMembershipContent() {
           </p>
           <button
             onClick={() => router.push('/member')}
-            className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+            className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
           >
             Go Back
           </button>
@@ -232,7 +232,7 @@ function RenewMembershipContent() {
     appearance: {
       theme: 'stripe' as const,
       variables: {
-        colorPrimary: '#FF9933',
+        colorPrimary: '#c75b12',
       },
     },
   }
@@ -275,7 +275,7 @@ function RenewMembershipContent() {
           {updatingPayment && (
             <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-lg">
               <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-2 text-sm text-gray-600">Updating payment...</p>
               </div>
             </div>

@@ -158,7 +158,7 @@ export default function MemberRequestsPage() {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
               >
                 <option value="All">All Statuses</option>
                 <option value="Sent">Pending Payment</option>
@@ -172,7 +172,7 @@ export default function MemberRequestsPage() {
           {/* Requests List */}
           {loading ? (
             <div className="text-center py-12 bg-white rounded-lg shadow">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
               <p className="mt-4 text-gray-600">Loading requests...</p>
             </div>
           ) : filteredRequests.length === 0 ? (
@@ -219,7 +219,7 @@ export default function MemberRequestsPage() {
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">Amount</p>
-                        <p className="text-2xl font-bold text-[#FF9933]">
+                        <p className="text-2xl font-bold text-saffron">
                           ${request.amount.toFixed(2)}
                         </p>
                       </div>
@@ -237,7 +237,7 @@ export default function MemberRequestsPage() {
                       {request.status === 'Sent' && (
                         <button
                           onClick={() => handlePayRequest(request.id)}
-                          className="flex-1 px-6 py-3 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+                          className="flex-1 px-6 py-3 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
                         >
                           💳 Pay Now - ${request.amount.toFixed(2)}
                         </button>

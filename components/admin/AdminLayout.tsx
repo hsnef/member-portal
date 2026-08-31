@@ -201,7 +201,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             onClick={onItemClick}
             className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-colors ${
               shouldHighlight
-                ? 'bg-orange-50 text-[#FF9933]'
+                ? 'bg-orange-50 text-saffron'
                 : 'text-gray-700 hover:bg-gray-50'
             }`}
           >
@@ -231,7 +231,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               }`}
             >
               <div className="flex items-center">
-                <group.icon className={`w-5 h-5 mr-3 flex-shrink-0 ${isGroupActive ? 'text-[#FF9933]' : ''}`} />
+                <group.icon className={`w-5 h-5 mr-3 flex-shrink-0 ${isGroupActive ? 'text-saffron' : ''}`} />
                 {group.name}
               </div>
               <ChevronIcon className="w-4 h-4 text-gray-400" expanded={isExpanded} />
@@ -249,7 +249,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                       onClick={onItemClick}
                       className={`block px-3 py-2 text-sm rounded-md transition-colors ${
                         isActive
-                          ? 'bg-orange-50 text-[#FF9933] font-medium'
+                          ? 'bg-orange-50 text-saffron font-medium'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                     >
@@ -278,7 +278,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               onClick={() => setSidebarOpen(false)}
             />
             <div className="fixed inset-y-0 left-0 flex flex-col w-64 bg-white">
-              <div className="flex items-center justify-between h-14 px-4 bg-gradient-to-r from-[#FF9933] to-[#800000]">
+              <div className="flex items-center justify-between h-14 px-4 bg-kumkum">
                 <span className="text-lg font-bold text-white">HSNEF Admin</span>
                 <button
                   onClick={() => setSidebarOpen(false)}
@@ -299,7 +299,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         {/* Desktop sidebar */}
         <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-60 lg:flex-col">
           <div className="flex flex-col flex-1 min-h-0 bg-white border-r border-gray-200">
-            <div className="flex items-center h-14 px-4 bg-gradient-to-r from-[#FF9933] to-[#800000]">
+            <div className="flex items-center h-14 px-4 bg-kumkum">
               <span className="text-lg font-bold text-white">HSNEF Admin</span>
             </div>
             <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto">
@@ -331,7 +331,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
                 <Link
                   href="/member"
-                  className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-gray-600 hover:text-[#FF9933] hover:bg-orange-50 rounded-md transition-colors"
+                  className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-gray-600 hover:text-saffron hover:bg-orange-50 rounded-md transition-colors"
                   title="View Member Portal"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

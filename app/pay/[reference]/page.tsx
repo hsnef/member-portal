@@ -101,7 +101,7 @@ export default function PaymentPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading payment details...</p>
         </div>
       </div>
@@ -123,7 +123,7 @@ export default function PaymentPage() {
             <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={() => router.push('/')}
-              className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
             >
               Go to Home
             </button>
@@ -158,7 +158,7 @@ export default function PaymentPage() {
             <div className="space-y-3">
               <button
                 onClick={() => router.push('/member')}
-                className="w-full px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+                className="w-full px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
               >
                 Go to My Dashboard
               </button>
@@ -205,7 +205,7 @@ export default function PaymentPage() {
             </div>
             <button
               onClick={() => router.push('/member')}
-              className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
             >
               Go to Dashboard
             </button>
@@ -232,7 +232,7 @@ export default function PaymentPage() {
             </p>
             <button
               onClick={() => router.push('/')}
-              className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
             >
               Go to Home
             </button>

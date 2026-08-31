@@ -182,7 +182,7 @@ export default function ZelleSettingsPage() {
         <AdminLayout>
           <div className="flex justify-center items-center min-h-[400px]">
             <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
               <p className="mt-4 text-gray-600">Loading settings...</p>
             </div>
           </div>
@@ -207,7 +207,7 @@ export default function ZelleSettingsPage() {
             </p>
             <button
               onClick={() => router.push('/admin/zelle')}
-              className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
             >
               Back to Zelle Payments
             </button>
@@ -263,8 +263,8 @@ export default function ZelleSettingsPage() {
                 </div>
                 <button
                   onClick={() => setSettings(prev => ({ ...prev, enabled: !prev.enabled }))}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#FF9933] focus:ring-offset-2 ${
-                    settings.enabled ? 'bg-[#FF9933]' : 'bg-gray-200'
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-saffron-ring focus:ring-offset-2 ${
+                    settings.enabled ? 'bg-saffron' : 'bg-gray-200'
                   }`}
                 >
                   <span
@@ -294,7 +294,7 @@ export default function ZelleSettingsPage() {
                     value={settings.email}
                     onChange={(e) => setSettings(prev => ({ ...prev, email: e.target.value }))}
                     placeholder="temple@example.org"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                   />
                 </div>
 
@@ -307,7 +307,7 @@ export default function ZelleSettingsPage() {
                     value={settings.phone}
                     onChange={(e) => setSettings(prev => ({ ...prev, phone: formatPhoneNumber(e.target.value) }))}
                     placeholder="(555) 123-4567"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                   />
                 </div>
               </div>
@@ -335,7 +335,7 @@ export default function ZelleSettingsPage() {
                       ...prev,
                       autoConfirmThreshold: parseInt(e.target.value) || 0
                     }))}
-                    className="w-32 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-32 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                   />
                   <span className="ml-2 text-sm text-gray-500">USD</span>
                 </div>
@@ -356,7 +356,7 @@ export default function ZelleSettingsPage() {
                       ...prev,
                       expiryHours: parseInt(e.target.value) || 48
                     }))}
-                    className="w-32 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-32 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                   />
                   <span className="ml-2 text-sm text-gray-500">hours</span>
                 </div>
@@ -373,7 +373,7 @@ export default function ZelleSettingsPage() {
                 rows={3}
                 value={settings.instructions}
                 onChange={(e) => setSettings(prev => ({ ...prev, instructions: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                 placeholder="Enter instructions for members..."
               />
             </div>
@@ -389,7 +389,7 @@ export default function ZelleSettingsPage() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+                className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
               >
                 {saving ? 'Saving...' : 'Save Settings'}
               </button>

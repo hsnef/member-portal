@@ -102,7 +102,7 @@ function DonationForm({
               }}
               className={`py-3 px-4 border-2 rounded-lg font-semibold transition-all ${
                 amount === amt && !customAmount
-                  ? 'border-[#FF9933] bg-orange-50 text-[#FF9933]'
+                  ? 'border-saffron bg-orange-50 text-saffron'
                   : 'border-gray-200 hover:border-gray-300 text-gray-700'
               }`}
             >
@@ -130,7 +130,7 @@ function DonationForm({
               setCustomAmount(e.target.value)
               setAmount(parseFloat(e.target.value) || 0)
             }}
-            className="pl-7 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+            className="pl-7 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
             placeholder="0.00"
           />
         </div>
@@ -144,7 +144,7 @@ function DonationForm({
         <select
           value={purpose}
           onChange={(e) => setPurpose(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
         >
           <option value="General">General Temple Fund</option>
           <option value="Building">Building & Maintenance</option>
@@ -197,7 +197,7 @@ function DonationForm({
             <button
               type="submit"
               disabled={!stripe || loading || amount <= 0}
-              className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
             >
               {loading ? 'Processing...' : `Donate $${amount.toFixed(2)}`}
             </button>
@@ -395,7 +395,7 @@ function DonateContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading donation form...</p>
         </div>
       </div>
@@ -417,10 +417,10 @@ function DonateContent() {
             <p className="text-gray-600 mb-4">
               Your Zelle payment has been recorded. A receipt will be sent to your email once confirmed.
             </p>
-            <p className="text-2xl font-bold text-[#FF9933] mb-6">{formatAmount(amount)}</p>
+            <p className="text-2xl font-bold text-saffron mb-6">{formatAmount(amount)}</p>
             <button
               onClick={() => router.push('/member')}
-              className="w-full px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+              className="w-full px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
             >
               Return to Dashboard
             </button>
@@ -449,7 +449,7 @@ function DonateContent() {
             {zelleSettings?.enabled && (
               <button
                 onClick={() => setPaymentMethod('zelle')}
-                className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+                className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
               >
                 Pay with Zelle
               </button>
@@ -465,7 +465,7 @@ function DonateContent() {
     appearance: {
       theme: 'stripe' as const,
       variables: {
-        colorPrimary: '#FF9933',
+        colorPrimary: '#c75b12',
       },
     },
   } : undefined
@@ -499,7 +499,7 @@ function DonateContent() {
                 className={`
                   w-full p-4 rounded-lg border-2 transition-all text-left
                   ${paymentMethod === 'card'
-                    ? 'border-[#FF9933] bg-[#FF9933]/5'
+                    ? 'border-saffron bg-saffron-soft'
                     : 'border-gray-200 bg-white hover:border-gray-300'
                   }
                 `}
@@ -508,10 +508,10 @@ function DonateContent() {
                   <div
                     className={`
                       w-5 h-5 rounded-full border-2 flex items-center justify-center
-                      ${paymentMethod === 'card' ? 'border-[#FF9933]' : 'border-gray-300'}
+                      ${paymentMethod === 'card' ? 'border-saffron' : 'border-gray-300'}
                     `}
                   >
-                    {paymentMethod === 'card' && <div className="w-3 h-3 rounded-full bg-[#FF9933]" />}
+                    {paymentMethod === 'card' && <div className="w-3 h-3 rounded-full bg-saffron" />}
                   </div>
                   <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -539,7 +539,7 @@ function DonateContent() {
           {(updatingPayment || zelleLoading) && (
             <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-lg">
               <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-2 text-sm text-gray-600">
                   {zelleLoading ? 'Processing...' : 'Updating...'}
                 </p>
@@ -573,7 +573,7 @@ function DonateContent() {
                       onClick={() => handleAmountChange(amt)}
                       className={`py-3 px-4 border-2 rounded-lg font-semibold transition-all ${
                         amount === amt
-                          ? 'border-[#FF9933] bg-orange-50 text-[#FF9933]'
+                          ? 'border-saffron bg-orange-50 text-saffron'
                           : 'border-gray-200 hover:border-gray-300 text-gray-700'
                       }`}
                     >
@@ -598,7 +598,7 @@ function DonateContent() {
                     min="1"
                     value={amount || ''}
                     onChange={(e) => handleAmountChange(parseFloat(e.target.value) || 0)}
-                    className="pl-7 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="pl-7 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     placeholder="0.00"
                   />
                 </div>
@@ -612,7 +612,7 @@ function DonateContent() {
                 <select
                   value={purpose}
                   onChange={(e) => handlePurposeChange(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                 >
                   <option value="General">General Temple Fund</option>
                   <option value="Building">Building & Maintenance</option>

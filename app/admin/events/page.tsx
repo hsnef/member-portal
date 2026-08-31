@@ -144,7 +144,7 @@ export default function EventsPage() {
             </div>
             <Link
               href="/admin/events/new"
-              className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-medium"
+              className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-medium"
             >
               + Create Event
             </Link>
@@ -185,14 +185,14 @@ export default function EventsPage() {
                 placeholder="Search events by name or category..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
               />
 
               {/* Status Filter */}
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
               >
                 <option value="All">All Statuses</option>
                 <option value="Published">Published</option>
@@ -207,7 +207,7 @@ export default function EventsPage() {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading events...</p>
               </div>
             ) : filteredEvents.length === 0 ? (
@@ -215,7 +215,7 @@ export default function EventsPage() {
                 <p className="text-gray-500 mb-4">No events found</p>
                 <Link
                   href="/admin/events/new"
-                  className="inline-block px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+                  className="inline-block px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
                 >
                   Create First Event
                 </Link>
@@ -284,7 +284,7 @@ export default function EventsPage() {
                         <div className="flex items-center gap-6 text-sm">
                           <div>
                             <span className="font-medium text-gray-700">Registrations:</span>{' '}
-                            <span className="font-bold text-[#FF9933]">
+                            <span className="font-bold text-saffron">
                               {event.registration_count || 0}
                               {event.max_capacity > 0 && ` / ${event.max_capacity}`}
                             </span>
@@ -309,7 +309,7 @@ export default function EventsPage() {
                         </button>
                         <button
                           onClick={() => router.push(`/admin/events/${event.id}/edit`)}
-                          className="px-4 py-2 text-sm bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+                          className="px-4 py-2 text-sm bg-saffron text-white rounded-md hover:bg-saffron-hover"
                         >
                           Edit Event
                         </button>

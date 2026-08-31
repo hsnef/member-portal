@@ -237,7 +237,7 @@ export default function JoinPage() {
         <div className="max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 bg-gradient-to-br from-[#FF9933] to-[#800000] rounded-full flex items-center justify-center">
+              <div className="h-12 w-12 bg-kumkum rounded-full flex items-center justify-center">
                 <span className="text-xl font-bold text-white">H</span>
               </div>
               <div>
@@ -247,7 +247,7 @@ export default function JoinPage() {
             </div>
             <Link
               href="/login"
-              className="text-sm text-[#FF9933] hover:text-[#FF8800] font-medium"
+              className="text-sm text-saffron hover:text-[#FF8800] font-medium"
             >
               Already a member? Sign in
             </Link>
@@ -263,11 +263,11 @@ export default function JoinPage() {
             <div
               key={level}
               className={`bg-white rounded-lg p-6 shadow-md border-2 ${
-                requestedLevel === level ? 'border-[#FF9933]' : 'border-transparent'
+                requestedLevel === level ? 'border-saffron' : 'border-transparent'
               }`}
             >
               <h3 className="text-lg font-semibold text-gray-900">{level} Membership</h3>
-              <p className="text-2xl font-bold text-[#FF9933] mt-2">{info.price}</p>
+              <p className="text-2xl font-bold text-saffron mt-2">{info.price}</p>
               <ul className="mt-4 space-y-2">
                 {info.benefits.map((benefit, idx) => (
                   <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
@@ -306,7 +306,7 @@ export default function JoinPage() {
                 <select
                   value={memberClass}
                   onChange={(e) => setMemberClass(e.target.value as MemberClass)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   disabled={loading}
                 >
                   <option value="Personal">Personal / Family</option>
@@ -321,7 +321,7 @@ export default function JoinPage() {
                 <select
                   value={requestedLevel}
                   onChange={(e) => setRequestedLevel(e.target.value as MembershipLevel)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   disabled={loading}
                 >
                   <option value="Community">
@@ -354,7 +354,7 @@ export default function JoinPage() {
                         required
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                         disabled={loading}
                       />
                     </div>
@@ -367,7 +367,7 @@ export default function JoinPage() {
                         required
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                         disabled={loading}
                       />
                     </div>
@@ -379,7 +379,7 @@ export default function JoinPage() {
                         type="text"
                         value={nakshatra}
                         onChange={(e) => setNakshatra(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                         disabled={loading}
                       />
                     </div>
@@ -391,7 +391,7 @@ export default function JoinPage() {
                         type="text"
                         value={familyGotra}
                         onChange={(e) => setFamilyGotra(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                         disabled={loading}
                       />
                     </div>
@@ -409,7 +409,7 @@ export default function JoinPage() {
                         type="checkbox"
                         checked={includeSpouse}
                         onChange={(e) => setIncludeSpouse(e.target.checked)}
-                        className="h-4 w-4 text-[#FF9933] focus:ring-[#FF9933] border-gray-300 rounded"
+                        className="h-4 w-4 text-saffron focus:ring-saffron-ring border-gray-300 rounded"
                         disabled={loading}
                       />
                       <span className="ml-2 text-sm text-gray-700">Include spouse details</span>
@@ -426,7 +426,7 @@ export default function JoinPage() {
                           type="text"
                           value={secondaryFirstName}
                           onChange={(e) => setSecondaryFirstName(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                           disabled={loading}
                         />
                       </div>
@@ -438,7 +438,7 @@ export default function JoinPage() {
                           type="text"
                           value={secondaryLastName}
                           onChange={(e) => setSecondaryLastName(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                           disabled={loading}
                         />
                       </div>
@@ -450,7 +450,7 @@ export default function JoinPage() {
                           type="text"
                           value={secondaryNakshatra}
                           onChange={(e) => setSecondaryNakshatra(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                           disabled={loading}
                         />
                       </div>
@@ -476,7 +476,7 @@ export default function JoinPage() {
                       required
                       value={businessName}
                       onChange={(e) => setBusinessName(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       disabled={loading}
                     />
                   </div>
@@ -488,7 +488,7 @@ export default function JoinPage() {
                       type="text"
                       value={businessEin}
                       onChange={(e) => setBusinessEin(formatEIN(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       disabled={loading}
                       placeholder="XX-XXXXXXX"
                     />
@@ -501,7 +501,7 @@ export default function JoinPage() {
                       type="text"
                       value={businessType}
                       onChange={(e) => setBusinessType(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       disabled={loading}
                       placeholder="e.g., Restaurant, Retail, Services"
                     />
@@ -522,7 +522,7 @@ export default function JoinPage() {
                       required
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       disabled={loading}
                     />
                   </div>
@@ -535,7 +535,7 @@ export default function JoinPage() {
                       required
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       disabled={loading}
                     />
                   </div>
@@ -547,7 +547,7 @@ export default function JoinPage() {
                       type="text"
                       value={nakshatra}
                       onChange={(e) => setNakshatra(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       disabled={loading}
                     />
                   </div>
@@ -568,7 +568,7 @@ export default function JoinPage() {
                     required
                     value={primaryEmail}
                     onChange={(e) => setPrimaryEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                     disabled={loading}
                   />
                 </div>
@@ -580,7 +580,7 @@ export default function JoinPage() {
                     type="tel"
                     value={primaryPhone}
                     onChange={(e) => setPrimaryPhone(formatPhoneNumber(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                     disabled={loading}
                     placeholder="(555) 123-4567"
                   />
@@ -593,7 +593,7 @@ export default function JoinPage() {
                     type="email"
                     value={secondaryEmail}
                     onChange={(e) => setSecondaryEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                     disabled={loading}
                   />
                 </div>
@@ -605,7 +605,7 @@ export default function JoinPage() {
                     type="tel"
                     value={secondaryPhone}
                     onChange={(e) => setSecondaryPhone(formatPhoneNumber(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                     disabled={loading}
                     placeholder="(555) 123-4567"
                   />
@@ -625,7 +625,7 @@ export default function JoinPage() {
                     type="text"
                     value={addressLine1}
                     onChange={(e) => setAddressLine1(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                     disabled={loading}
                   />
                 </div>
@@ -637,7 +637,7 @@ export default function JoinPage() {
                     type="text"
                     value={addressLine2}
                     onChange={(e) => setAddressLine2(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                     disabled={loading}
                   />
                 </div>
@@ -648,7 +648,7 @@ export default function JoinPage() {
                       type="text"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       disabled={loading}
                     />
                   </div>
@@ -658,7 +658,7 @@ export default function JoinPage() {
                       type="text"
                       value={state}
                       onChange={(e) => setState(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       disabled={loading}
                       placeholder="FL"
                     />
@@ -671,7 +671,7 @@ export default function JoinPage() {
                       type="text"
                       value={zip}
                       onChange={(e) => setZip(formatZipCode(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       disabled={loading}
                       placeholder="32092"
                     />
@@ -691,7 +691,7 @@ export default function JoinPage() {
                   <select
                     value={howDidYouHear}
                     onChange={(e) => setHowDidYouHear(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                     disabled={loading}
                   >
                     <option value="">Select an option</option>
@@ -711,7 +711,7 @@ export default function JoinPage() {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                     disabled={loading}
                     placeholder="Any additional information you'd like to share..."
                   />
@@ -734,7 +734,7 @@ export default function JoinPage() {
               <button
                 type="submit"
                 disabled={loading || !termsAccepted}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#FF9933] to-[#800000] hover:from-[#FF8800] hover:to-[#700000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9933] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-kumkum focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-saffron-ring disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
@@ -777,7 +777,7 @@ export default function JoinPage() {
             Questions?{' '}
             <a
               href="mailto:info@hsnef.org"
-              className="text-[#FF9933] hover:text-[#FF8800] font-medium"
+              className="text-saffron hover:text-[#FF8800] font-medium"
             >
               Contact us at info@hsnef.org
             </a>

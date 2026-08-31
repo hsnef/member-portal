@@ -260,7 +260,7 @@ export default function MemberEventsPage() {
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
               >
                 <option value="All">All Categories</option>
                 <option value="Festival">Festival</option>
@@ -277,7 +277,7 @@ export default function MemberEventsPage() {
           {/* Events Grid */}
           {loading ? (
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
               <p className="mt-4 text-gray-600">Loading events...</p>
             </div>
           ) : filteredEvents.length === 0 ? (
@@ -309,7 +309,7 @@ export default function MemberEventsPage() {
                   {/* Event Details */}
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-[#FF9933] uppercase tracking-wide">
+                      <span className="text-xs font-semibold text-saffron uppercase tracking-wide">
                         {event.category}
                       </span>
                       {event.is_registered && (
@@ -321,7 +321,7 @@ export default function MemberEventsPage() {
 
                     <h3
                       onClick={() => router.push(`/member/events/${event.id}`)}
-                      className="text-xl font-bold text-gray-900 mb-2 hover:text-[#FF9933] cursor-pointer transition-colors"
+                      className="text-xl font-bold text-gray-900 mb-2 hover:text-saffron cursor-pointer transition-colors"
                     >
                       {event.event_name}
                     </h3>
@@ -353,7 +353,7 @@ export default function MemberEventsPage() {
                     {/* View Details Link */}
                     <button
                       onClick={() => router.push(`/member/events/${event.id}`)}
-                      className="text-sm text-[#FF9933] hover:text-[#E68A2E] font-medium mb-4 inline-flex items-center"
+                      className="text-sm text-saffron hover:text-saffron-hover font-medium mb-4 inline-flex items-center"
                     >
                       View Details
                       <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -365,7 +365,7 @@ export default function MemberEventsPage() {
                     <div className="flex items-center justify-between mb-4 pb-4 border-b">
                       <div>
                         <p className="text-xs text-gray-500">Price (Member)</p>
-                        <p className="text-lg font-bold text-[#FF9933]">
+                        <p className="text-lg font-bold text-saffron">
                           {event.member_price === 0 ? 'Free' : `$${event.member_price.toFixed(2)}`}
                         </p>
                       </div>
@@ -422,7 +422,7 @@ export default function MemberEventsPage() {
                         <p className="text-sm text-gray-500 italic">No registration required</p>
                         <button
                           onClick={() => router.push(`/member/events/${event.id}`)}
-                          className="mt-2 text-sm text-[#FF9933] hover:text-[#E68A2E] font-medium"
+                          className="mt-2 text-sm text-saffron hover:text-saffron-hover font-medium"
                         >
                           View Event Details →
                         </button>
@@ -444,7 +444,7 @@ export default function MemberEventsPage() {
                     ) : (
                       <button
                         onClick={() => handleRegister(event.id)}
-                        className="w-full px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+                        className="w-full px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
                       >
                         {event.is_payable
                           ? `Register - $${getEventPrice(event).toFixed(2)}`

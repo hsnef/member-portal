@@ -176,7 +176,7 @@ export default function ViewRequestPage() {
       <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
         <AdminLayout>
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading request...</p>
           </div>
         </AdminLayout>
@@ -192,7 +192,7 @@ export default function ViewRequestPage() {
             <p className="text-gray-500">Request not found</p>
             <button
               onClick={() => router.push('/admin/requests')}
-              className="mt-4 px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+              className="mt-4 px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
             >
               Back to Requests
             </button>
@@ -227,7 +227,7 @@ export default function ViewRequestPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => router.push(`/admin/requests/${request.id}/edit`)}
-                className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+                className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
               >
                 Edit Request
               </button>
@@ -259,7 +259,7 @@ export default function ViewRequestPage() {
 
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Amount</p>
-                  <p className="text-2xl font-bold text-[#FF9933]">${request.amount.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-saffron">${request.amount.toFixed(2)}</p>
                 </div>
 
                 <div>
@@ -308,7 +308,7 @@ export default function ViewRequestPage() {
 
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Membership ID</p>
-                  <p className="text-lg font-mono font-semibold text-[#FF9933]">
+                  <p className="text-lg font-mono font-semibold text-saffron">
                     {request.membership_id}
                   </p>
                 </div>

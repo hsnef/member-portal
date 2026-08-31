@@ -181,7 +181,7 @@ function CallbackHandler() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Completing sign in...</p>
         </div>
       </div>
@@ -197,7 +197,7 @@ function CallbackHandler() {
             <p className="text-red-600 mb-4">{error}</p>
             <a
               href="/login"
-              className="inline-block px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#FF8800] transition-colors"
+              className="inline-block px-4 py-2 bg-saffron text-white rounded-md hover:bg-[#FF8800] transition-colors"
             >
               Return to Login
             </a>
@@ -216,7 +216,7 @@ export default function CallbackHandlerPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>

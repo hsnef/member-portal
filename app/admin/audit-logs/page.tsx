@@ -176,7 +176,7 @@ export default function GlobalAuditLogsPage() {
                   placeholder="Member name, ID, staff..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
 
@@ -189,7 +189,7 @@ export default function GlobalAuditLogsPage() {
                   id="actionType"
                   value={actionTypeFilter}
                   onChange={(e) => setActionTypeFilter(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 >
                   <option value="All">All Actions</option>
                   <option value="CREATED">Created</option>
@@ -208,7 +208,7 @@ export default function GlobalAuditLogsPage() {
                   id="creationSource"
                   value={creationSourceFilter}
                   onChange={(e) => setCreationSourceFilter(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 >
                   <option value="All">All Sources</option>
                   <option value="AUTO_IMPORT">Auto Import</option>
@@ -229,7 +229,7 @@ export default function GlobalAuditLogsPage() {
                   id="fromDate"
                   value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
 
@@ -243,7 +243,7 @@ export default function GlobalAuditLogsPage() {
                   id="toDate"
                   value={toDate}
                   onChange={(e) => setToDate(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
             </div>
@@ -259,7 +259,7 @@ export default function GlobalAuditLogsPage() {
                     setFromDate('')
                     setToDate('')
                   }}
-                  className="text-sm text-[#FF9933] hover:text-[#FF8800] font-medium"
+                  className="text-sm text-saffron hover:text-[#FF8800] font-medium"
                 >
                   Clear all filters
                 </button>
@@ -275,7 +275,7 @@ export default function GlobalAuditLogsPage() {
 
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading audit logs...</p>
               </div>
             ) : (

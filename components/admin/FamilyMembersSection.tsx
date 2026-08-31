@@ -153,7 +153,7 @@ export function FamilyMembersSection({ memberId, familyMembers, onRefresh }: Fam
         <h2 className="text-lg font-semibold text-gray-900">Family Members</h2>
         <button
           onClick={openAddModal}
-          className="px-4 py-2 text-sm font-medium text-white bg-[#FF9933] hover:bg-[#E68A2E] rounded-md transition-colors"
+          className="px-4 py-2 text-sm font-medium text-white bg-saffron hover:bg-saffron-hover rounded-md transition-colors"
         >
           + Add Family Member
         </button>
@@ -199,7 +199,7 @@ export function FamilyMembersSection({ memberId, familyMembers, onRefresh }: Fam
                         <span className="text-gray-500">Email:</span>
                         <a
                           href={`mailto:${familyMember.email}`}
-                          className="ml-2 text-[#FF9933] hover:text-[#FF8800]"
+                          className="ml-2 text-saffron hover:text-[#FF8800]"
                         >
                           {familyMember.email}
                         </a>
@@ -251,7 +251,7 @@ export function FamilyMembersSection({ memberId, familyMembers, onRefresh }: Fam
                     <input
                       type="text"
                       {...register('first_name')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                     {errors.first_name && (
                       <p className="mt-1 text-sm text-red-600">{errors.first_name.message}</p>
@@ -265,7 +265,7 @@ export function FamilyMembersSection({ memberId, familyMembers, onRefresh }: Fam
                     <input
                       type="text"
                       {...register('last_name')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                     {errors.last_name && (
                       <p className="mt-1 text-sm text-red-600">{errors.last_name.message}</p>
@@ -280,7 +280,7 @@ export function FamilyMembersSection({ memberId, familyMembers, onRefresh }: Fam
                       type="text"
                       {...register('relationship')}
                       placeholder="e.g., Son, Daughter, Spouse"
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                   </div>
 
@@ -291,7 +291,7 @@ export function FamilyMembersSection({ memberId, familyMembers, onRefresh }: Fam
                     <input
                       type="date"
                       {...register('date_of_birth')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                   </div>
 
@@ -301,7 +301,7 @@ export function FamilyMembersSection({ memberId, familyMembers, onRefresh }: Fam
                     </label>
                     <select
                       {...register('nakshatra')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     >
                       <option value="">Select Nakshatra</option>
                       {NAKSHATRAS.map((nakshatra) => (
@@ -319,7 +319,7 @@ export function FamilyMembersSection({ memberId, familyMembers, onRefresh }: Fam
                     <input
                       type="email"
                       {...register('email')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                     {errors.email && (
                       <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
@@ -338,7 +338,7 @@ export function FamilyMembersSection({ memberId, familyMembers, onRefresh }: Fam
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-4 py-2 text-sm font-medium text-white bg-[#FF9933] hover:bg-[#E68A2E] rounded-md disabled:opacity-50"
+                    className="px-4 py-2 text-sm font-medium text-white bg-saffron hover:bg-saffron-hover rounded-md disabled:opacity-50"
                   >
                     {loading ? 'Saving...' : editingMember ? 'Save Changes' : 'Add Family Member'}
                   </button>

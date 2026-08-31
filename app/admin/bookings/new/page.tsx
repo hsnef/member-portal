@@ -327,7 +327,7 @@ export default function StaffNewBookingPage() {
       <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
         <AdminLayout>
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading booking form...</p>
           </div>
         </AdminLayout>
@@ -374,14 +374,14 @@ export default function StaffNewBookingPage() {
                       value={memberSearchTerm}
                       onChange={(e) => setMemberSearchTerm(e.target.value)}
                       placeholder="Search by name, membership #, or email..."
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                     />
                   </div>
                   <div>
                     <select
                       value={selectedMemberId}
                       onChange={(e) => setSelectedMemberId(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       size={8}
                     >
                       <option value="">-- No Member (Community Member) --</option>
@@ -420,7 +420,7 @@ export default function StaffNewBookingPage() {
                       type="text"
                       value={requesterName}
                       onChange={(e) => setRequesterName(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       required
                     />
                   </div>
@@ -433,7 +433,7 @@ export default function StaffNewBookingPage() {
                       value={requesterPhone}
                       onChange={(e) => setRequesterPhone(formatPhoneNumber(e.target.value))}
                       placeholder="(555) 123-4567"
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       required
                     />
                   </div>
@@ -445,7 +445,7 @@ export default function StaffNewBookingPage() {
                       type="email"
                       value={requesterEmail}
                       onChange={(e) => setRequesterEmail(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       required
                     />
                   </div>
@@ -464,7 +464,7 @@ export default function StaffNewBookingPage() {
                     <select
                       value={selectedServiceId}
                       onChange={(e) => setSelectedServiceId(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                     >
                       <option value="">Choose a service...</option>
                       {services.map(service => (
@@ -487,7 +487,7 @@ export default function StaffNewBookingPage() {
                         type="date"
                         value={serviceDate}
                         onChange={(e) => setServiceDate(e.target.value)}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       />
                     </div>
                     <div>
@@ -498,7 +498,7 @@ export default function StaffNewBookingPage() {
                         type="time"
                         value={serviceTime}
                         onChange={(e) => setServiceTime(e.target.value)}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       />
                     </div>
                   </div>
@@ -536,7 +536,7 @@ export default function StaffNewBookingPage() {
                         value={locationAddress}
                         onChange={(e) => setLocationAddress(e.target.value)}
                         placeholder="Enter complete address"
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       />
                     )}
                   </div>
@@ -548,7 +548,7 @@ export default function StaffNewBookingPage() {
                     <select
                       value={selectedPurohitId}
                       onChange={(e) => setSelectedPurohitId(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                     >
                       <option value="">Choose a priest...</option>
                       {purohits.map(purohit => (
@@ -567,7 +567,7 @@ export default function StaffNewBookingPage() {
                       value={itemNotes}
                       onChange={(e) => setItemNotes(e.target.value)}
                       rows={2}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       placeholder="Any special requirements..."
                     />
                   </div>
@@ -583,7 +583,7 @@ export default function StaffNewBookingPage() {
                   <button
                     type="button"
                     onClick={handleAddToCart}
-                    className="w-full px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+                    className="w-full px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
                   >
                     Add to Booking
                   </button>
@@ -635,7 +635,7 @@ export default function StaffNewBookingPage() {
                     <div className="border-t pt-4 mb-4">
                       <div className="flex justify-between items-center text-lg font-bold">
                         <span>Total Amount:</span>
-                        <span className="text-[#FF9933]">${getTotalAmount().toFixed(2)}</span>
+                        <span className="text-saffron">${getTotalAmount().toFixed(2)}</span>
                       </div>
                     </div>
 
@@ -647,7 +647,7 @@ export default function StaffNewBookingPage() {
                         value={additionalNotes}
                         onChange={(e) => setAdditionalNotes(e.target.value)}
                         rows={3}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933] text-sm"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron text-sm"
                         placeholder="General notes..."
                       />
                     </div>
@@ -664,7 +664,7 @@ export default function StaffNewBookingPage() {
                           <select
                             value={bookingSource}
                             onChange={(e) => setBookingSource(e.target.value as any)}
-                            className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933] text-sm"
+                            className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron text-sm"
                           >
                             <option value="Walk-in">Walk-in</option>
                             <option value="Phone">Phone</option>
@@ -678,7 +678,7 @@ export default function StaffNewBookingPage() {
                             id="markAsPaid"
                             checked={markAsPaid}
                             onChange={(e) => setMarkAsPaid(e.target.checked)}
-                            className="h-4 w-4 text-[#FF9933] focus:ring-[#FF9933] border-gray-300 rounded"
+                            className="h-4 w-4 text-saffron focus:ring-saffron-ring border-gray-300 rounded"
                           />
                           <label htmlFor="markAsPaid" className="ml-2 text-sm text-gray-700">
                             Mark as Paid (cash/check received)

@@ -278,7 +278,7 @@ export default function MemberPaymentsPage() {
                     <select
                       value={filterYear}
                       onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                      className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     >
                       {availableYears.map((year) => (
                         <option key={year} value={year}>
@@ -300,7 +300,7 @@ export default function MemberPaymentsPage() {
                   </button>
                   <button
                     onClick={downloadAllReceipts}
-                    className="px-4 py-2 text-sm bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] flex items-center gap-2"
+                    className="px-4 py-2 text-sm bg-saffron text-white rounded-md hover:bg-saffron-hover flex items-center gap-2"
                   >
                     <span>📄</span> Download All Receipts
                   </button>
@@ -320,7 +320,7 @@ export default function MemberPaymentsPage() {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading payments...</p>
               </div>
             ) : filteredPayments.length === 0 ? (
@@ -328,7 +328,7 @@ export default function MemberPaymentsPage() {
                 <p className="text-gray-500 mb-4">No payments found for {filterYear}</p>
                 <button
                   onClick={() => router.push('/member/donate')}
-                  className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+                  className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
                 >
                   Make a Donation
                 </button>
@@ -373,7 +373,7 @@ export default function MemberPaymentsPage() {
 
                       <button
                         onClick={() => handleDownloadReceipt(payment)}
-                        className="ml-4 px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] text-sm font-medium"
+                        className="ml-4 px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover text-sm font-medium"
                       >
                         📄 Download Receipt
                       </button>

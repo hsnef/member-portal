@@ -614,8 +614,8 @@ export default function ImportMembersPage() {
                 file:mr-4 file:py-2 file:px-4
                 file:rounded-md file:border-0
                 file:text-sm file:font-semibold
-                file:bg-[#FF9933] file:text-white
-                hover:file:bg-[#E68A2E]
+                file:bg-saffron file:text-white
+                hover:file:bg-saffron-hover
                 cursor-pointer"
             />
             {file && (
@@ -732,7 +732,7 @@ export default function ImportMembersPage() {
                 <button
                   onClick={handleImport}
                   disabled={importing || validCount === 0}
-                  className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+                  className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
                 >
                   {importing ? 'Importing...' : `Import ${validCount} Valid Members`}
                 </button>
@@ -789,7 +789,7 @@ export default function ImportMembersPage() {
                 </button>
                 <button
                   onClick={() => router.push('/admin/members')}
-                  className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+                  className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
                 >
                   View Members
                 </button>

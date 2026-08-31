@@ -202,7 +202,7 @@ export default function LoginActivityPage() {
                   placeholder="Name, ID, email, IP..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
 
@@ -215,7 +215,7 @@ export default function LoginActivityPage() {
                   id="loginMethod"
                   value={loginMethodFilter}
                   onChange={(e) => setLoginMethodFilter(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 >
                   <option value="All">All Methods</option>
                   <option value="google">Google OAuth</option>
@@ -234,7 +234,7 @@ export default function LoginActivityPage() {
                   id="success"
                   value={successFilter}
                   onChange={(e) => setSuccessFilter(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 >
                   <option value="All">All Status</option>
                   <option value="Success">Successful</option>
@@ -252,7 +252,7 @@ export default function LoginActivityPage() {
                   id="fromDate"
                   value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
 
@@ -266,7 +266,7 @@ export default function LoginActivityPage() {
                   id="toDate"
                   value={toDate}
                   onChange={(e) => setToDate(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
             </div>
@@ -282,7 +282,7 @@ export default function LoginActivityPage() {
                     setFromDate('')
                     setToDate('')
                   }}
-                  className="text-sm text-[#FF9933] hover:text-[#FF8800] font-medium"
+                  className="text-sm text-saffron hover:text-[#FF8800] font-medium"
                 >
                   Clear all filters
                 </button>
@@ -294,7 +294,7 @@ export default function LoginActivityPage() {
           <div className="bg-white rounded-lg shadow overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading login activity...</p>
               </div>
             ) : filteredLogs.length === 0 ? (
@@ -381,7 +381,7 @@ export default function LoginActivityPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <button
                               onClick={() => setExpandedRow(expandedRow === log.id ? null : log.id)}
-                              className="text-[#FF9933] hover:text-[#FF8800] font-medium"
+                              className="text-saffron hover:text-[#FF8800] font-medium"
                             >
                               {expandedRow === log.id ? 'Hide Details' : 'View Details'}
                             </button>

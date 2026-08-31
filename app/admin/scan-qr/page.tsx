@@ -276,7 +276,7 @@ function ScanQRContent() {
               onClick={() => setScanMode('camera')}
               className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
                 scanMode === 'camera'
-                  ? 'bg-[#FF9933] text-white'
+                  ? 'bg-saffron text-white'
                   : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
               }`}
             >
@@ -286,7 +286,7 @@ function ScanQRContent() {
               onClick={() => setScanMode('manual')}
               className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
                 scanMode === 'manual'
-                  ? 'bg-[#FF9933] text-white'
+                  ? 'bg-saffron text-white'
                   : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
               }`}
             >
@@ -310,7 +310,7 @@ function ScanQRContent() {
                 <p className="text-red-800 font-medium mb-4">{cameraError}</p>
                 <button
                   onClick={() => setScanMode('manual')}
-                  className="px-6 py-2 bg-[#FF9933] text-white rounded-lg hover:bg-[#E68A2E]"
+                  className="px-6 py-2 bg-saffron text-white rounded-lg hover:bg-saffron-hover"
                 >
                   Switch to Manual Lookup
                 </button>
@@ -323,11 +323,11 @@ function ScanQRContent() {
                   style={{ maxHeight: '400px' }}
                 />
                 {scanning && (
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-4 border-[#FF9933] rounded-lg pointer-events-none">
-                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-[#FF9933]"></div>
-                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-[#FF9933]"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-[#FF9933]"></div>
-                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-[#FF9933]"></div>
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-4 border-saffron rounded-lg pointer-events-none">
+                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-saffron"></div>
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-saffron"></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-saffron"></div>
+                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-saffron"></div>
                   </div>
                 )}
               </div>
@@ -335,7 +335,7 @@ function ScanQRContent() {
 
             {verifying && (
               <div className="mt-4 text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-2 text-gray-600">Verifying member...</p>
               </div>
             )}
@@ -365,7 +365,7 @@ function ScanQRContent() {
                       onClick={() => setManualSearchType(type.value as any)}
                       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         manualSearchType === type.value
-                          ? 'bg-[#FF9933] text-white'
+                          ? 'bg-saffron text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -395,12 +395,12 @@ function ScanQRContent() {
                       manualSearchType === 'email' ? 'member@example.com' :
                       '555-1234'
                     }
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                   />
                   <button
                     onClick={handleManualSearch}
                     disabled={!manualInput.trim() || verifying}
-                    className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+                    className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
                   >
                     {verifying ? 'Searching...' : 'Search'}
                   </button>
@@ -410,7 +410,7 @@ function ScanQRContent() {
 
             {verifying && (
               <div className="mt-4 text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-2 text-gray-600">Searching for member...</p>
               </div>
             )}
@@ -461,7 +461,7 @@ function ScanQRContent() {
 
                 <div>
                   <p className="text-sm text-gray-500 uppercase tracking-wide mb-1">Membership ID</p>
-                  <p className="text-2xl font-mono font-bold text-[#FF9933]">{member.membership_id}</p>
+                  <p className="text-2xl font-mono font-bold text-saffron">{member.membership_id}</p>
                 </div>
 
                 <div>
@@ -501,7 +501,7 @@ function ScanQRContent() {
                   <div className="space-y-2">
                     {familyMembers.map((family) => (
                       <div key={family.id} className="flex items-center py-2 border-b border-gray-100 last:border-0">
-                        <div className="w-3 h-3 bg-[#FF9933] rounded-full mr-3"></div>
+                        <div className="w-3 h-3 bg-saffron rounded-full mr-3"></div>
                         <div className="flex-1">
                           <p className="font-medium text-gray-900">
                             {family.first_name} {family.last_name}
@@ -562,7 +562,7 @@ function ScanQRContent() {
             <div className="px-6 py-4 bg-white border-t border-gray-200 text-center">
               <button
                 onClick={resetScan}
-                className="px-8 py-3 bg-[#FF9933] hover:bg-[#E68A2E] text-white font-semibold rounded-lg text-lg"
+                className="px-8 py-3 bg-saffron hover:bg-saffron-hover text-white font-semibold rounded-lg text-lg"
               >
                 Scan Next Member →
               </button>

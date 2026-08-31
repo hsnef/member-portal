@@ -71,7 +71,7 @@ function PaymentSuccessContent() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent mb-4"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-900">Confirming your payment...</h2>
           <p className="text-gray-600 mt-2">Please wait while we verify your payment.</p>
         </div>
@@ -126,7 +126,7 @@ function PaymentSuccessContent() {
         <div className="space-y-3">
           <button
             onClick={() => router.push('/member')}
-            className="w-full px-6 py-3 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+            className="w-full px-6 py-3 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
           >
             Go to Dashboard
           </button>
@@ -152,7 +152,7 @@ export default function PaymentSuccessPage() {
     <ProtectedRoute>
       <Suspense fallback={
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
         </div>
       }>
         <PaymentSuccessContent />

@@ -173,7 +173,7 @@ export default function AdminReceiptsPage() {
                   placeholder="Search by member name, number, or receipt ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
 
@@ -185,7 +185,7 @@ export default function AdminReceiptsPage() {
                   <select
                     value={filterYear}
                     onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   >
                     {years.map(year => (
                       <option key={year} value={year}>{year}</option>
@@ -199,7 +199,7 @@ export default function AdminReceiptsPage() {
                   <select
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value as any)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   >
                     <option value="all">All Categories</option>
                     <option value="Membership">Membership</option>
@@ -216,7 +216,7 @@ export default function AdminReceiptsPage() {
                       type="checkbox"
                       checked={includeTestAccounts}
                       onChange={(e) => setIncludeTestAccounts(e.target.checked)}
-                      className="h-4 w-4 text-[#FF9933] focus:ring-[#FF9933] border-gray-300 rounded"
+                      className="h-4 w-4 text-saffron focus:ring-saffron-ring border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Include test accounts</span>
                   </label>
@@ -239,7 +239,7 @@ export default function AdminReceiptsPage() {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading receipts...</p>
               </div>
             ) : filteredPayments.length === 0 ? (
@@ -330,7 +330,7 @@ export default function AdminReceiptsPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
                             onClick={() => handleDownloadReceipt(payment)}
-                            className="text-[#FF9933] hover:text-[#E68A2E]"
+                            className="text-saffron hover:text-saffron-hover"
                           >
                             Download PDF
                           </button>

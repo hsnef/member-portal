@@ -193,7 +193,7 @@ function EventDetailContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading event details...</p>
         </div>
       </div>
@@ -209,7 +209,7 @@ function EventDetailContent() {
           <p className="text-gray-600 mb-6">{error || 'The event you are looking for does not exist.'}</p>
           <Link
             href="/member/events"
-            className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] inline-block"
+            className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover inline-block"
           >
             Back to Events
           </Link>
@@ -259,7 +259,7 @@ function EventDetailContent() {
 
         {/* Category Badge */}
         <div className="absolute top-4 right-4">
-          <span className="px-4 py-2 bg-[#FF9933] text-white rounded-full text-sm font-semibold shadow">
+          <span className="px-4 py-2 bg-saffron text-white rounded-full text-sm font-semibold shadow">
             {event.category}
           </span>
         </div>
@@ -325,7 +325,7 @@ function EventDetailContent() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase tracking-wide">Price</p>
-                  <p className="font-semibold text-[#FF9933]">
+                  <p className="font-semibold text-saffron">
                     {price === 0 ? 'Free' : `$${price.toFixed(2)}`}
                     {member?.current_level === 'Annual' || member?.current_level === 'Lifetime' ? (
                       <span className="text-xs text-green-600 ml-1">(Member)</span>
@@ -357,7 +357,7 @@ function EventDetailContent() {
                 </div>
                 <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
                   <div
-                    className="bg-[#FF9933] h-2 rounded-full transition-all"
+                    className="bg-saffron h-2 rounded-full transition-all"
                     style={{
                       width: `${Math.min((event.registration_count || 0) / event.max_capacity * 100, 100)}%`,
                     }}
@@ -373,12 +373,12 @@ function EventDetailContent() {
               <h3 className="text-sm font-semibold text-gray-900 mb-2">Contact Information</h3>
               <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                 {event.contact_email && (
-                  <a href={`mailto:${event.contact_email}`} className="hover:text-[#FF9933]">
+                  <a href={`mailto:${event.contact_email}`} className="hover:text-saffron">
                     📧 {event.contact_email}
                   </a>
                 )}
                 {event.contact_phone && (
-                  <a href={`tel:${event.contact_phone}`} className="hover:text-[#FF9933]">
+                  <a href={`tel:${event.contact_phone}`} className="hover:text-saffron">
                     📞 {event.contact_phone}
                   </a>
                 )}
@@ -449,7 +449,7 @@ function EventDetailContent() {
               <button
                 onClick={handleRegister}
                 disabled={registering}
-                className="w-full px-6 py-3 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 font-semibold text-lg"
+                className="w-full px-6 py-3 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 font-semibold text-lg"
               >
                 {registering
                   ? 'Registering...'

@@ -86,7 +86,7 @@ export function MembershipSwitcher() {
                 <div className="text-right ml-2 flex-shrink-0">
                   <p className="text-xs font-mono text-gray-600">{m.membership_id}</p>
                   {m.id === member?.id && (
-                    <span className="text-xs text-[#FF9933] font-medium">Active</span>
+                    <span className="text-xs text-saffron font-medium">Active</span>
                   )}
                 </div>
               </button>

@@ -19,7 +19,7 @@ export function ZellePaymentOption({
       className={`
         w-full p-4 rounded-lg border-2 transition-all text-left
         ${selected
-          ? 'border-[#FF9933] bg-[#FF9933]/5'
+          ? 'border-saffron bg-saffron-soft'
           : 'border-gray-200 bg-white hover:border-gray-300'
         }
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
@@ -30,10 +30,10 @@ export function ZellePaymentOption({
         <div
           className={`
             w-5 h-5 rounded-full border-2 flex items-center justify-center
-            ${selected ? 'border-[#FF9933]' : 'border-gray-300'}
+            ${selected ? 'border-saffron' : 'border-gray-300'}
           `}
         >
-          {selected && <div className="w-3 h-3 rounded-full bg-[#FF9933]" />}
+          {selected && <div className="w-3 h-3 rounded-full bg-saffron" />}
         </div>
 
         {/* Zelle Icon */}
@@ -51,7 +51,7 @@ export function ZellePaymentOption({
       </div>
 
       {selected && (
-        <div className="mt-3 ml-8 pl-5 border-l-2 border-[#FF9933]/30">
+        <div className="mt-3 ml-8 pl-5 border-l-2 border-saffron-ring">
           <p className="text-sm text-gray-600">
             You&apos;ll receive instructions to complete the Zelle payment from your bank app.
             No processing fees!

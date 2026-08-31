@@ -126,7 +126,7 @@ function PaymentForm({ booking }: { booking: Booking }) {
         <button
           type="submit"
           disabled={!stripe || loading}
-          className="flex-1 px-6 py-3 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+          className="flex-1 px-6 py-3 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
         >
           {loading ? 'Processing...' : `Pay $${booking.total_amount.toFixed(2)}`}
         </button>
@@ -215,7 +215,7 @@ export default function BookingPaymentPage() {
       <ProtectedRoute>
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading payment form...</p>
           </div>
         </div>
@@ -257,7 +257,7 @@ export default function BookingPaymentPage() {
   const appearance = {
     theme: 'stripe' as const,
     variables: {
-      colorPrimary: '#FF9933',
+      colorPrimary: '#c75b12',
     },
   }
 

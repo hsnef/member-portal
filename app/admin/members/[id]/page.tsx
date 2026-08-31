@@ -83,7 +83,7 @@ export default function MemberDetailPage() {
   const getLevelBadgeColor = (level: string) => {
     switch (level) {
       case 'Lifetime':
-        return 'bg-[#FF9933] text-white'
+        return 'bg-saffron text-white'
       case 'Annual':
         return 'bg-blue-500 text-white'
       case 'Community':
@@ -133,7 +133,7 @@ export default function MemberDetailPage() {
         <AdminLayout>
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
               <p className="mt-4 text-gray-600">Loading member details...</p>
             </div>
           </div>
@@ -152,7 +152,7 @@ export default function MemberDetailPage() {
               <p className="text-red-600">{error || 'Member not found'}</p>
               <Link
                 href="/admin/members"
-                className="mt-4 inline-block text-[#FF9933] hover:text-[#FF8800] font-medium"
+                className="mt-4 inline-block text-saffron hover:text-[#FF8800] font-medium"
               >
                 ← Back to Members
               </Link>
@@ -209,7 +209,7 @@ export default function MemberDetailPage() {
               <button
                 onClick={handleSendInvitation}
                 disabled={sendingEmail}
-                className="px-4 py-2 bg-gradient-to-r from-[#FF9933] to-[#800000] text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-kumkum text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {sendingEmail ? 'Sending...' : 'Send Email'}
               </button>
@@ -286,7 +286,7 @@ export default function MemberDetailPage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-500">Primary Email</label>
                     <p className="mt-1 text-gray-900">
-                      <a href={`mailto:${member.primary_email}`} className="text-[#FF9933] hover:text-[#FF8800]">
+                      <a href={`mailto:${member.primary_email}`} className="text-saffron hover:text-[#FF8800]">
                         {member.primary_email}
                       </a>
                     </p>
@@ -295,7 +295,7 @@ export default function MemberDetailPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-500">Primary Phone</label>
                       <p className="mt-1 text-gray-900">
-                        <a href={`tel:${member.primary_phone}`} className="text-[#FF9933] hover:text-[#FF8800]">
+                        <a href={`tel:${member.primary_phone}`} className="text-saffron hover:text-[#FF8800]">
                           {member.primary_phone}
                         </a>
                       </p>
@@ -332,7 +332,7 @@ export default function MemberDetailPage() {
                         <div>
                           <label className="block text-sm font-medium text-gray-500">Email</label>
                           <p className="mt-1 text-gray-900">
-                            <a href={`mailto:${member.secondary_email}`} className="text-[#FF9933] hover:text-[#FF8800]">
+                            <a href={`mailto:${member.secondary_email}`} className="text-saffron hover:text-[#FF8800]">
                               {member.secondary_email}
                             </a>
                           </p>
@@ -464,7 +464,7 @@ export default function MemberDetailPage() {
                 <div className="space-y-2">
                   <Link
                     href={`/admin/members/${memberId}/edit`}
-                    className="block w-full text-left px-4 py-2 text-sm text-white bg-[#FF9933] hover:bg-[#E68A2E] rounded-md transition-colors"
+                    className="block w-full text-left px-4 py-2 text-sm text-white bg-saffron hover:bg-saffron-hover rounded-md transition-colors"
                   >
                     ✏️ Edit Member
                   </Link>

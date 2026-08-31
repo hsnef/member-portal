@@ -140,7 +140,7 @@ export function MembershipPass({ member, familyMembers = [], qrToken }: Membersh
               />
             ) : (
               <div className="w-40 h-40 bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-solid border-saffron border-r-transparent"></div>
               </div>
             )}
             <p className="mt-2 text-[10px] text-gray-500">Scan for check-in</p>
@@ -151,7 +151,7 @@ export function MembershipPass({ member, familyMembers = [], qrToken }: Membersh
             {/* Name */}
             <div className="text-center">
               <p className="text-lg font-bold text-gray-900">{displayName}</p>
-              <p className="text-base font-mono font-bold text-[#FF9933]">{member.membership_id}</p>
+              <p className="text-base font-mono font-bold text-saffron">{member.membership_id}</p>
             </div>
 
             {/* Family Members */}
@@ -219,7 +219,7 @@ export function MembershipPass({ member, familyMembers = [], qrToken }: Membersh
                 link.click()
               }
             }}
-            className="px-3 py-1.5 text-xs font-medium text-white bg-[#FF9933] hover:bg-[#E68A2E] rounded"
+            className="px-3 py-1.5 text-xs font-medium text-white bg-saffron hover:bg-saffron-hover rounded"
           >
             Download QR
           </button>
@@ -286,7 +286,7 @@ export function MembershipPass({ member, familyMembers = [], qrToken }: Membersh
 
               <button
                 onClick={() => setShowAddToHome(false)}
-                className="mt-4 w-full py-2.5 bg-[#FF9933] text-white rounded-lg font-medium hover:bg-[#E68A2E]"
+                className="mt-4 w-full py-2.5 bg-saffron text-white rounded-lg font-medium hover:bg-saffron-hover"
               >
                 Got it
               </button>
@@ -360,7 +360,7 @@ export function MembershipPass({ member, familyMembers = [], qrToken }: Membersh
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-[10px] text-gray-500 uppercase tracking-wide">Membership ID</p>
-                  <p className="text-base font-mono font-bold text-[#FF9933]">{member.membership_id}</p>
+                  <p className="text-base font-mono font-bold text-saffron">{member.membership_id}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-gray-500 uppercase tracking-wide">Valid Until</p>
@@ -410,7 +410,7 @@ export function MembershipPass({ member, familyMembers = [], qrToken }: Membersh
                 </>
               ) : (
                 <div className="w-28 h-28 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-solid border-saffron border-r-transparent"></div>
                 </div>
               )}
             </div>
@@ -461,7 +461,7 @@ export function MembershipPass({ member, familyMembers = [], qrToken }: Membersh
               link.click()
             }
           }}
-          className="px-3 py-1.5 text-xs font-medium text-white bg-[#FF9933] hover:bg-[#E68A2E] rounded"
+          className="px-3 py-1.5 text-xs font-medium text-white bg-saffron hover:bg-saffron-hover rounded"
         >
           Download QR
         </button>
@@ -523,7 +523,7 @@ export function MembershipPass({ member, familyMembers = [], qrToken }: Membersh
 
             <button
               onClick={() => setShowAddToHome(false)}
-              className="mt-4 w-full py-2.5 bg-[#FF9933] text-white rounded-lg font-medium hover:bg-[#E68A2E]"
+              className="mt-4 w-full py-2.5 bg-saffron text-white rounded-lg font-medium hover:bg-saffron-hover"
             >
               Got it
             </button>

@@ -105,7 +105,7 @@ export default function BookingDetailPage() {
       <ProtectedRoute>
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading booking details...</p>
           </div>
         </div>
@@ -265,7 +265,7 @@ export default function BookingDetailPage() {
                         )}
                       </h3>
                     </div>
-                    <p className="text-lg font-semibold text-[#FF9933] ml-4">
+                    <p className="text-lg font-semibold text-saffron ml-4">
                       ${item.price.toFixed(2)}
                     </p>
                   </div>
@@ -320,7 +320,7 @@ export default function BookingDetailPage() {
           <div className="bg-white shadow rounded-lg p-6">
             <div className="flex justify-between items-center">
               <span className="text-xl font-semibold text-gray-900">Total Amount</span>
-              <span className="text-3xl font-bold text-[#FF9933]">
+              <span className="text-3xl font-bold text-saffron">
                 ${booking.total_amount.toFixed(2)}
               </span>
             </div>

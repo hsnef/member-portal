@@ -294,7 +294,7 @@ export default function TestAccountsPage() {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading test accounts...</p>
               </div>
             ) : testAccounts.length === 0 ? (
@@ -369,7 +369,7 @@ export default function TestAccountsPage() {
                           <button
                             onClick={() => handleResetPassword(account.primary_email, account.id)}
                             disabled={resettingPassword === account.id}
-                            className="text-[#FF9933] hover:text-[#E68A2E] disabled:text-gray-400"
+                            className="text-saffron hover:text-saffron-hover disabled:text-gray-400"
                           >
                             {resettingPassword === account.id ? 'Sending...' : 'Reset Password'}
                           </button>

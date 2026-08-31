@@ -86,7 +86,7 @@ function PaymentSuccessContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Processing your registration...</p>
         </div>
       </div>
@@ -105,7 +105,7 @@ function PaymentSuccessContent() {
           </p>
           <Link
             href="/member/events"
-            className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] inline-block"
+            className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover inline-block"
           >
             Back to Events
           </Link>
@@ -121,7 +121,7 @@ function PaymentSuccessContent() {
           <p className="text-gray-600">Unable to process registration</p>
           <Link
             href="/member/events"
-            className="mt-4 px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] inline-block"
+            className="mt-4 px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover inline-block"
           >
             Back to Events
           </Link>
@@ -189,7 +189,7 @@ function PaymentSuccessContent() {
           <div className="flex justify-center gap-4">
             <Link
               href="/member/events"
-              className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
             >
               View All Events
             </Link>

@@ -48,9 +48,9 @@ export function ZelleInstructions({
   return (
     <div className="space-y-4">
       {/* Amount */}
-      <div className="bg-[#FF9933]/10 border border-[#FF9933]/30 rounded-lg p-4 text-center">
+      <div className="bg-saffron-soft border border-saffron-ring rounded-lg p-4 text-center">
         <p className="text-sm text-gray-600 mb-1">Amount to Pay</p>
-        <p className="text-3xl font-bold text-[#FF9933]">{formatAmount(amount)}</p>
+        <p className="text-3xl font-bold text-saffron">{formatAmount(amount)}</p>
         <p className="text-sm text-gray-500 mt-1">{purpose}</p>
       </div>
 
