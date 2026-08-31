@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import type { LedgerEntry, ActivityType } from '@/types/database'
@@ -34,7 +33,7 @@ const getActivityColor = (type: ActivityType) => {
     case 'Donation': return 'text-green-600 bg-green-50 border-green-200'
     case 'Service': return 'text-indigo-600 bg-indigo-50 border-indigo-200'
     case 'Membership': return 'text-teal-600 bg-teal-50 border-teal-200'
-    default: return 'text-gray-600 bg-gray-50 border-gray-200'
+    default: return 'text-gray-600 bg-transparent border-gray-200'
   }
 }
 
@@ -119,20 +118,20 @@ export default function MemberActivityPage() {
 
   if (loading) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <>
+        <div className="flex items-center justify-center bg-transparent">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading activity...</p>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+    <>
+      <div className="bg-transparent">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -284,6 +283,6 @@ export default function MemberActivityPage() {
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

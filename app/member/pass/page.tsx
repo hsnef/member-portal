@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { MembershipPass } from '@/components/member/MembershipPass'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
@@ -68,21 +67,21 @@ export default function MemberPassPage() {
 
   if (loading) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 to-white">
+      <>
+        <div className="flex items-center justify-center bg-transparent">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading pass...</p>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   if (!member) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 to-white p-4">
+      <>
+        <div className="flex items-center justify-center bg-transparent p-4">
           <div className="text-center">
             <p className="text-gray-600">No membership found</p>
             <button
@@ -93,13 +92,13 @@ export default function MemberPassPage() {
             </button>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white p-4 pt-6">
+    <>
+      <div className="bg-transparent p-4 pt-6">
         {/* Minimal header */}
         <div className="max-w-xl mx-auto mb-4">
           <button
@@ -125,6 +124,6 @@ export default function MemberPassPage() {
           Pull down to refresh
         </p>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

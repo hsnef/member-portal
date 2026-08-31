@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
 
 interface TestAccount {
@@ -249,7 +248,7 @@ export default function TestAccountsPage() {
 
   return (
     <ProtectedRoute requiredRoles={['Admin', 'Office Manager']}>
-      <AdminLayout>
+      <>
         <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
@@ -305,7 +304,7 @@ export default function TestAccountsPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-transparent">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Membership #
@@ -332,7 +331,7 @@ export default function TestAccountsPage() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {testAccounts.map((account) => (
-                      <tr key={account.id} className="hover:bg-gray-50">
+                      <tr key={account.id} className="hover:bg-transparent">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="px-2 py-1 text-xs font-mono bg-purple-100 text-purple-800 rounded">
                             {account.membership_id}
@@ -446,7 +445,7 @@ export default function TestAccountsPage() {
             </div>
           </div>
         </div>
-      </AdminLayout>
+      </>
     </ProtectedRoute>
   )
 }

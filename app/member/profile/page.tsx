@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import { formatPhoneNumber, formatZipCode } from '@/lib/utils/formatters'
@@ -181,21 +180,21 @@ export default function MemberProfilePage() {
 
   if (loading) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <>
+        <div className="flex items-center justify-center bg-transparent">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading profile...</p>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   if (!member) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <>
+        <div className="flex items-center justify-center bg-transparent">
           <div className="text-center max-w-md">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Profile Not Found</h1>
             <p className="text-gray-600 mb-6">Unable to load your profile.</p>
@@ -207,13 +206,13 @@ export default function MemberProfilePage() {
             </button>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+    <>
+      <div className="bg-transparent">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -348,7 +347,7 @@ export default function MemberProfilePage() {
                       name="business_ein"
                       value={formData.business_ein}
                       disabled
-                      className="w-full px-4 py-2 border border-gray-200 rounded-md bg-gray-50 text-gray-500"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-md bg-transparent text-gray-500"
                     />
                     <p className="mt-1 text-xs text-gray-500">Contact office to update EIN</p>
                   </div>
@@ -369,7 +368,7 @@ export default function MemberProfilePage() {
                     name="primary_email"
                     value={formData.primary_email}
                     disabled
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md bg-gray-50 text-gray-500"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-md bg-transparent text-gray-500"
                   />
                   <p className="mt-1 text-xs text-gray-500">Contact office to change email</p>
                 </div>
@@ -563,7 +562,7 @@ export default function MemberProfilePage() {
               <button
                 type="button"
                 onClick={() => router.push('/member')}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
               >
                 Cancel
               </button>
@@ -578,6 +577,6 @@ export default function MemberProfilePage() {
           </form>
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

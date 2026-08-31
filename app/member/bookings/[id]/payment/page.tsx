@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 
@@ -119,7 +118,7 @@ function PaymentForm({ booking }: { booking: Booking }) {
         <button
           type="button"
           onClick={() => router.push(`/member/bookings/${booking.id}`)}
-          className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-semibold"
+          className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent font-semibold"
         >
           Cancel
         </button>
@@ -212,21 +211,21 @@ export default function BookingPaymentPage() {
 
   if (loading) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <>
+        <div className="bg-transparent flex items-center justify-center">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading payment form...</p>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   if (error) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 py-8">
+      <>
+        <div className="bg-transparent py-8">
           <div className="max-w-2xl mx-auto px-4">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
               <h2 className="text-xl font-semibold text-red-800 mb-2">Payment Error</h2>
@@ -240,17 +239,17 @@ export default function BookingPaymentPage() {
             </div>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   if (!booking || !clientSecret) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <>
+        <div className="bg-transparent flex items-center justify-center">
           <p className="text-gray-600">Booking not found</p>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
@@ -267,8 +266,8 @@ export default function BookingPaymentPage() {
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 py-8">
+    <>
+      <div className="bg-transparent py-8">
         <div className="max-w-2xl mx-auto px-4">
           <div className="mb-8">
             <button
@@ -290,6 +289,6 @@ export default function BookingPaymentPage() {
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

@@ -1,8 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
 import { downloadReceipt } from '@/lib/pdf/receipt'
 import type { PaymentCategory, PaymentMethod } from '@/types/database'
@@ -152,198 +150,196 @@ export default function AdminReceiptsPage() {
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
 
   return (
-    <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-      <AdminLayout>
-        <div className="space-y-6">
-          {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Receipts</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              View and download payment receipts
-            </p>
-          </div>
+    <>
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Receipts</h1>
+          <p className="mt-1 text-sm text-gray-600">
+            View and download payment receipts
+          </p>
+        </div>
 
-          {/* Filters */}
-          <div className="bg-white shadow rounded-lg p-4">
-            <div className="space-y-4">
-              {/* Search */}
+        {/* Filters */}
+        <div className="bg-white shadow rounded-lg p-4">
+          <div className="space-y-4">
+            {/* Search */}
+            <div>
+              <input
+                type="text"
+                placeholder="Search by member name, number, or receipt ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+              />
+            </div>
+
+            {/* Filters Row */}
+            <div className="flex flex-wrap gap-4">
+              {/* Year Filter */}
               <div>
-                <input
-                  type="text"
-                  placeholder="Search by member name, number, or receipt ID..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                <select
+                  value={filterYear}
+                  onChange={(e) => setFilterYear(parseInt(e.target.value))}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                >
+                  {years.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
               </div>
 
-              {/* Filters Row */}
-              <div className="flex flex-wrap gap-4">
-                {/* Year Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
-                  <select
-                    value={filterYear}
-                    onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                  >
-                    {years.map(year => (
-                      <option key={year} value={year}>{year}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Category Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                  <select
-                    value={filterCategory}
-                    onChange={(e) => setFilterCategory(e.target.value as any)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                  >
-                    <option value="all">All Categories</option>
-                    <option value="Membership">Membership</option>
-                    <option value="Donation">Donation</option>
-                    <option value="Service">Service</option>
-                    <option value="Event">Event</option>
-                  </select>
-                </div>
-
-                {/* Test Accounts Toggle */}
-                <div className="flex items-end">
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={includeTestAccounts}
-                      onChange={(e) => setIncludeTestAccounts(e.target.checked)}
-                      className="h-4 w-4 text-saffron focus:ring-saffron-ring border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Include test accounts</span>
-                  </label>
-                </div>
+              {/* Category Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value as any)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                >
+                  <option value="all">All Categories</option>
+                  <option value="Membership">Membership</option>
+                  <option value="Donation">Donation</option>
+                  <option value="Service">Service</option>
+                  <option value="Event">Event</option>
+                </select>
               </div>
 
-              {/* Summary */}
-              <div className="flex justify-between items-center pt-4 border-t">
-                <div className="text-sm text-gray-600">
-                  Showing {filteredPayments.length} receipts
-                </div>
-                <div className="text-lg font-semibold text-gray-900">
-                  Total: ${totalAmount.toFixed(2)}
-                </div>
+              {/* Test Accounts Toggle */}
+              <div className="flex items-end">
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeTestAccounts}
+                    onChange={(e) => setIncludeTestAccounts(e.target.checked)}
+                    className="h-4 w-4 text-saffron focus:ring-saffron-ring border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Include test accounts</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div className="flex justify-between items-center pt-4 border-t">
+              <div className="text-sm text-gray-600">
+                Showing {filteredPayments.length} receipts
+              </div>
+              <div className="text-lg font-semibold text-gray-900">
+                Total: ${totalAmount.toFixed(2)}
               </div>
             </div>
           </div>
-
-          {/* Receipts List */}
-          <div className="bg-white shadow rounded-lg overflow-hidden">
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-                <p className="mt-4 text-gray-600">Loading receipts...</p>
-              </div>
-            ) : filteredPayments.length === 0 ? (
-              <div className="text-center py-12">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No receipts found</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {searchTerm ? 'Try adjusting your search or filters' : 'No receipts for the selected period'}
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Receipt ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Member
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Category
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Method
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Amount
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredPayments.map((payment) => (
-                      <tr key={payment.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-mono text-gray-900">
-                            R-{payment.id.slice(0, 8).toUpperCase()}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {new Date(payment.payment_date).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm">
-                            <div className="font-medium text-gray-900 flex items-center gap-2">
-                              {payment.members?.member_class === 'Personal'
-                                ? `${payment.members.first_name} ${payment.members.last_name}`
-                                : payment.members?.business_name}
-                              {payment.members?.is_test_account && (
-                                <span className="px-2 py-0.5 text-xs font-semibold rounded bg-purple-100 text-purple-800">
-                                  TEST
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-gray-500">{payment.members?.membership_id}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getCategoryColor(payment.category)}`}>
-                            {payment.category}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {payment.payment_method}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                          ${payment.amount.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            onClick={() => handleDownloadReceipt(payment)}
-                            className="text-saffron hover:text-saffron-hover"
-                          >
-                            Download PDF
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
         </div>
-      </AdminLayout>
-    </ProtectedRoute>
+
+        {/* Receipts List */}
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
+              <p className="mt-4 text-gray-600">Loading receipts...</p>
+            </div>
+          ) : filteredPayments.length === 0 ? (
+            <div className="text-center py-12">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No receipts found</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                {searchTerm ? 'Try adjusting your search or filters' : 'No receipts for the selected period'}
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-transparent">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Receipt ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Member
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Method
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredPayments.map((payment) => (
+                    <tr key={payment.id} className="hover:bg-transparent">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-mono text-gray-900">
+                          R-{payment.id.slice(0, 8).toUpperCase()}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date(payment.payment_date).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm">
+                          <div className="font-medium text-gray-900 flex items-center gap-2">
+                            {payment.members?.member_class === 'Personal'
+                              ? `${payment.members.first_name} ${payment.members.last_name}`
+                              : payment.members?.business_name}
+                            {payment.members?.is_test_account && (
+                              <span className="px-2 py-0.5 text-xs font-semibold rounded bg-purple-100 text-purple-800">
+                                TEST
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-gray-500">{payment.members?.membership_id}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getCategoryColor(payment.category)}`}>
+                          {payment.category}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {payment.payment_method}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                        ${payment.amount.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => handleDownloadReceipt(payment)}
+                          className="text-saffron hover:text-saffron-hover"
+                        >
+                          Download PDF
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   )
 }

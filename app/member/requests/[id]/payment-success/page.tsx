@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 
@@ -92,21 +91,21 @@ export default function RequestPaymentSuccessPage() {
 
   if (verifying) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <>
+        <div className="flex items-center justify-center bg-transparent">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Verifying your payment...</p>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   if (error) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <>
+        <div className="flex items-center justify-center bg-transparent">
           <div className="text-center max-w-md">
             <div className="text-6xl mb-4">⚠️</div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Payment Verification Issue</h2>
@@ -119,13 +118,13 @@ export default function RequestPaymentSuccessPage() {
             </button>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center px-4">
+    <>
+      <div className="bg-gradient-to-b from-green-50 to-white flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center">
           {/* Success Icon */}
           <div className="mb-6">
@@ -191,13 +190,13 @@ export default function RequestPaymentSuccessPage() {
             </button>
             <button
               onClick={() => router.push('/member/payments')}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
             >
               Payment History
             </button>
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

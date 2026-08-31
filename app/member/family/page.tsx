@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import type { FamilyMember, Nakshatra } from '@/types/database'
@@ -205,20 +204,20 @@ export default function MemberFamilyPage() {
 
   if (loading) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <>
+        <div className="flex items-center justify-center bg-transparent">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading family members...</p>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+    <>
+      <div className="bg-transparent">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -354,7 +353,7 @@ export default function MemberFamilyPage() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
                   >
                     Cancel
                   </button>
@@ -429,7 +428,7 @@ export default function MemberFamilyPage() {
                     <div className="flex items-center gap-2 ml-4">
                       <button
                         onClick={() => handleEdit(fm)}
-                        className="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                        className="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
                       >
                         Edit
                       </button>
@@ -444,7 +443,7 @@ export default function MemberFamilyPage() {
                           </button>
                           <button
                             onClick={() => setDeleteConfirmId(null)}
-                            className="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                            className="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
                           >
                             Cancel
                           </button>
@@ -485,6 +484,6 @@ export default function MemberFamilyPage() {
           )}
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

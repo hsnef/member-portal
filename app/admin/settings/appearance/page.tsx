@@ -7,7 +7,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { useThemes } from '@/lib/themes/hooks/useThemes'
 import { useTheme } from '@/lib/themes/hooks/useTheme'
 import { ThemeList } from '@/lib/themes/components/ThemeList'
@@ -162,16 +161,16 @@ export default function AppearanceSettingsPage() {
 
   if (authLoading || loading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center min-h-screen">
+      <>
+        <div className="flex items-center justify-center">
           <p>Loading...</p>
         </div>
-      </AdminLayout>
+      </>
     )
   }
 
   return (
-    <AdminLayout>
+    <>
       <div className="max-w-7xl mx-auto p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Appearance Settings</h1>
@@ -238,7 +237,7 @@ export default function AppearanceSettingsPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowUploadModal(true)}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-transparent transition-colors"
               >
                 Upload JSON (Advanced)
               </button>
@@ -308,6 +307,6 @@ export default function AppearanceSettingsPage() {
           />
         )}
       </div>
-    </AdminLayout>
+    </>
   )
 }

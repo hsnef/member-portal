@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { formatPhoneNumber } from '@/lib/utils/formatters'
@@ -275,22 +274,22 @@ export default function NewBookingPage() {
 
   if (loading) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <>
+        <div className="bg-transparent flex items-center justify-center">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading booking form...</p>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   const selectedService = services.find(s => s.id === selectedServiceId)
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 py-8">
+    <>
+      <div className="bg-transparent py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
@@ -595,6 +594,6 @@ export default function NewBookingPage() {
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { createClient } from '@/lib/supabase/client'
 import { verifyQRToken } from '@/lib/qr-token'
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library'
@@ -233,12 +232,12 @@ function ScanQRContent() {
   }, [scanMode])
 
   const getMembershipColor = () => {
-    if (!member) return 'bg-gray-500'
+    if (!member) return 'bg-transparent0'
     switch (member.current_level) {
       case 'Lifetime': return 'bg-amber-500'
       case 'Annual': return 'bg-blue-500'
       case 'Community': return 'bg-green-500'
-      default: return 'bg-gray-500'
+      default: return 'bg-transparent0'
     }
   }
 
@@ -247,7 +246,7 @@ function ScanQRContent() {
     : member?.business_name
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-transparent">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -277,7 +276,7 @@ function ScanQRContent() {
               className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
                 scanMode === 'camera'
                   ? 'bg-saffron text-white'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-transparent'
               }`}
             >
               📷 Camera Scan
@@ -287,7 +286,7 @@ function ScanQRContent() {
               className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
                 scanMode === 'manual'
                   ? 'bg-saffron text-white'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-transparent'
               }`}
             >
               🔍 Manual Lookup
@@ -528,7 +527,7 @@ function ScanQRContent() {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+            <div className="bg-transparent px-6 py-4 border-t border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Quick Actions</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <button
@@ -539,19 +538,19 @@ function ScanQRContent() {
                 </button>
                 <button
                   onClick={() => router.push(`/admin/members/${member.id}`)}
-                  className="px-4 py-3 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 font-medium"
+                  className="px-4 py-3 text-sm bg-white border border-gray-300 rounded-md hover:bg-transparent font-medium"
                 >
                   👤 View Full Profile
                 </button>
                 <button
                   onClick={() => alert('Payment recording coming soon')}
-                  className="px-4 py-3 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 font-medium"
+                  className="px-4 py-3 text-sm bg-white border border-gray-300 rounded-md hover:bg-transparent font-medium"
                 >
                   💳 Record Payment
                 </button>
                 <button
                   onClick={() => alert('Service booking coming soon')}
-                  className="px-4 py-3 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 font-medium"
+                  className="px-4 py-3 text-sm bg-white border border-gray-300 rounded-md hover:bg-transparent font-medium"
                 >
                   📅 Book Service
                 </button>
@@ -576,8 +575,8 @@ function ScanQRContent() {
 
 export default function ScanQRPage() {
   return (
-    <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
+    <>
       <ScanQRContent />
-    </ProtectedRoute>
+    </>
   )
 }

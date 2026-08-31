@@ -1,8 +1,6 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -132,123 +130,121 @@ export default function SettingsPage() {
   ]
 
   return (
-    <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-      <AdminLayout>
-        <div className="space-y-6">
-          {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              System configuration and management tools
-            </p>
-          </div>
+    <>
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+          <p className="mt-1 text-sm text-gray-600">
+            System configuration and management tools
+          </p>
+        </div>
 
-          {/* System Information */}
-          <div className="bg-kumkum rounded-lg shadow-lg p-6 text-white">
-            <h2 className="text-2xl font-bold mb-2">HSNEF Member Portal</h2>
-            <p className="text-white/90">Hindu Society of North East Florida</p>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="text-white/70">Version</p>
-                <p className="font-semibold">1.0.0</p>
-              </div>
-              <div>
-                <p className="text-white/70">Environment</p>
-                <p className="font-semibold">Production</p>
-              </div>
-              <div>
-                <p className="text-white/70">Database</p>
-                <p className="font-semibold">Supabase</p>
-              </div>
+        {/* System Information */}
+        <div className="bg-kumkum rounded-lg shadow-lg p-6 text-white">
+          <h2 className="text-2xl font-bold mb-2">HSNEF Member Portal</h2>
+          <p className="text-white/90">Hindu Society of North East Florida</p>
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <p className="text-white/70">Version</p>
+              <p className="font-semibold">1.0.0</p>
             </div>
-          </div>
-
-          {/* Settings Categories */}
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Configuration</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {settingsCategories.map((category) => (
-                <button
-                  key={category.href}
-                  onClick={() => router.push(category.href)}
-                  className="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow text-left"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-shrink-0">{category.icon}</div>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {category.title}
-                  </h3>
-                  <p className="text-sm text-gray-600">{category.description}</p>
-                  <div className="mt-4 text-sm text-saffron font-medium">
-                    Configure →
-                  </div>
-                </button>
-              ))}
+            <div>
+              <p className="text-white/70">Environment</p>
+              <p className="font-semibold">Production</p>
             </div>
-          </div>
-
-          {/* Coming Soon */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Coming Soon</h2>
-            <div className="space-y-3 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>Voting Module - Elections and polls for members (Phase 2)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <span>Email Templates - Customize automated email notifications</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span>Reports & Analytics - Advanced reporting and insights</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                onClick={() => router.push('/admin/members')}
-                className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-md text-left transition-colors"
-              >
-                <div className="font-semibold text-gray-900">View All Members</div>
-                <div className="text-sm text-gray-600">Manage member database</div>
-              </button>
-              <button
-                onClick={() => router.push('/admin/payments')}
-                className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-md text-left transition-colors"
-              >
-                <div className="font-semibold text-gray-900">Record Payment</div>
-                <div className="text-sm text-gray-600">Add new payment record</div>
-              </button>
-              <button
-                onClick={() => router.push('/admin/bookings')}
-                className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-md text-left transition-colors"
-              >
-                <div className="font-semibold text-gray-900">View Bookings</div>
-                <div className="text-sm text-gray-600">Manage service bookings</div>
-              </button>
-              <button
-                onClick={() => router.push('/admin/events')}
-                className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-md text-left transition-colors"
-              >
-                <div className="font-semibold text-gray-900">Manage Events</div>
-                <div className="text-sm text-gray-600">Create and configure events</div>
-              </button>
+            <div>
+              <p className="text-white/70">Database</p>
+              <p className="font-semibold">Supabase</p>
             </div>
           </div>
         </div>
-      </AdminLayout>
-    </ProtectedRoute>
+
+        {/* Settings Categories */}
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Configuration</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {settingsCategories.map((category) => (
+              <button
+                key={category.href}
+                onClick={() => router.push(category.href)}
+                className="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow text-left"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-shrink-0">{category.icon}</div>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {category.title}
+                </h3>
+                <p className="text-sm text-gray-600">{category.description}</p>
+                <div className="mt-4 text-sm text-saffron font-medium">
+                  Configure →
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Coming Soon */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Coming Soon</h2>
+          <div className="space-y-3 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Voting Module - Elections and polls for members (Phase 2)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span>Email Templates - Customize automated email notifications</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <span>Reports & Analytics - Advanced reporting and insights</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              onClick={() => router.push('/admin/members')}
+              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-md text-left transition-colors"
+            >
+              <div className="font-semibold text-gray-900">View All Members</div>
+              <div className="text-sm text-gray-600">Manage member database</div>
+            </button>
+            <button
+              onClick={() => router.push('/admin/payments')}
+              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-md text-left transition-colors"
+            >
+              <div className="font-semibold text-gray-900">Record Payment</div>
+              <div className="text-sm text-gray-600">Add new payment record</div>
+            </button>
+            <button
+              onClick={() => router.push('/admin/bookings')}
+              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-md text-left transition-colors"
+            >
+              <div className="font-semibold text-gray-900">View Bookings</div>
+              <div className="text-sm text-gray-600">Manage service bookings</div>
+            </button>
+            <button
+              onClick={() => router.push('/admin/events')}
+              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-md text-left transition-colors"
+            >
+              <div className="font-semibold text-gray-900">Manage Events</div>
+              <div className="text-sm text-gray-600">Create and configure events</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
   )
 }

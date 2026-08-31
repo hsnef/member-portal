@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { formatPhoneNumber } from '@/lib/utils/formatters'
@@ -324,14 +322,12 @@ export default function StaffNewBookingPage() {
 
   if (loading) {
     return (
-      <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-        <AdminLayout>
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-            <p className="mt-4 text-gray-600">Loading booking form...</p>
-          </div>
-        </AdminLayout>
-      </ProtectedRoute>
+      <>
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
+          <p className="mt-4 text-gray-600">Loading booking form...</p>
+        </div>
+      </>
     )
   }
 
@@ -339,374 +335,372 @@ export default function StaffNewBookingPage() {
   const selectedMember = members.find(m => m.id === selectedMemberId)
 
   return (
-    <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-      <AdminLayout>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Create Service Booking</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Create a booking on behalf of a member
-              </p>
-            </div>
-            <button
-              onClick={() => router.push('/admin/bookings')}
-              className="text-sm text-gray-600 hover:text-gray-900"
-            >
-              ← Back to Bookings
-            </button>
+    <>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Create Service Booking</h1>
+            <p className="mt-1 text-sm text-gray-600">
+              Create a booking on behalf of a member
+            </p>
           </div>
+          <button
+            onClick={() => router.push('/admin/bookings')}
+            className="text-sm text-gray-600 hover:text-gray-900"
+          >
+            ← Back to Bookings
+          </button>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Member Selection */}
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Select Member</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Search Member
-                    </label>
-                    <input
-                      type="text"
-                      value={memberSearchTerm}
-                      onChange={(e) => setMemberSearchTerm(e.target.value)}
-                      placeholder="Search by name, membership #, or email..."
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                    />
-                  </div>
-                  <div>
-                    <select
-                      value={selectedMemberId}
-                      onChange={(e) => setSelectedMemberId(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                      size={8}
-                    >
-                      <option value="">-- No Member (Community Member) --</option>
-                      {filteredMembers.slice(0, 50).map(member => (
-                        <option key={member.id} value={member.id}>
-                          {member.membership_number} - {member.first_name} {member.last_name}
-                          {member.primary_email ? ` (${member.primary_email})` : ''}
-                        </option>
-                      ))}
-                    </select>
-                    {filteredMembers.length > 50 && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Showing first 50 results. Refine your search to see more.
-                      </p>
-                    )}
-                  </div>
-                  {selectedMember && (
-                    <div className="bg-blue-50 p-3 rounded-md text-sm">
-                      <p><strong>Member Type:</strong> {selectedMember.current_level}</p>
-                      <p><strong>Phone:</strong> {selectedMember.primary_phone || 'N/A'}</p>
-                      <p><strong>Email:</strong> {selectedMember.primary_email || 'N/A'}</p>
-                    </div>
-                  )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Member Selection */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Select Member</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Search Member
+                  </label>
+                  <input
+                    type="text"
+                    value={memberSearchTerm}
+                    onChange={(e) => setMemberSearchTerm(e.target.value)}
+                    placeholder="Search by name, membership #, or email..."
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                  />
                 </div>
-              </div>
-
-              {/* Requester Information */}
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Requester Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={requesterName}
-                      onChange={(e) => setRequesterName(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Phone <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      value={requesterPhone}
-                      onChange={(e) => setRequesterPhone(formatPhoneNumber(e.target.value))}
-                      placeholder="(555) 123-4567"
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      value={requesterEmail}
-                      onChange={(e) => setRequesterEmail(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Add Service to Cart */}
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Add Service</h2>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Select Service <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={selectedServiceId}
-                      onChange={(e) => setSelectedServiceId(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                    >
-                      <option value="">Choose a service...</option>
-                      {services.map(service => (
-                        <option key={service.id} value={service.id}>
-                          {service.name} {service.display_name ? `(${service.display_name})` : ''}
-                        </option>
-                      ))}
-                    </select>
-                    {selectedService?.description && (
-                      <p className="mt-1 text-sm text-gray-500">{selectedService.description}</p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Service Date <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="date"
-                        value={serviceDate}
-                        onChange={(e) => setServiceDate(e.target.value)}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Service Time <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="time"
-                        value={serviceTime}
-                        onChange={(e) => setServiceTime(e.target.value)}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Location <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex gap-4 mb-2">
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          value="Temple"
-                          checked={locationType === 'Temple'}
-                          onChange={() => setLocationType('Temple')}
-                          className="mr-2"
-                        />
-                        Inside Temple
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          value="External"
-                          checked={locationType === 'External'}
-                          onChange={() => setLocationType('External')}
-                          disabled={selectedService?.is_temple_only}
-                          className="mr-2"
-                        />
-                        External Location
-                      </label>
-                    </div>
-                    {locationType === 'External' && (
-                      <input
-                        type="text"
-                        value={locationAddress}
-                        onChange={(e) => setLocationAddress(e.target.value)}
-                        placeholder="Enter complete address"
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                      />
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Select Priest <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={selectedPurohitId}
-                      onChange={(e) => setSelectedPurohitId(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                    >
-                      <option value="">Choose a priest...</option>
-                      {purohits.map(purohit => (
-                        <option key={purohit.id} value={purohit.id}>
-                          {purohit.name} {purohit.specialties ? `- ${purohit.specialties}` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Notes for this service
-                    </label>
-                    <textarea
-                      value={itemNotes}
-                      onChange={(e) => setItemNotes(e.target.value)}
-                      rows={2}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                      placeholder="Any special requirements..."
-                    />
-                  </div>
-
-                  {selectedService && (
-                    <div className="bg-blue-50 p-4 rounded-md">
-                      <p className="text-sm font-medium text-blue-900">
-                        Price: ${getServicePrice(selectedService, locationType).toFixed(2)}
-                      </p>
-                    </div>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={handleAddToCart}
-                    className="w-full px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
+                <div>
+                  <select
+                    value={selectedMemberId}
+                    onChange={(e) => setSelectedMemberId(e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                    size={8}
                   >
-                    Add to Booking
-                  </button>
+                    <option value="">-- No Member (Community Member) --</option>
+                    {filteredMembers.slice(0, 50).map(member => (
+                      <option key={member.id} value={member.id}>
+                        {member.membership_number} - {member.first_name} {member.last_name}
+                        {member.primary_email ? ` (${member.primary_email})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {filteredMembers.length > 50 && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Showing first 50 results. Refine your search to see more.
+                    </p>
+                  )}
                 </div>
-              </div>
-            </div>
-
-            {/* Right Column - Cart Summary */}
-            <div className="lg:col-span-1">
-              <div className="bg-white shadow rounded-lg p-6 sticky top-4">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Booking Summary
-                </h2>
-
-                {cart.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-8">
-                    No services added yet
-                  </p>
-                ) : (
-                  <>
-                    <div className="space-y-4 mb-4 max-h-96 overflow-y-auto">
-                      {cart.map((item) => (
-                        <div key={item.id} className="border-b pb-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="flex-1">
-                              <p className="font-medium text-gray-900">{item.service_name}</p>
-                              <p className="text-sm text-gray-600">{item.purohit_name}</p>
-                              <p className="text-sm text-gray-600">
-                                {new Date(item.service_date).toLocaleDateString()} at {item.service_time}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                {item.location_type === 'Temple' ? 'At Temple' : item.location_address}
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => handleRemoveFromCart(item.id)}
-                              className="text-red-600 hover:text-red-800 ml-2"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                          <p className="text-right font-semibold text-gray-900">
-                            ${item.price.toFixed(2)}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="border-t pt-4 mb-4">
-                      <div className="flex justify-between items-center text-lg font-bold">
-                        <span>Total Amount:</span>
-                        <span className="text-saffron">${getTotalAmount().toFixed(2)}</span>
-                      </div>
-                    </div>
-
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Additional Notes
-                      </label>
-                      <textarea
-                        value={additionalNotes}
-                        onChange={(e) => setAdditionalNotes(e.target.value)}
-                        rows={3}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron text-sm"
-                        placeholder="General notes..."
-                      />
-                    </div>
-
-                    {/* Staff Options */}
-                    <div className="mb-4 border-t pt-4">
-                      <h3 className="font-semibold text-gray-900 mb-3">Staff Options</h3>
-
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Booking Source
-                          </label>
-                          <select
-                            value={bookingSource}
-                            onChange={(e) => setBookingSource(e.target.value as any)}
-                            className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron text-sm"
-                          >
-                            <option value="Walk-in">Walk-in</option>
-                            <option value="Phone">Phone</option>
-                            <option value="Online">Online</option>
-                          </select>
-                        </div>
-
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id="markAsPaid"
-                            checked={markAsPaid}
-                            onChange={(e) => setMarkAsPaid(e.target.checked)}
-                            className="h-4 w-4 text-saffron focus:ring-saffron-ring border-gray-300 rounded"
-                          />
-                          <label htmlFor="markAsPaid" className="ml-2 text-sm text-gray-700">
-                            Mark as Paid (cash/check received)
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={handleSubmitBooking}
-                      disabled={submitting}
-                      className="w-full px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
-                    >
-                      {submitting ? 'Creating...' : 'Create Booking'}
-                    </button>
-
-                    {!markAsPaid && (
-                      <p className="text-xs text-gray-500 mt-2 text-center">
-                        Booking will be created as Pending Approval
-                      </p>
-                    )}
-                  </>
+                {selectedMember && (
+                  <div className="bg-blue-50 p-3 rounded-md text-sm">
+                    <p><strong>Member Type:</strong> {selectedMember.current_level}</p>
+                    <p><strong>Phone:</strong> {selectedMember.primary_phone || 'N/A'}</p>
+                    <p><strong>Email:</strong> {selectedMember.primary_email || 'N/A'}</p>
+                  </div>
                 )}
               </div>
             </div>
+
+            {/* Requester Information */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Requester Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={requesterName}
+                    onChange={(e) => setRequesterName(e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={requesterPhone}
+                    onChange={(e) => setRequesterPhone(formatPhoneNumber(e.target.value))}
+                    placeholder="(555) 123-4567"
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={requesterEmail}
+                    onChange={(e) => setRequesterEmail(e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Add Service to Cart */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Add Service</h2>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Service <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={selectedServiceId}
+                    onChange={(e) => setSelectedServiceId(e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                  >
+                    <option value="">Choose a service...</option>
+                    {services.map(service => (
+                      <option key={service.id} value={service.id}>
+                        {service.name} {service.display_name ? `(${service.display_name})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedService?.description && (
+                    <p className="mt-1 text-sm text-gray-500">{selectedService.description}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Service Date <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={serviceDate}
+                      onChange={(e) => setServiceDate(e.target.value)}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Service Time <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="time"
+                      value={serviceTime}
+                      onChange={(e) => setServiceTime(e.target.value)}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Location <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex gap-4 mb-2">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="Temple"
+                        checked={locationType === 'Temple'}
+                        onChange={() => setLocationType('Temple')}
+                        className="mr-2"
+                      />
+                      Inside Temple
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="External"
+                        checked={locationType === 'External'}
+                        onChange={() => setLocationType('External')}
+                        disabled={selectedService?.is_temple_only}
+                        className="mr-2"
+                      />
+                      External Location
+                    </label>
+                  </div>
+                  {locationType === 'External' && (
+                    <input
+                      type="text"
+                      value={locationAddress}
+                      onChange={(e) => setLocationAddress(e.target.value)}
+                      placeholder="Enter complete address"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Priest <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={selectedPurohitId}
+                    onChange={(e) => setSelectedPurohitId(e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                  >
+                    <option value="">Choose a priest...</option>
+                    {purohits.map(purohit => (
+                      <option key={purohit.id} value={purohit.id}>
+                        {purohit.name} {purohit.specialties ? `- ${purohit.specialties}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Notes for this service
+                  </label>
+                  <textarea
+                    value={itemNotes}
+                    onChange={(e) => setItemNotes(e.target.value)}
+                    rows={2}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
+                    placeholder="Any special requirements..."
+                  />
+                </div>
+
+                {selectedService && (
+                  <div className="bg-blue-50 p-4 rounded-md">
+                    <p className="text-sm font-medium text-blue-900">
+                      Price: ${getServicePrice(selectedService, locationType).toFixed(2)}
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className="w-full px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
+                >
+                  Add to Booking
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Cart Summary */}
+          <div className="lg:col-span-1">
+            <div className="bg-white shadow rounded-lg p-6 sticky top-4">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Booking Summary
+              </h2>
+
+              {cart.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-8">
+                  No services added yet
+                </p>
+              ) : (
+                <>
+                  <div className="space-y-4 mb-4 max-h-96 overflow-y-auto">
+                    {cart.map((item) => (
+                      <div key={item.id} className="border-b pb-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900">{item.service_name}</p>
+                            <p className="text-sm text-gray-600">{item.purohit_name}</p>
+                            <p className="text-sm text-gray-600">
+                              {new Date(item.service_date).toLocaleDateString()} at {item.service_time}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {item.location_type === 'Temple' ? 'At Temple' : item.location_address}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleRemoveFromCart(item.id)}
+                            className="text-red-600 hover:text-red-800 ml-2"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <p className="text-right font-semibold text-gray-900">
+                          ${item.price.toFixed(2)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="border-t pt-4 mb-4">
+                    <div className="flex justify-between items-center text-lg font-bold">
+                      <span>Total Amount:</span>
+                      <span className="text-saffron">${getTotalAmount().toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Additional Notes
+                    </label>
+                    <textarea
+                      value={additionalNotes}
+                      onChange={(e) => setAdditionalNotes(e.target.value)}
+                      rows={3}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron text-sm"
+                      placeholder="General notes..."
+                    />
+                  </div>
+
+                  {/* Staff Options */}
+                  <div className="mb-4 border-t pt-4">
+                    <h3 className="font-semibold text-gray-900 mb-3">Staff Options</h3>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Booking Source
+                        </label>
+                        <select
+                          value={bookingSource}
+                          onChange={(e) => setBookingSource(e.target.value as any)}
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron text-sm"
+                        >
+                          <option value="Walk-in">Walk-in</option>
+                          <option value="Phone">Phone</option>
+                          <option value="Online">Online</option>
+                        </select>
+                      </div>
+
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id="markAsPaid"
+                          checked={markAsPaid}
+                          onChange={(e) => setMarkAsPaid(e.target.checked)}
+                          className="h-4 w-4 text-saffron focus:ring-saffron-ring border-gray-300 rounded"
+                        />
+                        <label htmlFor="markAsPaid" className="ml-2 text-sm text-gray-700">
+                          Mark as Paid (cash/check received)
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleSubmitBooking}
+                    disabled={submitting}
+                    className="w-full px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+                  >
+                    {submitting ? 'Creating...' : 'Create Booking'}
+                  </button>
+
+                  {!markAsPaid && (
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Booking will be created as Pending Approval
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </AdminLayout>
-    </ProtectedRoute>
+      </div>
+    </>
   )
 }

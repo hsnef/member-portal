@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
 import { formatPhoneNumber } from '@/lib/utils/formatters'
 
@@ -179,14 +178,14 @@ export default function ZelleSettingsPage() {
   if (loading) {
     return (
       <ProtectedRoute requiredRoles={['Office Manager', 'Admin']}>
-        <AdminLayout>
+        <>
           <div className="flex justify-center items-center min-h-[400px]">
             <div className="text-center">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
               <p className="mt-4 text-gray-600">Loading settings...</p>
             </div>
           </div>
-        </AdminLayout>
+        </>
       </ProtectedRoute>
     )
   }
@@ -194,7 +193,7 @@ export default function ZelleSettingsPage() {
   if (!hasAccess) {
     return (
       <ProtectedRoute requiredRoles={['Office Manager', 'Admin']}>
-        <AdminLayout>
+        <>
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -212,14 +211,14 @@ export default function ZelleSettingsPage() {
               Back to Zelle Payments
             </button>
           </div>
-        </AdminLayout>
+        </>
       </ProtectedRoute>
     )
   }
 
   return (
     <ProtectedRoute requiredRoles={['Office Manager', 'Admin']}>
-      <AdminLayout>
+      <>
         <div className="space-y-6 max-w-3xl">
           {/* Header */}
           <div className="flex items-center justify-between">
@@ -379,7 +378,7 @@ export default function ZelleSettingsPage() {
             </div>
 
             {/* Save Button */}
-            <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3">
+            <div className="px-6 py-4 bg-transparent flex justify-end gap-3">
               <button
                 onClick={() => router.push('/admin/zelle')}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100"
@@ -418,7 +417,7 @@ export default function ZelleSettingsPage() {
             </div>
           </div>
         </div>
-      </AdminLayout>
+      </>
     </ProtectedRoute>
   )
 }

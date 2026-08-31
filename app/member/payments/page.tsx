@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { ZellePendingPayments } from '@/components/zelle/ZellePendingPayments'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
@@ -101,7 +100,7 @@ export default function MemberPaymentsPage() {
       case 'Event': return 'text-orange-600 bg-orange-50 border-orange-200'
       case 'Request': return 'text-indigo-600 bg-indigo-50 border-indigo-200'
       case 'Sponsorship': return 'text-pink-600 bg-pink-50 border-pink-200'
-      default: return 'text-gray-600 bg-gray-50 border-gray-200'
+      default: return 'text-gray-600 bg-transparent border-gray-200'
     }
   }
 
@@ -233,8 +232,8 @@ export default function MemberPaymentsPage() {
   ).sort((a, b) => b - a)
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+    <>
+      <div className="bg-transparent">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -294,7 +293,7 @@ export default function MemberPaymentsPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={exportToCSV}
-                    className="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 flex items-center gap-2"
+                    className="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-transparent flex items-center gap-2"
                   >
                     <span>📊</span> Export CSV
                   </button>
@@ -336,7 +335,7 @@ export default function MemberPaymentsPage() {
             ) : (
               <div className="divide-y divide-gray-200">
                 {filteredPayments.map((payment) => (
-                  <div key={payment.id} className="p-6 hover:bg-gray-50">
+                  <div key={payment.id} className="p-6 hover:bg-transparent">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -405,6 +404,6 @@ export default function MemberPaymentsPage() {
           )}
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

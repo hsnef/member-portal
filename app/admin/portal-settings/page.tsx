@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import {
   getAllSettings,
   updateSetting,
@@ -155,21 +154,21 @@ export default function PortalSettingsPage() {
   if (loading) {
     return (
       <ProtectedRoute requiredRoles={['Office Manager', 'Admin']}>
-        <AdminLayout>
+        <>
           <div className="flex justify-center items-center min-h-[400px]">
             <div className="text-center">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
               <p className="mt-4 text-gray-600">Loading settings...</p>
             </div>
           </div>
-        </AdminLayout>
+        </>
       </ProtectedRoute>
     )
   }
 
   return (
     <ProtectedRoute requiredRoles={['Office Manager', 'Admin']}>
-      <AdminLayout>
+      <>
         <div className="space-y-6">
           {/* Header */}
           <div>
@@ -488,7 +487,7 @@ export default function PortalSettingsPage() {
             </div>
           </div>
         </div>
-      </AdminLayout>
+      </>
     </ProtectedRoute>
   )
 }

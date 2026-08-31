@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { createClient } from '@/lib/supabase/client'
 
 interface BookingItem {
@@ -102,32 +101,32 @@ export default function BookingDetailPage() {
 
   if (loading) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <>
+        <div className="bg-transparent flex items-center justify-center">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading booking details...</p>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   if (!booking) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <>
+        <div className="bg-transparent flex items-center justify-center">
           <div className="text-center">
             <p className="text-gray-600">Booking not found</p>
           </div>
         </div>
-      </ProtectedRoute>
+      </>
     )
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 py-8">
+    <>
+      <div className="bg-transparent py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
@@ -212,7 +211,7 @@ export default function BookingDetailPage() {
           )}
 
           {booking.status === 'Completed' && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+            <div className="bg-transparent border border-gray-200 rounded-lg p-4 mb-6">
               <p className="text-gray-800 font-medium">
                 ✓ Services Completed
               </p>
@@ -335,6 +334,6 @@ export default function BookingDetailPage() {
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   )
 }

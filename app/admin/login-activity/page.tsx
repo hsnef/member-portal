@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
 import { formatLoginMethod, formatLocation, formatUserAgent } from '@/lib/login-audit-log/utils'
 
@@ -144,7 +143,7 @@ export default function LoginActivityPage() {
 
   return (
     <ProtectedRoute requiredRoles={['Admin', 'Office Manager']}>
-      <AdminLayout>
+      <>
         <div className="space-y-6">
           {/* Header */}
           <div className="flex justify-between items-center">
@@ -312,7 +311,7 @@ export default function LoginActivityPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-transparent">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Date/Time
@@ -340,7 +339,7 @@ export default function LoginActivityPage() {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredLogs.map((log) => (
                       <>
-                        <tr key={log.id} className="hover:bg-gray-50">
+                        <tr key={log.id} className="hover:bg-transparent">
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {new Date(log.login_at).toLocaleString()}
                           </td>
@@ -389,7 +388,7 @@ export default function LoginActivityPage() {
                         </tr>
                         {expandedRow === log.id && (
                           <tr>
-                            <td colSpan={7} className="px-6 py-4 bg-gray-50">
+                            <td colSpan={7} className="px-6 py-4 bg-transparent">
                               <div className="space-y-2 text-sm">
                                 <div>
                                   <span className="font-medium text-gray-700">Email:</span>{' '}
@@ -428,7 +427,7 @@ export default function LoginActivityPage() {
             </div>
           )}
         </div>
-      </AdminLayout>
+      </>
     </ProtectedRoute>
   )
 }
