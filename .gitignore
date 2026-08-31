@@ -118,3 +118,6 @@ LPT6
 LPT7
 LPT8
 LPT9
+
+# design system reference kit - not part of the build
+design-kit/
