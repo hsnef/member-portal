@@ -189,7 +189,7 @@ export default function EventRegistrationsPage() {
             </div>
             <div className="bg-white p-4 rounded-lg shadow">
               <p className="text-sm text-gray-600">Attendance Rate</p>
-              <p className="text-2xl font-bold text-[#FF9933]">
+              <p className="text-2xl font-bold text-saffron">
                 {registrations.length > 0 ? Math.round((attendedCount / registrations.length) * 100) : 0}%
               </p>
             </div>
@@ -202,7 +202,7 @@ export default function EventRegistrationsPage() {
               placeholder="Search by name, membership ID, or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
             />
           </div>
 
@@ -210,7 +210,7 @@ export default function EventRegistrationsPage() {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading registrations...</p>
               </div>
             ) : filteredRegistrations.length === 0 ? (
@@ -275,7 +275,7 @@ export default function EventRegistrationsPage() {
                               type="checkbox"
                               checked={reg.attended}
                               onChange={(e) => handleMarkAttendance(reg.id, e.target.checked)}
-                              className="w-5 h-5 text-[#FF9933] rounded focus:ring-[#FF9933]"
+                              className="w-5 h-5 text-saffron rounded focus:ring-saffron-ring"
                             />
                             <span className="ml-2 text-sm text-gray-700">
                               {reg.attended ? 'Present' : 'Mark Present'}

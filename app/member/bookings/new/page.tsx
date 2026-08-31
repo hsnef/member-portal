@@ -278,7 +278,7 @@ export default function NewBookingPage() {
       <ProtectedRoute>
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading booking form...</p>
           </div>
         </div>
@@ -321,7 +321,7 @@ export default function NewBookingPage() {
                       type="text"
                       value={requesterName}
                       onChange={(e) => setRequesterName(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       required
                     />
                   </div>
@@ -334,7 +334,7 @@ export default function NewBookingPage() {
                       value={requesterPhone}
                       onChange={(e) => setRequesterPhone(formatPhoneNumber(e.target.value))}
                       placeholder="(555) 123-4567"
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       required
                     />
                   </div>
@@ -346,7 +346,7 @@ export default function NewBookingPage() {
                       type="email"
                       value={requesterEmail}
                       onChange={(e) => setRequesterEmail(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       required
                     />
                   </div>
@@ -366,7 +366,7 @@ export default function NewBookingPage() {
                     <select
                       value={selectedServiceId}
                       onChange={(e) => setSelectedServiceId(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                     >
                       <option value="">Choose a service...</option>
                       {services.map(service => (
@@ -396,7 +396,7 @@ export default function NewBookingPage() {
                         value={serviceDate}
                         onChange={(e) => setServiceDate(e.target.value)}
                         min={new Date().toISOString().split('T')[0]}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       />
                     </div>
                     <div>
@@ -407,7 +407,7 @@ export default function NewBookingPage() {
                         type="time"
                         value={serviceTime}
                         onChange={(e) => setServiceTime(e.target.value)}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       />
                     </div>
                   </div>
@@ -449,7 +449,7 @@ export default function NewBookingPage() {
                         value={locationAddress}
                         onChange={(e) => setLocationAddress(e.target.value)}
                         placeholder="Enter complete address"
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       />
                     )}
                   </div>
@@ -462,7 +462,7 @@ export default function NewBookingPage() {
                     <select
                       value={selectedPurohitId}
                       onChange={(e) => setSelectedPurohitId(e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                     >
                       <option value="">Choose a priest...</option>
                       {purohits.map(purohit => (
@@ -482,7 +482,7 @@ export default function NewBookingPage() {
                       value={itemNotes}
                       onChange={(e) => setItemNotes(e.target.value)}
                       rows={2}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       placeholder="Any special requirements or requests..."
                     />
                   </div>
@@ -504,7 +504,7 @@ export default function NewBookingPage() {
                   <button
                     type="button"
                     onClick={handleAddToCart}
-                    className="w-full px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+                    className="w-full px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
                   >
                     Add to Booking
                   </button>
@@ -559,7 +559,7 @@ export default function NewBookingPage() {
                     <div className="border-t pt-4 mb-4">
                       <div className="flex justify-between items-center text-lg font-bold">
                         <span>Total Amount:</span>
-                        <span className="text-[#FF9933]">${getTotalAmount().toFixed(2)}</span>
+                        <span className="text-saffron">${getTotalAmount().toFixed(2)}</span>
                       </div>
                     </div>
 
@@ -572,7 +572,7 @@ export default function NewBookingPage() {
                         value={additionalNotes}
                         onChange={(e) => setAdditionalNotes(e.target.value)}
                         rows={3}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933] text-sm"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron text-sm"
                         placeholder="Any general notes for this booking..."
                       />
                     </div>

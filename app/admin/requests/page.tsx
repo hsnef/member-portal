@@ -125,7 +125,7 @@ export default function RequestsPage() {
             </div>
             <Link
               href="/admin/requests/new"
-              className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-medium"
+              className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-medium"
             >
               + Create Request
             </Link>
@@ -160,14 +160,14 @@ export default function RequestsPage() {
                 placeholder="Search by member, type, or membership ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
               />
 
               {/* Status Filter */}
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
               >
                 <option value="All">All Statuses</option>
                 <option value="Draft">Draft</option>
@@ -183,7 +183,7 @@ export default function RequestsPage() {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading requests...</p>
               </div>
             ) : filteredRequests.length === 0 ? (
@@ -191,7 +191,7 @@ export default function RequestsPage() {
                 <p className="text-gray-500 mb-4">No requests found</p>
                 <Link
                   href="/admin/requests/new"
-                  className="inline-block px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+                  className="inline-block px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
                 >
                   Create First Request
                 </Link>
@@ -233,7 +233,7 @@ export default function RequestsPage() {
                           </div>
                           <div>
                             <span className="font-medium text-gray-700">Amount:</span>{' '}
-                            <span className="font-bold text-[#FF9933]">
+                            <span className="font-bold text-saffron">
                               ${request.amount.toFixed(2)}
                             </span>
                           </div>
@@ -253,7 +253,7 @@ export default function RequestsPage() {
                         </button>
                         <button
                           onClick={() => router.push(`/admin/requests/${request.id}/edit`)}
-                          className="px-4 py-2 text-sm bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+                          className="px-4 py-2 text-sm bg-saffron text-white rounded-md hover:bg-saffron-hover"
                         >
                           Edit
                         </button>

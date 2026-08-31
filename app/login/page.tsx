@@ -176,7 +176,7 @@ function LoginForm() {
       <div className="max-w-md w-full space-y-8">
         {/* Logo and Header */}
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-gradient-to-br from-[#FF9933] to-[#800000] rounded-full flex items-center justify-center">
+          <div className="mx-auto h-16 w-16 bg-kumkum rounded-full flex items-center justify-center">
             <span className="text-2xl font-bold text-white">H</span>
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -190,7 +190,7 @@ function LoginForm() {
               <span className="block mb-1">Not a member yet?</span>
               <a
                 href="/join"
-                className="text-[#FF9933] hover:text-[#FF8800] font-semibold underline"
+                className="text-saffron hover:text-[#FF8800] font-semibold underline"
               >
                 Apply for membership here →
               </a>
@@ -222,7 +222,7 @@ function LoginForm() {
               handleGoogleSignIn(e)
             }}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9933] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-saffron-ring disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             suppressHydrationWarning
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -270,7 +270,7 @@ function LoginForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 placeholder="you@example.com"
                 disabled={loading}
                 suppressHydrationWarning
@@ -280,7 +280,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#FF9933] to-[#800000] hover:from-[#FF8800] hover:to-[#700000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9933] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-kumkum focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-saffron-ring disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               suppressHydrationWarning
             >
               {loading ? (
@@ -324,7 +324,7 @@ function LoginForm() {
           {showTraditionalLogin && (
             <div className="text-center text-sm mt-4 pt-4 border-t border-gray-200">
               <span className="text-gray-600">Existing member without portal access? </span>
-              <a href="/register" className="text-[#FF9933] hover:text-[#FF8800] font-medium">
+              <a href="/register" className="text-saffron hover:text-[#FF8800] font-medium">
                 Create portal account
               </a>
             </div>
@@ -345,7 +345,7 @@ function LoginForm() {
             Need help?{' '}
             <a
               href="mailto:info@hsnef.org"
-              className="text-[#FF9933] hover:text-[#FF8800] font-medium"
+              className="text-saffron hover:text-[#FF8800] font-medium"
             >
               Contact Support
             </a>
@@ -361,7 +361,7 @@ export default function LoginPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>

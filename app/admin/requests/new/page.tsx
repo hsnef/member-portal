@@ -155,12 +155,12 @@ export default function NewRequestPage() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
                         placeholder="Search by name, membership ID, or email..."
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       />
                       <button
                         type="button"
                         onClick={handleSearch}
-                        className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+                        className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
                       >
                         Search
                       </button>
@@ -187,7 +187,7 @@ export default function NewRequestPage() {
                                 {member.membership_id} • {member.primary_email}
                               </p>
                             </div>
-                            <span className="text-[#FF9933]">Select →</span>
+                            <span className="text-saffron">Select →</span>
                           </button>
                         ))}
                       </div>
@@ -226,7 +226,7 @@ export default function NewRequestPage() {
                       required
                       value={formData.request_type}
                       onChange={(e) => setFormData({ ...formData, request_type: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     >
                       <option value="Puja">Puja</option>
                       <option value="Sponsorship">Sponsorship</option>
@@ -246,7 +246,7 @@ export default function NewRequestPage() {
                       required
                       value={formData.requested_date}
                       onChange={(e) => setFormData({ ...formData, requested_date: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
 
@@ -259,7 +259,7 @@ export default function NewRequestPage() {
                       rows={3}
                       value={formData.service_description}
                       onChange={(e) => setFormData({ ...formData, service_description: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       placeholder="Describe the service or request in detail..."
                     />
                   </div>
@@ -275,7 +275,7 @@ export default function NewRequestPage() {
                       required
                       value={formData.amount}
                       onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       placeholder="0.00"
                     />
                   </div>
@@ -293,7 +293,7 @@ export default function NewRequestPage() {
                     rows={3}
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     placeholder="Additional notes or special instructions..."
                   />
                 </div>
@@ -336,7 +336,7 @@ export default function NewRequestPage() {
                         type="checkbox"
                         checked={formData.send_invoice}
                         onChange={(e) => setFormData({ ...formData, send_invoice: e.target.checked })}
-                        className="mr-2 w-4 h-4 text-[#FF9933] rounded focus:ring-[#FF9933]"
+                        className="mr-2 w-4 h-4 text-saffron rounded focus:ring-saffron-ring"
                       />
                       <span className="text-sm text-gray-700">
                         Send invoice email to member
@@ -358,7 +358,7 @@ export default function NewRequestPage() {
                 <button
                   type="submit"
                   disabled={loading || !selectedMember}
-                  className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+                  className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
                 >
                   {loading ? 'Creating...' : 'Create Request'}
                 </button>

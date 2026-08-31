@@ -244,7 +244,7 @@ export default function RichTextEditor({ content, onChange, placeholder, minHeig
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-[#FF9933] underline hover:text-[#E68A2E]',
+          class: 'text-saffron underline hover:text-saffron-hover',
         },
       }),
       TextAlign.configure({

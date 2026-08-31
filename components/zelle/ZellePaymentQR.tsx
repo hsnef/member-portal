@@ -67,7 +67,7 @@ export function ZellePaymentQR({
             className="flex items-center justify-center bg-gray-100 rounded-lg"
             style={{ width: size, height: size }}
           >
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           </div>
         ) : qrCodeDataURL ? (
           <img
@@ -90,7 +90,7 @@ export function ZellePaymentQR({
       {showAmount && (
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-500">Scan to pay</p>
-          <p className="text-2xl font-bold text-[#FF9933]">{formatAmount(amount)}</p>
+          <p className="text-2xl font-bold text-saffron">{formatAmount(amount)}</p>
           {purpose && <p className="text-sm text-gray-600">{purpose}</p>}
         </div>
       )}

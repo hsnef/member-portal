@@ -104,7 +104,7 @@ export default function AdminDashboard() {
           {/* Stats Grid */}
           {loading ? (
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
               <p className="mt-4 text-gray-600">Loading dashboard...</p>
             </div>
           ) : (
@@ -169,7 +169,7 @@ export default function AdminDashboard() {
                     <div className="p-5">
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
-                          <div className="h-6 w-6 rounded-full bg-[#FF9933]"></div>
+                          <div className="h-6 w-6 rounded-full bg-saffron"></div>
                         </div>
                         <div className="ml-5 w-0 flex-1">
                           <dl>
@@ -315,7 +315,7 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <a
                     href="/admin/scan-qr"
-                    className="block p-6 bg-gradient-to-br from-[#FF9933] to-[#E68A2E] text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+                    className="block p-6 bg-kumkum text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow"
                   >
                     <div className="text-3xl mb-2">📷</div>
                     <h3 className="text-lg font-bold">Scan QR Code</h3>

@@ -41,7 +41,7 @@ export function ZelleConfirmationForm({
           value={zelleReference}
           onChange={(e) => setZelleReference(e.target.value)}
           placeholder="Enter your bank's Zelle confirmation #"
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
         />
         <p className="mt-1 text-xs text-gray-500">
           This helps us verify your payment faster

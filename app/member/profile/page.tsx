@@ -184,7 +184,7 @@ export default function MemberProfilePage() {
       <ProtectedRoute>
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading profile...</p>
           </div>
         </div>
@@ -201,7 +201,7 @@ export default function MemberProfilePage() {
             <p className="text-gray-600 mb-6">Unable to load your profile.</p>
             <button
               onClick={() => router.push('/member')}
-              className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
             >
               Back to Dashboard
             </button>
@@ -274,7 +274,7 @@ export default function MemberProfilePage() {
                       name="first_name"
                       value={formData.first_name}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -286,7 +286,7 @@ export default function MemberProfilePage() {
                       name="last_name"
                       value={formData.last_name}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -297,7 +297,7 @@ export default function MemberProfilePage() {
                       name="nakshatra"
                       value={formData.nakshatra}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     >
                       <option value="">Select Nakshatra</option>
                       {NAKSHATRAS.map((n) => (
@@ -314,7 +314,7 @@ export default function MemberProfilePage() {
                       name="family_gotra"
                       value={formData.family_gotra}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       placeholder="e.g., Bharadwaja"
                     />
                   </div>
@@ -336,7 +336,7 @@ export default function MemberProfilePage() {
                       name="business_name"
                       value={formData.business_name}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -382,7 +382,7 @@ export default function MemberProfilePage() {
                     name="primary_phone"
                     value={formData.primary_phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     placeholder="(555) 123-4567"
                   />
                 </div>
@@ -395,7 +395,7 @@ export default function MemberProfilePage() {
                     name="primary_phone_2"
                     value={formData.primary_phone_2}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     placeholder="(555) 123-4567"
                   />
                 </div>
@@ -416,7 +416,7 @@ export default function MemberProfilePage() {
                       name="secondary_first_name"
                       value={formData.secondary_first_name}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -428,7 +428,7 @@ export default function MemberProfilePage() {
                       name="secondary_last_name"
                       value={formData.secondary_last_name}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -440,7 +440,7 @@ export default function MemberProfilePage() {
                       name="secondary_email"
                       value={formData.secondary_email}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -452,7 +452,7 @@ export default function MemberProfilePage() {
                       name="secondary_phone"
                       value={formData.secondary_phone}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -463,7 +463,7 @@ export default function MemberProfilePage() {
                       name="secondary_nakshatra"
                       value={formData.secondary_nakshatra}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     >
                       <option value="">Select Nakshatra</option>
                       {NAKSHATRAS.map((n) => (
@@ -488,7 +488,7 @@ export default function MemberProfilePage() {
                     name="address_line_1"
                     value={formData.address_line_1}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     placeholder="Street address"
                   />
                 </div>
@@ -501,7 +501,7 @@ export default function MemberProfilePage() {
                     name="address_line_2"
                     value={formData.address_line_2}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     placeholder="Apt, Suite, Unit, etc. (optional)"
                   />
                 </div>
@@ -514,7 +514,7 @@ export default function MemberProfilePage() {
                     name="city"
                     value={formData.city}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -526,7 +526,7 @@ export default function MemberProfilePage() {
                     name="state"
                     value={formData.state}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     placeholder="FL"
                   />
                 </div>
@@ -539,7 +539,7 @@ export default function MemberProfilePage() {
                     name="zip"
                     value={formData.zip}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     placeholder="32256"
                   />
                 </div>
@@ -552,7 +552,7 @@ export default function MemberProfilePage() {
                     name="country"
                     value={formData.country}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                   />
                 </div>
               </div>
@@ -570,7 +570,7 @@ export default function MemberProfilePage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-3 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+                className="px-6 py-3 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
               >
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>

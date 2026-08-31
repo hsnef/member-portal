@@ -129,12 +129,12 @@ export default function RecordPaymentPage() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
                         placeholder="Search by name, membership ID, or email..."
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       />
                       <button
                         type="button"
                         onClick={handleSearch}
-                        className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+                        className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
                       >
                         Search
                       </button>
@@ -161,7 +161,7 @@ export default function RecordPaymentPage() {
                                 {member.membership_id} • {member.primary_email}
                               </p>
                             </div>
-                            <span className="text-[#FF9933]">Select →</span>
+                            <span className="text-saffron">Select →</span>
                           </button>
                         ))}
                       </div>
@@ -201,7 +201,7 @@ export default function RecordPaymentPage() {
                     required
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     placeholder="0.00"
                   />
                 </div>
@@ -215,7 +215,7 @@ export default function RecordPaymentPage() {
                     required
                     value={formData.payment_method}
                     onChange={(e) => setFormData({ ...formData, payment_method: e.target.value as PaymentMethod })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                   >
                     <option value="Cash">Cash</option>
                     <option value="Check">Check</option>
@@ -233,7 +233,7 @@ export default function RecordPaymentPage() {
                     required
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value as PaymentCategory })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                   >
                     <option value="Membership">Membership</option>
                     <option value="Donation">Donation</option>
@@ -254,7 +254,7 @@ export default function RecordPaymentPage() {
                       type="text"
                       value={formData.check_number}
                       onChange={(e) => setFormData({ ...formData, check_number: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       placeholder="Check #"
                     />
                   </div>
@@ -270,7 +270,7 @@ export default function RecordPaymentPage() {
                       type="text"
                       value={formData.transaction_id}
                       onChange={(e) => setFormData({ ...formData, transaction_id: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       placeholder="Zelle transaction reference"
                     />
                   </div>
@@ -286,7 +286,7 @@ export default function RecordPaymentPage() {
                       type="text"
                       value={formData.transaction_id}
                       onChange={(e) => setFormData({ ...formData, transaction_id: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       placeholder="pi_xxxxxxxxxxxxxx"
                     />
                   </div>
@@ -302,7 +302,7 @@ export default function RecordPaymentPage() {
                   rows={3}
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                   placeholder="Additional notes about this payment..."
                 />
               </div>
@@ -319,7 +319,7 @@ export default function RecordPaymentPage() {
                 <button
                   type="submit"
                   disabled={loading || !selectedMember}
-                  className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Recording...' : 'Record Payment'}
                 </button>

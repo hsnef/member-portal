@@ -158,7 +158,7 @@ export default function PortalSettingsPage() {
         <AdminLayout>
           <div className="flex justify-center items-center min-h-[400px]">
             <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-orange-600 border-r-transparent"></div>
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
               <p className="mt-4 text-gray-600">Loading settings...</p>
             </div>
           </div>

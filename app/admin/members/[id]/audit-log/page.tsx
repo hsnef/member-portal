@@ -124,7 +124,7 @@ export default function MemberAuditLogPage() {
             <div>
               <button
                 onClick={() => router.push(`/admin/members/${memberId}`)}
-                className="text-sm text-[#FF9933] hover:text-[#FF8800] font-medium mb-2 flex items-center"
+                className="text-sm text-saffron hover:text-[#FF8800] font-medium mb-2 flex items-center"
               >
                 <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -181,7 +181,7 @@ export default function MemberAuditLogPage() {
                   id="actionType"
                   value={actionTypeFilter}
                   onChange={(e) => setActionTypeFilter(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 >
                   <option value="All">All Actions</option>
                   <option value="CREATED">Created</option>
@@ -200,7 +200,7 @@ export default function MemberAuditLogPage() {
                   id="creationSource"
                   value={creationSourceFilter}
                   onChange={(e) => setCreationSourceFilter(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   disabled={actionTypeFilter !== 'All' && actionTypeFilter !== 'CREATED'}
                 >
                   <option value="All">All Sources</option>
@@ -222,7 +222,7 @@ export default function MemberAuditLogPage() {
                   id="fromDate"
                   value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
 
@@ -236,7 +236,7 @@ export default function MemberAuditLogPage() {
                   id="toDate"
                   value={toDate}
                   onChange={(e) => setToDate(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
             </div>
@@ -251,7 +251,7 @@ export default function MemberAuditLogPage() {
                     setFromDate('')
                     setToDate('')
                   }}
-                  className="text-sm text-[#FF9933] hover:text-[#FF8800] font-medium"
+                  className="text-sm text-saffron hover:text-[#FF8800] font-medium"
                 >
                   Clear all filters
                 </button>
@@ -267,7 +267,7 @@ export default function MemberAuditLogPage() {
 
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading audit log...</p>
               </div>
             ) : (

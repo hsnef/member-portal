@@ -194,7 +194,7 @@ export default function TermsAcceptanceModal({ onAccepted }: TermsAcceptanceModa
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative w-full max-w-4xl bg-white rounded-lg shadow-2xl">
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#FF9933] to-[#800000] text-white px-6 py-4 rounded-t-lg">
+          <div className="bg-kumkum text-white px-6 py-4 rounded-t-lg">
             <h2 className="text-2xl font-bold">{terms.title}</h2>
             <p className="mt-1 text-white/90 text-sm">
               Please review and accept to continue
@@ -299,7 +299,7 @@ export default function TermsAcceptanceModal({ onAccepted }: TermsAcceptanceModa
                 <button
                   onClick={handleAccept}
                   disabled={!termsAccepted || accepting || bypassing}
-                  className="px-6 py-3 bg-gradient-to-r from-[#FF9933] to-[#800000] text-white rounded-md font-semibold hover:from-[#FF8800] hover:to-[#700000] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
+                  className="px-6 py-3 bg-kumkum text-white rounded-md font-semibold hover:from-[#FF8800] hover:to-[#700000] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
                 >
                   {accepting ? (
                     <span className="flex items-center gap-2">

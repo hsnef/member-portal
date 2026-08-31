@@ -137,7 +137,7 @@ export default function AdminBookingsPage() {
             </div>
             <Link
               href="/admin/bookings/new"
-              className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+              className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
             >
               + New Booking
             </Link>
@@ -153,7 +153,7 @@ export default function AdminBookingsPage() {
                   placeholder="Search by name, email, phone, or booking ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
 
@@ -163,7 +163,7 @@ export default function AdminBookingsPage() {
                   onClick={() => setFilter('all')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     filter === 'all'
-                      ? 'bg-[#FF9933] text-white'
+                      ? 'bg-saffron text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -173,7 +173,7 @@ export default function AdminBookingsPage() {
                   onClick={() => setFilter('pending')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     filter === 'pending'
-                      ? 'bg-[#FF9933] text-white'
+                      ? 'bg-saffron text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -183,7 +183,7 @@ export default function AdminBookingsPage() {
                   onClick={() => setFilter('approved')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     filter === 'approved'
-                      ? 'bg-[#FF9933] text-white'
+                      ? 'bg-saffron text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -193,7 +193,7 @@ export default function AdminBookingsPage() {
                   onClick={() => setFilter('paid')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     filter === 'paid'
-                      ? 'bg-[#FF9933] text-white'
+                      ? 'bg-saffron text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -203,7 +203,7 @@ export default function AdminBookingsPage() {
                   onClick={() => setFilter('completed')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     filter === 'completed'
-                      ? 'bg-[#FF9933] text-white'
+                      ? 'bg-saffron text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -221,7 +221,7 @@ export default function AdminBookingsPage() {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading bookings...</p>
               </div>
             ) : filteredBookings.length === 0 ? (
@@ -320,7 +320,7 @@ export default function AdminBookingsPage() {
                           <div className="flex justify-end gap-2">
                             <button
                               onClick={() => router.push(`/admin/bookings/${booking.id}`)}
-                              className="text-[#FF9933] hover:text-[#E68A2E]"
+                              className="text-saffron hover:text-saffron-hover"
                             >
                               View
                             </button>

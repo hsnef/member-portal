@@ -69,7 +69,7 @@ function RequestPaymentForm({ request }: { request: RequestDetails }) {
           </div>
           <div className="border-t pt-2 flex justify-between">
             <span className="font-semibold text-gray-900">Total</span>
-            <span className="font-bold text-[#FF9933] text-lg">${request.amount.toFixed(2)}</span>
+            <span className="font-bold text-saffron text-lg">${request.amount.toFixed(2)}</span>
           </div>
         </div>
       </div>
@@ -97,7 +97,7 @@ function RequestPaymentForm({ request }: { request: RequestDetails }) {
         <button
           type="submit"
           disabled={!stripe || loading}
-          className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+          className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
         >
           {loading ? 'Processing...' : `Pay $${request.amount.toFixed(2)}`}
         </button>
@@ -184,7 +184,7 @@ function RequestPaymentContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading payment form...</p>
         </div>
       </div>
@@ -201,7 +201,7 @@ function RequestPaymentContent() {
           </p>
           <button
             onClick={() => router.push('/member/requests')}
-            className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
+            className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
           >
             Back to Requests
           </button>
@@ -215,7 +215,7 @@ function RequestPaymentContent() {
     appearance: {
       theme: 'stripe' as const,
       variables: {
-        colorPrimary: '#FF9933',
+        colorPrimary: '#c75b12',
       },
     },
   }

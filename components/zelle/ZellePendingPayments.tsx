@@ -131,7 +131,7 @@ export function ZellePendingPayments({ memberId, compact = false }: ZellePending
               </div>
               <button
                 onClick={() => router.push(`/pay/${req.reference_code}`)}
-                className="px-4 py-1.5 text-sm font-medium text-[#FF9933] hover:bg-[#FF9933]/10 rounded-md transition-colors"
+                className="px-4 py-1.5 text-sm font-medium text-saffron hover:bg-saffron-soft rounded-md transition-colors"
               >
                 {req.status === 'pending' ? 'Complete Payment' : 'View Details'}
               </button>

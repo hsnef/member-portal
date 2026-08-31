@@ -220,7 +220,7 @@ export default function NewMemberPage() {
                   </label>
                   <select
                     {...register('member_class')}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                   >
                     <option value="Personal">Personal</option>
                     <option value="Business">Business</option>
@@ -236,7 +236,7 @@ export default function NewMemberPage() {
                   </label>
                   <select
                     {...register('current_level')}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                   >
                     <option value="Community">Community</option>
                     <option value="Annual">Annual</option>
@@ -252,7 +252,7 @@ export default function NewMemberPage() {
                     <input
                       type="checkbox"
                       {...register('is_founding_member')}
-                      className="rounded border-gray-300 text-[#FF9933] focus:ring-[#FF9933]"
+                      className="rounded border-gray-300 text-saffron focus:ring-saffron-ring"
                     />
                     <span className="ml-2 text-sm text-gray-700">Founding Member</span>
                   </label>
@@ -272,7 +272,7 @@ export default function NewMemberPage() {
                     <input
                       type="text"
                       {...register('first_name')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                     {errors.first_name && (
                       <p className="mt-1 text-sm text-red-600">{errors.first_name.message}</p>
@@ -286,7 +286,7 @@ export default function NewMemberPage() {
                     <input
                       type="text"
                       {...register('last_name')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                     {errors.last_name && (
                       <p className="mt-1 text-sm text-red-600">{errors.last_name.message}</p>
@@ -301,7 +301,7 @@ export default function NewMemberPage() {
                       type="text"
                       {...register('profile_name')}
                       placeholder="Display name"
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                   </div>
 
@@ -311,7 +311,7 @@ export default function NewMemberPage() {
                     </label>
                     <select
                       {...register('nakshatra')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     >
                       <option value="">Select Nakshatra</option>
                       {NAKSHATRAS.map((nakshatra) => (
@@ -329,7 +329,7 @@ export default function NewMemberPage() {
                     <input
                       type="text"
                       {...register('family_gotra')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                   </div>
                 </div>
@@ -348,7 +348,7 @@ export default function NewMemberPage() {
                     <input
                       type="text"
                       {...register('business_name')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                     {errors.business_name && (
                       <p className="mt-1 text-sm text-red-600">{errors.business_name.message}</p>
@@ -361,7 +361,7 @@ export default function NewMemberPage() {
                     </label>
                     <EINInput
                       {...register('business_ein')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                   </div>
                 </div>
@@ -376,7 +376,7 @@ export default function NewMemberPage() {
                     <input
                       type="text"
                       {...register('first_name')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                     {errors.first_name && (
                       <p className="mt-1 text-sm text-red-600">{errors.first_name.message}</p>
@@ -390,7 +390,7 @@ export default function NewMemberPage() {
                     <input
                       type="text"
                       {...register('last_name')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                     {errors.last_name && (
                       <p className="mt-1 text-sm text-red-600">{errors.last_name.message}</p>
@@ -403,7 +403,7 @@ export default function NewMemberPage() {
                     </label>
                     <select
                       {...register('nakshatra')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     >
                       <option value="">Select Nakshatra</option>
                       {NAKSHATRAS.map((nakshatra) => (
@@ -428,7 +428,7 @@ export default function NewMemberPage() {
                   <input
                     type="email"
                     {...register('primary_email')}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                   />
                   {errors.primary_email && (
                     <p className="mt-1 text-sm text-red-600">{errors.primary_email.message}</p>
@@ -441,7 +441,7 @@ export default function NewMemberPage() {
                   </label>
                   <PhoneInput
                     {...register('primary_phone')}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                   />
                 </div>
 
@@ -451,7 +451,7 @@ export default function NewMemberPage() {
                   </label>
                   <PhoneInput
                     {...register('primary_phone_2')}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                   />
                 </div>
               </div>
@@ -471,7 +471,7 @@ export default function NewMemberPage() {
                     <input
                       type="text"
                       {...register('secondary_first_name')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                   </div>
 
@@ -482,7 +482,7 @@ export default function NewMemberPage() {
                     <input
                       type="text"
                       {...register('secondary_last_name')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                   </div>
 
@@ -492,7 +492,7 @@ export default function NewMemberPage() {
                     </label>
                     <select
                       {...register('secondary_nakshatra')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     >
                       <option value="">Select Nakshatra</option>
                       {NAKSHATRAS.map((nakshatra) => (
@@ -510,7 +510,7 @@ export default function NewMemberPage() {
                     <input
                       type="email"
                       {...register('secondary_email')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                     {errors.secondary_email && (
                       <p className="mt-1 text-sm text-red-600">{errors.secondary_email.message}</p>
@@ -523,7 +523,7 @@ export default function NewMemberPage() {
                     </label>
                     <PhoneInput
                       {...register('secondary_phone')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                   </div>
                 </div>
@@ -541,7 +541,7 @@ export default function NewMemberPage() {
                   <input
                     type="text"
                     {...register('address_line_1')}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                   />
                 </div>
 
@@ -553,7 +553,7 @@ export default function NewMemberPage() {
                     type="text"
                     {...register('address_line_2')}
                     placeholder="Apt, Suite, Unit, etc."
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                   />
                 </div>
 
@@ -565,7 +565,7 @@ export default function NewMemberPage() {
                     <input
                       type="text"
                       {...register('city')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                   </div>
 
@@ -577,7 +577,7 @@ export default function NewMemberPage() {
                       type="text"
                       {...register('state')}
                       placeholder="FL"
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                   </div>
 
@@ -587,7 +587,7 @@ export default function NewMemberPage() {
                     </label>
                     <ZipInput
                       {...register('zip')}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     />
                   </div>
                 </div>
@@ -599,7 +599,7 @@ export default function NewMemberPage() {
                   <input
                     type="text"
                     {...register('country')}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                   />
                 </div>
 
@@ -610,7 +610,7 @@ export default function NewMemberPage() {
                   <textarea
                     {...register('mailing_address')}
                     rows={3}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FF9933] focus:ring-[#FF9933]"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-saffron focus:ring-saffron-ring"
                     placeholder="Full mailing address if different from above"
                   />
                 </div>
@@ -625,7 +625,7 @@ export default function NewMemberPage() {
                   type="checkbox"
                   checked={sendInvitation}
                   onChange={(e) => setSendInvitation(e.target.checked)}
-                  className="rounded border-gray-300 text-[#FF9933] focus:ring-[#FF9933]"
+                  className="rounded border-gray-300 text-saffron focus:ring-saffron-ring"
                 />
                 <span className="ml-2 text-sm text-gray-700">
                   Send registration invitation email to member
@@ -641,14 +641,14 @@ export default function NewMemberPage() {
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="px-6 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9933]"
+                className="px-6 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-saffron-ring"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FF9933] hover:bg-[#E68A2E] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9933] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-saffron hover:bg-saffron-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-saffron-ring disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Creating...' : 'Create Member'}
               </button>

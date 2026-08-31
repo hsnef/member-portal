@@ -79,7 +79,7 @@ export default function MembersPage() {
   const getLevelBadgeColor = (level: MembershipLevel) => {
     switch (level) {
       case 'Lifetime':
-        return 'bg-[#FF9933] text-white'
+        return 'bg-saffron text-white'
       case 'Annual':
         return 'bg-blue-500 text-white'
       case 'Community':
@@ -104,7 +104,7 @@ export default function MembersPage() {
             <div className="flex gap-3">
               <Link
                 href="/admin/members/import"
-                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9933]"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-saffron-ring"
               >
                 <svg
                   className="mr-2 h-5 w-5"
@@ -123,7 +123,7 @@ export default function MembersPage() {
               </Link>
               <Link
                 href="/admin/members/new"
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gradient-to-r from-[#FF9933] to-[#800000] hover:from-[#FF8800] hover:to-[#700000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9933]"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-kumkum focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-saffron-ring"
               >
                 <svg
                   className="mr-2 h-5 w-5"
@@ -157,7 +157,7 @@ export default function MembersPage() {
                   placeholder="Search by ID, name, email, phone..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
 
@@ -170,7 +170,7 @@ export default function MembersPage() {
                   id="level"
                   value={levelFilter}
                   onChange={(e) => setLevelFilter(e.target.value as MembershipLevel | 'All')}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 >
                   <option value="All">All Levels</option>
                   <option value="Lifetime">Lifetime</option>
@@ -190,7 +190,7 @@ export default function MembersPage() {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading members...</p>
               </div>
             ) : filteredMembers.length === 0 ? (
@@ -284,7 +284,7 @@ export default function MembersPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <Link
                             href={`/admin/members/${member.id}`}
-                            className="text-[#FF9933] hover:text-[#FF8800]"
+                            className="text-saffron hover:text-[#FF8800]"
                           >
                             View
                           </Link>

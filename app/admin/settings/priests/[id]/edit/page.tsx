@@ -106,7 +106,7 @@ export default function EditPriestPage() {
       <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
         <AdminLayout>
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
             <p className="mt-4 text-gray-600">Loading priest...</p>
           </div>
         </AdminLayout>
@@ -146,7 +146,7 @@ export default function EditPriestPage() {
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 required
               />
             </div>
@@ -161,7 +161,7 @@ export default function EditPriestPage() {
                 rows={4}
                 value={formData.bio}
                 onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 placeholder="Brief introduction and qualifications..."
               />
             </div>
@@ -178,7 +178,7 @@ export default function EditPriestPage() {
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: formatPhoneNumber(e.target.value) })}
                   placeholder="(555) 123-4567"
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
 
@@ -191,7 +191,7 @@ export default function EditPriestPage() {
                   id="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 />
               </div>
             </div>
@@ -206,7 +206,7 @@ export default function EditPriestPage() {
                 id="specialties"
                 value={formData.specialties}
                 onChange={(e) => setFormData({ ...formData, specialties: e.target.value })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 placeholder="e.g., Vedic rituals, Havans, Weddings"
               />
             </div>
@@ -222,7 +222,7 @@ export default function EditPriestPage() {
                   id="picture_url"
                   value={formData.picture_url}
                   onChange={(e) => setFormData({ ...formData, picture_url: e.target.value })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   placeholder="https://..."
                 />
               </div>
@@ -236,7 +236,7 @@ export default function EditPriestPage() {
                   id="profile_url"
                   value={formData.profile_url}
                   onChange={(e) => setFormData({ ...formData, profile_url: e.target.value })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   placeholder="https://..."
                 />
               </div>
@@ -253,7 +253,7 @@ export default function EditPriestPage() {
                   id="display_order"
                   value={formData.display_order}
                   onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                   min="0"
                 />
                 <p className="mt-1 text-xs text-gray-500">Lower numbers appear first</p>
@@ -269,7 +269,7 @@ export default function EditPriestPage() {
                     id="is_active"
                     checked={formData.is_active}
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="h-4 w-4 text-[#FF9933] focus:ring-[#FF9933] border-gray-300 rounded"
+                    className="h-4 w-4 text-saffron focus:ring-saffron-ring border-gray-300 rounded"
                   />
                   <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">
                     Active (available for booking)
@@ -290,7 +290,7 @@ export default function EditPriestPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+                className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
               >
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>

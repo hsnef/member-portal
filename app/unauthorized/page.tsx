@@ -46,7 +46,7 @@ export default function UnauthorizedPage() {
               <>
                 <Link
                   href="/member"
-                  className="block w-full px-4 py-2 bg-gradient-to-r from-[#FF9933] to-[#800000] text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
+                  className="block w-full px-4 py-2 bg-kumkum text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
                 >
                   Go to Member Portal
                 </Link>
@@ -63,7 +63,7 @@ export default function UnauthorizedPage() {
             ) : (
               <Link
                 href="/login"
-                className="block w-full px-4 py-2 bg-gradient-to-r from-[#FF9933] to-[#800000] text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
+                className="block w-full px-4 py-2 bg-kumkum text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
               >
                 Sign In
               </Link>
@@ -76,7 +76,7 @@ export default function UnauthorizedPage() {
               Need access?{' '}
               <a
                 href="mailto:info@hsnef.org"
-                className="text-[#FF9933] hover:text-[#FF8800] font-medium"
+                className="text-saffron hover:text-[#FF8800] font-medium"
               >
                 Contact an administrator
               </a>

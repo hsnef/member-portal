@@ -27,7 +27,7 @@ export default function TermsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-orange-600 border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading terms...</p>
         </div>
       </div>
@@ -44,7 +44,7 @@ export default function TermsPage() {
           </p>
           <Link
             href="/"
-            className="inline-block px-6 py-3 bg-gradient-to-r from-[#FF9933] to-[#800000] text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
+            className="inline-block px-6 py-3 bg-kumkum text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
           >
             Return to Home
           </Link>
@@ -56,7 +56,7 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#FF9933] to-[#800000] text-white py-6 px-4 shadow-lg">
+      <div className="bg-kumkum text-white py-6 px-4 shadow-lg">
         <div className="max-w-4xl mx-auto">
           <Link href="/" className="inline-flex items-center text-white hover:text-white/90 mb-4">
             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

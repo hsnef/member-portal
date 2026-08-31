@@ -339,12 +339,12 @@ export default function StaffRolesPage() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     placeholder="Search by name, email, or membership ID..."
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                   />
                   <button
                     onClick={handleSearch}
                     disabled={searching}
-                    className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300"
+                    className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300"
                   >
                     {searching ? 'Searching...' : 'Search'}
                   </button>
@@ -409,7 +409,7 @@ export default function StaffRolesPage() {
                           key={role}
                           className={`flex items-center gap-2 px-4 py-2 rounded-md cursor-pointer border ${
                             selectedRole === role
-                              ? 'border-[#FF9933] bg-orange-50'
+                              ? 'border-saffron bg-orange-50'
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >
@@ -419,7 +419,7 @@ export default function StaffRolesPage() {
                             value={role}
                             checked={selectedRole === role}
                             onChange={() => setSelectedRole(role)}
-                            className="text-[#FF9933] focus:ring-[#FF9933]"
+                            className="text-saffron focus:ring-saffron-ring"
                           />
                           <span className={`text-sm font-medium ${ROLE_COLORS[role]} px-2 py-0.5 rounded`}>
                             {role}
@@ -470,7 +470,7 @@ export default function StaffRolesPage() {
 
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading staff members...</p>
               </div>
             ) : staffMembers.length === 0 ? (

@@ -209,7 +209,7 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4" suppressHydrationWarning>
         <div className="text-center" suppressHydrationWarning>
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
@@ -222,7 +222,7 @@ export default function RegisterPage() {
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <div className="mx-auto h-16 w-16 bg-gradient-to-br from-[#FF9933] to-[#800000] rounded-full flex items-center justify-center">
+            <div className="mx-auto h-16 w-16 bg-kumkum rounded-full flex items-center justify-center">
               <span className="text-2xl font-bold text-white">H</span>
             </div>
             <h2 className="mt-6 text-3xl font-bold text-gray-900">Traditional Registration Disabled</h2>
@@ -244,7 +244,7 @@ export default function RegisterPage() {
                 </p>
                 <Link
                   href="/login"
-                  className="inline-block px-4 py-2 bg-gradient-to-r from-[#FF9933] to-[#800000] text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
+                  className="inline-block px-4 py-2 bg-kumkum text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
                 >
                   Go to Login
                 </Link>
@@ -257,7 +257,7 @@ export default function RegisterPage() {
                 </p>
                 <Link
                   href="/join"
-                  className="inline-block px-4 py-2 bg-gradient-to-r from-[#FF9933] to-[#800000] text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
+                  className="inline-block px-4 py-2 bg-kumkum text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
                 >
                   Apply for Membership
                 </Link>
@@ -278,7 +278,7 @@ export default function RegisterPage() {
       <div className="max-w-md w-full space-y-8">
         {/* Logo and Header */}
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-gradient-to-br from-[#FF9933] to-[#800000] rounded-full flex items-center justify-center">
+          <div className="mx-auto h-16 w-16 bg-kumkum rounded-full flex items-center justify-center">
             <span className="text-2xl font-bold text-white">H</span>
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">Create Your Account</h2>
@@ -316,7 +316,7 @@ export default function RegisterPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 placeholder="you@example.com"
                 disabled={loading}
               />
@@ -338,7 +338,7 @@ export default function RegisterPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 placeholder="••••••••"
                 disabled={loading}
               />
@@ -361,7 +361,7 @@ export default function RegisterPage() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#FF9933] focus:border-[#FF9933]"
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                 placeholder="••••••••"
                 disabled={loading}
               />
@@ -380,7 +380,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading || !termsAccepted}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#FF9933] to-[#800000] hover:from-[#FF8800] hover:to-[#700000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9933] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-kumkum focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-saffron-ring disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loading ? (
                 <div className="flex items-center gap-2">
@@ -415,7 +415,7 @@ export default function RegisterPage() {
           {/* Link to Login */}
           <div className="text-center text-sm">
             <span className="text-gray-600">Already have an account? </span>
-            <Link href="/login" className="text-[#FF9933] hover:text-[#FF8800] font-medium">
+            <Link href="/login" className="text-saffron hover:text-[#FF8800] font-medium">
               Sign in here
             </Link>
           </div>
@@ -426,7 +426,7 @@ export default function RegisterPage() {
               Not a member yet?{' '}
               <Link
                 href="/join"
-                className="text-[#FF9933] hover:text-[#FF8800] font-medium underline"
+                className="text-saffron hover:text-[#FF8800] font-medium underline"
               >
                 Apply for membership
               </Link>

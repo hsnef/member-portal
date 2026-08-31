@@ -151,7 +151,7 @@ export default function QuickPayPage() {
       >
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Scan to Pay</h1>
-          <p className="text-6xl font-bold text-[#FF9933] mb-8">
+          <p className="text-6xl font-bold text-saffron mb-8">
             {formatAmount(activeRequest.amount)}
           </p>
 
@@ -221,7 +221,7 @@ export default function QuickPayPage() {
                       min="0.01"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="w-full px-4 py-3 text-2xl font-bold border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-3 text-2xl font-bold border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       placeholder="0.00"
                       required
                     />
@@ -235,7 +235,7 @@ export default function QuickPayPage() {
                     <select
                       value={purpose}
                       onChange={(e) => setPurpose(e.target.value as PaymentPurpose)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     >
                       <option value="Donation">Donation</option>
                       <option value="Membership">Membership</option>
@@ -255,7 +255,7 @@ export default function QuickPayPage() {
                       type="text"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       placeholder="e.g., Ganesh Puja donation"
                     />
                   </div>
@@ -269,7 +269,7 @@ export default function QuickPayPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 font-semibold text-lg"
+                    className="w-full py-3 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 font-semibold text-lg"
                   >
                     {loading ? 'Creating...' : 'Generate QR Code'}
                   </button>
@@ -281,7 +281,7 @@ export default function QuickPayPage() {
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="text-sm text-gray-500">Amount</p>
-                        <p className="text-3xl font-bold text-[#FF9933]">
+                        <p className="text-3xl font-bold text-saffron">
                           {formatAmount(activeRequest.amount)}
                         </p>
                       </div>

@@ -133,7 +133,7 @@ export default function EditEventPage() {
         <AdminLayout>
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
               <p className="mt-4 text-gray-600">Loading event...</p>
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function EditEventPage() {
                       required
                       value={formData.event_name}
                       onChange={(e) => setFormData({ ...formData, event_name: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       placeholder="e.g., Diwali Festival 2024"
                     />
                   </div>
@@ -206,7 +206,7 @@ export default function EditEventPage() {
                       required
                       value={formData.event_date}
                       onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
 
@@ -219,7 +219,7 @@ export default function EditEventPage() {
                       required
                       value={formData.event_time}
                       onChange={(e) => setFormData({ ...formData, event_time: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                   </div>
 
@@ -232,7 +232,7 @@ export default function EditEventPage() {
                       required
                       value={formData.location}
                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       placeholder="e.g., HSNEF Temple Main Hall"
                     />
                   </div>
@@ -245,7 +245,7 @@ export default function EditEventPage() {
                       required
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     >
                       <option value="Festival">Festival</option>
                       <option value="Puja">Puja</option>
@@ -271,7 +271,7 @@ export default function EditEventPage() {
                     maxLength={200}
                     value={formData.short_description}
                     onChange={(e) => setFormData({ ...formData, short_description: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     placeholder="Brief summary shown on event listing cards (max 200 characters)"
                   />
                   <p className="mt-1 text-xs text-gray-500">
@@ -318,7 +318,7 @@ export default function EditEventPage() {
                         type="button"
                         onClick={() => setFormData({ ...formData, rsvp_enabled: !formData.rsvp_enabled })}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          formData.rsvp_enabled ? 'bg-[#FF9933]' : 'bg-gray-300'
+                          formData.rsvp_enabled ? 'bg-saffron' : 'bg-gray-300'
                         }`}
                       >
                         <span
@@ -360,7 +360,7 @@ export default function EditEventPage() {
                         disabled={!formData.rsvp_enabled}
                         onClick={() => setFormData({ ...formData, is_payable: !formData.is_payable })}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          formData.is_payable ? 'bg-[#FF9933]' : 'bg-gray-300'
+                          formData.is_payable ? 'bg-saffron' : 'bg-gray-300'
                         } ${!formData.rsvp_enabled ? 'cursor-not-allowed' : ''}`}
                       >
                         <span
@@ -371,7 +371,7 @@ export default function EditEventPage() {
                       </button>
                     </div>
                     {formData.rsvp_enabled && formData.is_payable && (
-                      <div className="mt-3 text-xs text-[#FF9933] flex items-center gap-1">
+                      <div className="mt-3 text-xs text-saffron flex items-center gap-1">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -400,7 +400,7 @@ export default function EditEventPage() {
                       min="0"
                       value={formData.max_capacity}
                       onChange={(e) => setFormData({ ...formData, max_capacity: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       placeholder="0 = unlimited"
                     />
                     <p className="mt-1 text-xs text-gray-500">Leave 0 or empty for unlimited capacity</p>
@@ -414,7 +414,7 @@ export default function EditEventPage() {
                       type="date"
                       value={formData.registration_deadline}
                       onChange={(e) => setFormData({ ...formData, registration_deadline: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                     />
                     <p className="mt-1 text-xs text-gray-500">Optional - defaults to event date</p>
                   </div>
@@ -424,7 +424,7 @@ export default function EditEventPage() {
                 {formData.is_payable && formData.rsvp_enabled && (
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                     <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <svg className="w-4 h-4 text-[#FF9933]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-saffron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       Pricing
@@ -441,7 +441,7 @@ export default function EditEventPage() {
                           required={formData.is_payable}
                           value={formData.member_price}
                           onChange={(e) => setFormData({ ...formData, member_price: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                           placeholder="25.00"
                         />
                         <p className="mt-1 text-xs text-gray-500">Price for Annual/Lifetime members</p>
@@ -458,7 +458,7 @@ export default function EditEventPage() {
                           required={formData.is_payable}
                           value={formData.non_member_price}
                           onChange={(e) => setFormData({ ...formData, non_member_price: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                           placeholder="35.00"
                         />
                         <p className="mt-1 text-xs text-gray-500">Price for non-members / guests</p>
@@ -480,7 +480,7 @@ export default function EditEventPage() {
                       type="email"
                       value={formData.contact_email}
                       onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       placeholder="events@hsnef.org"
                     />
                   </div>
@@ -493,7 +493,7 @@ export default function EditEventPage() {
                       type="tel"
                       value={formData.contact_phone}
                       onChange={(e) => setFormData({ ...formData, contact_phone: formatPhoneNumber(e.target.value) })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                       placeholder="(904) 555-1234"
                     />
                   </div>
@@ -567,7 +567,7 @@ export default function EditEventPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
+                  className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
                 >
                   {saving ? 'Saving...' : 'Save Changes'}
                 </button>

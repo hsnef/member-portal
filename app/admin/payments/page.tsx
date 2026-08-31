@@ -143,7 +143,7 @@ export default function PaymentsPage() {
             </div>
             <Link
               href="/admin/payments/new"
-              className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-medium"
+              className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-medium"
             >
               + Record Payment
             </Link>
@@ -185,7 +185,7 @@ export default function PaymentsPage() {
                   placeholder="Search by member name, ID, or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                 />
               </div>
 
@@ -194,7 +194,7 @@ export default function PaymentsPage() {
                 <select
                   value={filterPurpose}
                   onChange={(e) => setFilterPurpose(e.target.value as any)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                 >
                   <option value="All">All Purposes</option>
                   <option value="Membership">Membership</option>
@@ -211,7 +211,7 @@ export default function PaymentsPage() {
                 <select
                   value={filterMethod}
                   onChange={(e) => setFilterMethod(e.target.value as any)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
                 >
                   <option value="All">All Methods</option>
                   <option value="Stripe">Stripe</option>
@@ -227,7 +227,7 @@ export default function PaymentsPage() {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading payments...</p>
               </div>
             ) : filteredPayments.length === 0 ? (
@@ -304,7 +304,7 @@ export default function PaymentsPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
                             onClick={() => router.push(`/admin/payments/${payment.id}`)}
-                            className="text-[#FF9933] hover:text-[#E68A2E] mr-4"
+                            className="text-saffron hover:text-saffron-hover mr-4"
                           >
                             View
                           </button>

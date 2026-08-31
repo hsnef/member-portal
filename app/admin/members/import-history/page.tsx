@@ -130,7 +130,7 @@ export default function ImportHistoryPage() {
             </div>
             <button
               onClick={() => router.push('/admin/members/import')}
-              className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+              className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
             >
               New Import
             </button>
@@ -140,7 +140,7 @@ export default function ImportHistoryPage() {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
                 <p className="mt-4 text-gray-600">Loading import history...</p>
               </div>
             ) : batches.length === 0 ? (
@@ -165,7 +165,7 @@ export default function ImportHistoryPage() {
                 <div className="mt-6">
                   <button
                     onClick={() => router.push('/admin/members/import')}
-                    className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
+                    className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
                   >
                     Import CSV
                   </button>

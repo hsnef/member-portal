@@ -165,7 +165,7 @@ export default function ImageUpload({
           className={`
             relative rounded-lg border-2 border-dashed p-8 text-center cursor-pointer
             transition-colors duration-200
-            ${dragOver ? 'border-[#FF9933] bg-orange-50' : 'border-gray-300 hover:border-gray-400'}
+            ${dragOver ? 'border-saffron bg-orange-50' : 'border-gray-300 hover:border-gray-400'}
             ${uploading ? 'pointer-events-none opacity-50' : ''}
           `}
           style={{ aspectRatio }}
@@ -173,7 +173,7 @@ export default function ImageUpload({
           <div className="flex flex-col items-center justify-center h-full">
             {uploading ? (
               <>
-                <div className="animate-spin rounded-full h-10 w-10 border-4 border-solid border-[#FF9933] border-r-transparent mb-4"></div>
+                <div className="animate-spin rounded-full h-10 w-10 border-4 border-solid border-saffron border-r-transparent mb-4"></div>
                 <p className="text-sm text-gray-500">Uploading...</p>
               </>
             ) : (
@@ -227,7 +227,7 @@ export default function ImageUpload({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="https://example.com/event-image.jpg"
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
         />
       </div>
     </div>
