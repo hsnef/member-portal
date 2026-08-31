@@ -1,12 +1,27 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Instrument_Sans, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import { TestDataProvider } from "@/lib/context/TestDataContext";
 import { ThemeProvider } from "@/lib/themes/components/ThemeProvider";
 import { AppFooter } from "@/components/AppFooter";
 
-const inter = Inter({ subsets: ["latin"] });
+// Instrument Sans carries the interface. Instrument Serif is reserved for
+// page titles and greetings; it ships a single weight (400) and must never be
+// given font-bold — app/globals.css locks the weight and disables synthesis.
+const instrumentSans = Instrument_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-serif",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "HSNEF Membership Portal",
@@ -23,7 +38,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FF9933",
+  themeColor: "#c75b12",
 };
 
 export default function RootLayout({
@@ -32,8 +47,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} flex flex-col min-h-screen`}>
+    <html lang="en" className={`${instrumentSans.variable} ${instrumentSerif.variable}`}>
+      <body className="font-sans flex flex-col min-h-screen">
         <AuthProvider>
           <ThemeProvider>
             <TestDataProvider>

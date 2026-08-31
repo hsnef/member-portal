@@ -7,6 +7,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import type { Theme, ActiveThemeSetting } from '../types'
+import { DEFAULT_THEME_NAME } from '../themes/built-in'
 import { REQUIRED_CSS_VARIABLES } from '../types'
 
 /**
@@ -23,11 +24,11 @@ export async function getActiveThemeName(): Promise<string> {
 
   if (error || !data) {
     console.error('Error fetching active theme:', error)
-    return 'default'  // Default fallback
+    return DEFAULT_THEME_NAME  // Default fallback
   }
 
   const setting = data.setting_value as ActiveThemeSetting
-  return setting.themeName || 'default'
+  return setting.themeName || DEFAULT_THEME_NAME
 }
 
 /**

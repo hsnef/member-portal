@@ -6,6 +6,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { Theme, ActiveThemeSetting } from '../types'
+import { DEFAULT_THEME_NAME } from '../themes/built-in'
 
 /**
  * Get active theme name from portal_settings (server-side)
@@ -21,11 +22,11 @@ export async function getActiveThemeNameServer(): Promise<string> {
 
   if (error || !data) {
     console.error('Error fetching active theme:', error)
-    return 'default'  // Default fallback
+    return DEFAULT_THEME_NAME  // Default fallback
   }
 
   const setting = data.setting_value as ActiveThemeSetting
-  return setting.themeName || 'default'
+  return setting.themeName || DEFAULT_THEME_NAME
 }
 
 /**
