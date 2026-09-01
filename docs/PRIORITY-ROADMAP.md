@@ -52,11 +52,20 @@
 
 ### Tier 2 — next (high-value, start-ready)
 
-- **Regenerate `types/database.ts` from Supabase.** ~400 of the ~469 type errors trace to this one
-  file being out of sync — every insert/update resolves to `never`. Fixing it makes the type check
-  a usable gate for the first time, and would let `Type check` move out of `_disabledChecks` in
-  `release-gate.config.json`. Expect it to surface real bugs; do it as its own task, not inside a
-  redesign commit.
+- **Regenerate `types/database.ts` from Supabase. AGREED with Sujit 2026-09-01: do this at the
+  END of the design-system port, before anything else.** ~400 of the type errors trace to this one
+  stale file — every insert/update resolves to `never` — and that noise is what makes the other ~50
+  unreadable.
+
+  This is not cleanup. **The type checker has been reporting live defects all along and nothing was
+  reading its output.** Five bugs found during stage 6-7 were each visible to it:
+  the `userData` misreads (empty bookings list, `member_id: null` on new bookings,
+  `reviewed_by: null` on approvals), the `address_line1` typo (receipts issued with no address), and
+  `const memberId = memberId` (two admin pages that threw ReferenceError and had never rendered).
+  `next.config.ts` sets `ignoreBuildErrors`, so the build surfaced none of them.
+
+  Doing it will surface more. Treat that as the point, not a setback. Afterwards, move `Type check`
+  out of `_disabledChecks` in `release-gate.config.json` so it can never regress silently again.
 - **Install a test framework.** There is none, and no test files. `CLAUDE.md`'s tests-with-features
   policy cannot be honoured until this exists. Start with the money/permission paths: Stripe
   webhooks, Zelle confirmation, role gating.
