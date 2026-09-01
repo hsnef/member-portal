@@ -1,0 +1,139 @@
+# HSNEF Member Portal — Priority Roadmap
+
+> What to work on next, and why. Start each session by reading this + `gh issue list`. This file captures the WHY and ORDER; GitHub Issues capture the WHAT and STATUS.
+
+## Current Priority Tiers (as of 2026-08-31)
+
+### Tier 0 — blocking, do before more feature work
+
+- **Split the Supabase projects (DEC-006).** All three environments share one live database today,
+  so dev testing writes to real member data. Create `hsnef-member-portal-prod`, migrate, re-point
+  Vercel Production, verify RLS, re-point Stripe webhooks and OAuth redirect URLs.
+- **Fix the Vercel plan (DEC-007).** Hobby cannot deploy a private org repo, so both PR checks fail
+  and nothing deploys. **Do not fix this by making the repo public** — two committed CSVs carry 6
+  households of member PII including children's names and home addresses. Vercel Pro is the clean
+  fix; the PII purge is required first only if the repo goes public for some other reason.
+- **Remove the member-data CSVs regardless.** `docs/reference/data/current-member-data-import-template*.csv`
+  should not be in the repo at all, private or not. Delete from HEAD now; purge from history if/when
+  the repo's visibility changes.
+
+### Tier 1 — now
+
+- **Design-system port, stage 6: member screens (21 routes).**
+  Order: `/member` → `/member/pass` → `/member/profile` → `/member/payments` → `/member/donate` →
+  `/member/renew` → `/member/bookings/new` → `/member/bookings` + `/member/requests` →
+  `/member/bookings/[id]` → the payment/success routes → `/member/events`.
+  One route per commit. Exemplar map below.
+- **Then stage 7** (admin, ~40 routes — batch by archetype: lists, details, forms) **and stage 8**
+  (emails, PDFs, Stripe `appearance`).
+
+**Blocked on Sujit:**
+- `tailwind-merge` dependency approval. The kit's `cn()` needs it (17 components, 44 call sites);
+  without it a caller's `className` override can silently lose to the component's own default.
+  `utils/cn.ts` is a plain join with a note explaining the one-line swap.
+- **Real temple opening hours** — not in `lib/constants/temple.ts`. The login hero and the shell's
+  office card both want them and currently show the office phone instead. Inventing hours on a
+  sign-in page was not acceptable.
+- **A real photo of the temple.** `public/images/temple-hero.{webp,jpg}` is AI-generated, not the
+  Greenland Road building. Members will recognise that. **Replace before production.**
+- Next.js dev overlay reported "1 Issue" on `/login`; not yet diagnosed.
+
+### Tier 2 — next (high-value, start-ready)
+
+- **Regenerate `types/database.ts` from Supabase.** ~400 of the ~469 type errors trace to this one
+  file being out of sync — every insert/update resolves to `never`. Fixing it makes the type check
+  a usable gate for the first time, and would let `Type check` move out of `_disabledChecks` in
+  `release-gate.config.json`. Expect it to surface real bugs; do it as its own task, not inside a
+  redesign commit.
+- **Install a test framework.** There is none, and no test files. `CLAUDE.md`'s tests-with-features
+  policy cannot be honoured until this exists. Start with the money/permission paths: Stripe
+  webhooks, Zelle confirmation, role gating.
+- **Add `.github/workflows/ci.yml`.** `/govkit-doctor` reports this as the one missing guardrail.
+  govkit deliberately does not scaffold it — a wrong CI workflow is worse than none. It must run the
+  same checks as `release-gate.config.json`, and each job must be **named to match that file's
+  `ciJob` value** so the gate and CI describe the same thing. The existing `deploy.yml` is a deploy
+  workflow, not a checks workflow, and does not satisfy this.
+- **Clear the lint backlog** (mostly `@typescript-eslint/no-explicit-any`), then enable `Lint` in
+  the release gate.
+- **Raise `scripts/source-doc-map.json` severities from `warn` to `gate`**, schema first, as each
+  mapped doc catches up.
+- **Fix `EMAIL_FROM`.** Sends from `noreply@portal.hsnef.org`, but `portal.hsnef.org` is superseded
+  by `member.hsnef.org`. Mail only sends while Resend still has the old domain verified. Check the
+  Resend dashboard, then align — in Vercel for dev **and** prod, not just locally.
+- **Correct the role-gate docs** so `CLAUDE.md` / `ROUTE_MAP.md` match the code (see DEC-004), or
+  change the code deliberately. Right now they disagree and the docs are the wrong one.
+
+### Tier 3 — later
+
+- Add `loading.tsx` / `error.tsx` / `not-found.tsx` per section — there are none anywhere in `app/`.
+- Replace the 69 hand-rolled loading spinners. Left deliberately: the loading state should match
+  each page's final layout, so they go during that page's redesign, not before.
+- Sweep `portal.hsnef.org` out of `docs/` (~26 occurrences presented as current). Risk: someone
+  configures a Stripe webhook or OAuth callback against the wrong host.
+- `app/admin/settings/page.tsx` has a `roles` field on `settingsCategories` that is never used —
+  Office Staff see cards they cannot open. Filter them, or use `PermissionNote`.
+- `/admin/settings/appearance` uses a fourth role-gate pattern (inline `useEffect` + `router.push`)
+  instead of one of the three sanctioned ones.
+- Copy the redesign brief to `design-kit/docs/ORIGINAL_BRIEF.md`. `CLAUDE.md` §3 claims it is there;
+  it never was. Rule 3 forbids reading it from OneDrive directly.
+
+## Design-system port — reference
+
+Kit lives in `design-kit/` — **read-only, gitignored, never built, never edited.**
+`design-kit/docs/ROUTE_MAP.md` is ~7 months stale; **trust the code** (see DEC-003).
+
+**The pattern, established by `/login`:** open the exemplar in `design-kit/pages/` first (do not work
+from memory) → `page.tsx` keeps all logic and maps rows to view models at the boundary → a sibling
+presentational component takes plain props → check the "Definition of done" list in `CLAUDE.md` →
+one route per commit.
+
+| Route | Exemplar |
+|---|---|
+| `/member` | `pages/Home.tsx` |
+| `/member/pass` | `pages/Membership.tsx` (QR pass half) |
+| `/member/profile` | `pages/Profile.tsx` — existing 750-line page, a **rewrite** not a fill-in |
+| `/member/payments` | `pages/Payments.tsx` |
+| `/member/donate` | `pages/Donate.tsx` — 690 lines, 2× what the kit sized for |
+| `/member/renew` | `pages/Membership.tsx` then `pages/Checkout.tsx` |
+| `/member/bookings/new` | `pages/BookingWizard.tsx` |
+| `/member/bookings`, `/member/requests` | `pages/Requests.tsx` |
+| `/member/bookings/[id]` | `pages/admin/AdminMemberDetail.tsx` |
+| `/member/events` | `pages/Events.tsx` |
+| payment-success routes | `pages/PaymentSuccess.tsx` |
+
+**Do not delete the `/member/family` or `/member/activity` dashboard tiles.** The kit's phase 6 says
+to; both are live pages (566 + 372 lines). Restyle them.
+
+**No exemplar — ask before designing:** `/member/events/[id]` and its payment pair,
+`/member/requests/[id]/payment` pair, `/member/activity`, `/member/family`.
+
+## Verifying work (read before trusting a green result)
+
+- **Never run `npm run build` while `next dev` is running.** They share `.next/` and the production
+  build wipes the dev server's stylesheet, leaving an unstyled page and a 404 on
+  `/_next/static/css/app/layout.css`. This cost a debugging cycle. Use `npx tsc --noEmit` while
+  developing; build only with the dev server stopped.
+- **Type gate:** must not report MORE than the **469** baseline in `app|components|lib|utils|types`.
+  A sudden *drop* means something failed to parse — `tsc` aborts its semantic pass on a syntax error.
+- **`npm run build` proves little about types or lint:** `next.config.ts` sets `ignoreBuildErrors`
+  and `ignoreDuringBuilds`.
+- **Open a browser.** Both real bugs in session 1 were invisible to build and typecheck.
+
+## Environments
+
+| | URL | Branch |
+|---|---|---|
+| Local | http://localhost:3000 | — |
+| Dev | https://dev.member.hsnef.org | `dev` |
+| Production | https://member.hsnef.org | `main` |
+
+Main site: https://hsnef.org · See `docs/ENVIRONMENT_QUICK_REFERENCE.md`.
+`.env.local` is complete and points at the real dev Supabase. `QR_TOKEN_SECRET` /
+`ZELLE_TOKEN_SECRET` / `CRON_SECRET` are locally generated, so QR codes issued by dev will not
+verify locally — copy dev's `QR_TOKEN_SECRET` from Vercel if you need that.
+
+## Revision History
+
+| Date | Session | Changes |
+|------|---------|---------|
+| 2026-08-31 | 1 | Roadmap scaffolded by govkit; migrated from `tasks/NEXT_PRIORITIES.md`. |

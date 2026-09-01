@@ -121,3 +121,5 @@ LPT9
 
 # design system reference kit - not part of the build
 design-kit/
+
+test-results/

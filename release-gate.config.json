@@ -1,0 +1,36 @@
+{
+  "_comment": "Scoped to what this repo can pass TODAY (2026-08-31). A gate that is red on day one for reasons unrelated to the change being gated gets bypassed, and then it protects nothing. Re-enable each check below as its debt is paid; see docs/PRIORITY-ROADMAP.md Tier 2.",
+  "junitPath": "test-results/junit.xml",
+  "reportPath": "test-results/release-gate-report.md",
+  "checks": [
+    { "label": "Build", "ciJob": "Build", "cmd": "npm run build" }
+  ],
+  "_disabledChecks": [
+    {
+      "_why": "next lint reports many pre-existing errors (mostly @typescript-eslint/no-explicit-any). Enable once they are cleared or downgraded in .eslintrc.json.",
+      "label": "Lint",
+      "ciJob": "Lint & Type Check",
+      "cmd": "npm run lint"
+    },
+    {
+      "_why": "~469 pre-existing errors, ~400 from types/database.ts being out of sync with what Supabase generates (every insert/update resolves to never). Regenerate that file, then enable. Note next.config.ts sets ignoreBuildErrors, so Build passing says nothing about types.",
+      "label": "Type check",
+      "ciJob": "Lint & Type Check",
+      "cmd": "npx tsc --noEmit"
+    },
+    {
+      "_why": "No test framework is installed and there are no test files. Install vitest and write tests before enabling.",
+      "label": "Unit & Integration",
+      "ciJob": "Tests",
+      "cmd": "npx vitest run --reporter=junit --outputFile=test-results/junit.xml",
+      "parseJunit": true
+    },
+    {
+      "_why": "No E2E framework and no test:e2e script.",
+      "label": "E2E",
+      "ciJob": "E2E",
+      "cmd": "npm run test:e2e",
+      "full": true
+    }
+  ]
+}
