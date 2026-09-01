@@ -7,7 +7,17 @@
     "dev": "npm run generate-version && next dev",
     "build": "npm run generate-version && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepare": "git config core.hooksPath .githooks || exit 0",
+    "release-gate": "tsx scripts/release-gate.ts",
+    "release-gate:full": "tsx scripts/release-gate.ts --full",
+    "docs:sync-check": "node scripts/docs-sync-check.mjs",
+    "docs:sync-check:ci": "node scripts/docs-sync-check.mjs --ci",
+    "sdlc-docs:audit": "node scripts/sdlc-docs.mjs audit --warn",
+    "sdlc-docs:gate": "node scripts/sdlc-docs.mjs audit --gate",
+    "sdlc-docs:report": "node scripts/sdlc-docs.mjs report",
+    "govkit:doctor": "node scripts/govkit-doctor.mjs",
+    "govkit:config": "node scripts/govkit-doctor.mjs config"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

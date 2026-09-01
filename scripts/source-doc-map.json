@@ -1,0 +1,45 @@
+{
+  "_comment": "Code→doc registry for sdlc-docs. Mapped to this repo's REAL paths — the shipped example pointed at docs/ARCHITECTURE.md, which does not exist here, so it would have failed every PR to main for an unwritable doc. severity 'gate' fails PR→main if the mapped doc isn't updated in the same PR; 'warn' only comments.",
+  "_severityNote": "Everything starts at 'warn' deliberately. A gate that is red on day one for pre-existing reasons gets bypassed, and then it protects nothing. Raise each to 'gate' once its doc is caught up — schema first. Tracked in docs/PRIORITY-ROADMAP.md Tier 2.",
+  "mappings": [
+    {
+      "_note": "Schema is the highest-value thing to keep documented. Promote to 'gate' first.",
+      "source": ["supabase/migrations/**"],
+      "docs": ["docs/architecture/architecture.md"],
+      "severity": "warn"
+    },
+    {
+      "source": ["app/api/**", "lib/supabase/**"],
+      "docs": ["docs/architecture/architecture.md"],
+      "severity": "warn"
+    },
+    {
+      "_note": "Money paths. Stripe, Zelle and the receipt/invoice PDFs.",
+      "source": [
+        "lib/stripe/**",
+        "lib/zelle/**",
+        "lib/pdf/**",
+        "app/api/stripe/**",
+        "app/api/zelle/**"
+      ],
+      "docs": ["docs/guides/setup/payments-setup.md"],
+      "severity": "warn"
+    },
+    {
+      "source": ["app/member/events/**", "app/admin/events/**", "app/api/events/**"],
+      "docs": ["docs/architecture/events-system.md"],
+      "severity": "warn"
+    },
+    {
+      "source": ["app/member/requests/**", "app/admin/requests/**", "app/api/requests/**"],
+      "docs": ["docs/architecture/requests-invoices-system.md"],
+      "severity": "warn"
+    },
+    {
+      "_note": "Auth and role gating. DEC-004 in the hub records why code and docs currently disagree.",
+      "source": ["lib/auth/**", "components/ProtectedRoute.tsx", "components/auth/**"],
+      "docs": ["docs/PROJECT-HUB.md"],
+      "severity": "warn"
+    }
+  ]
+}
