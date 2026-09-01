@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/AuthContext'
+import { FamilyView } from '@/components/member/FamilyView'
 import { createClient } from '@/lib/supabase/client'
 import type { FamilyMember, Nakshatra } from '@/types/database'
 
@@ -202,288 +203,26 @@ export default function MemberFamilyPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <>
-        <div className="flex items-center justify-center bg-transparent">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-            <p className="mt-4 text-gray-600">Loading family members...</p>
-          </div>
-        </div>
-      </>
-    )
-  }
-
   return (
-    <>
-      <div className="bg-transparent">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <button
-              onClick={() => router.push('/member')}
-              className="text-sm text-gray-600 hover:text-gray-900 mb-4"
-            >
-              ← Back to Dashboard
-            </button>
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Family Members</h1>
-                <p className="mt-1 text-sm text-gray-600">
-                  Manage your family members (up to 4)
-                </p>
-              </div>
-              {!showForm && familyMembers.length < 4 && (
-                <button
-                  onClick={handleAddNew}
-                  className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
-                >
-                  + Add Family Member
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Message */}
-          {message && (
-            <div className={`mb-6 p-4 rounded-lg ${
-              message.type === 'success'
-                ? 'bg-green-50 border border-green-200 text-green-800'
-                : 'bg-red-50 border border-red-200 text-red-800'
-            }`}>
-              {message.text}
-            </div>
-          )}
-
-          {/* Add/Edit Form */}
-          {showForm && editingMember && (
-            <div className="bg-white shadow rounded-lg p-6 mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">
-                {editingMember.id ? 'Edit Family Member' : 'Add Family Member'}
-              </h2>
-              <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      First Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="first_name"
-                      value={editingMember.first_name}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Last Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="last_name"
-                      value={editingMember.last_name}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Relationship
-                    </label>
-                    <select
-                      name="relationship"
-                      value={editingMember.relationship}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    >
-                      {RELATIONSHIPS.map((r) => (
-                        <option key={r} value={r}>{r}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Date of Birth
-                    </label>
-                    <input
-                      type="date"
-                      name="date_of_birth"
-                      value={editingMember.date_of_birth}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nakshatra (Birth Star)
-                    </label>
-                    <select
-                      name="nakshatra"
-                      value={editingMember.nakshatra}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    >
-                      <option value="">Select Nakshatra</option>
-                      {NAKSHATRAS.map((n) => (
-                        <option key={n} value={n}>{n}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email (Optional)
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={editingMember.email}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-4 mt-6 pt-6 border-t">
-                  <button
-                    type="button"
-                    onClick={handleCancel}
-                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
-                  >
-                    {saving ? 'Saving...' : editingMember.id ? 'Update' : 'Add'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          {/* Family Members List */}
-          {familyMembers.length === 0 ? (
-            <div className="bg-white shadow rounded-lg p-12 text-center">
-              <div className="text-6xl mb-4">👨‍👩‍👧‍👦</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Family Members Yet</h3>
-              <p className="text-gray-600 mb-6">
-                Add your family members to include them in your membership benefits.
-              </p>
-              {!showForm && (
-                <button
-                  onClick={handleAddNew}
-                  className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
-                >
-                  Add Your First Family Member
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {familyMembers.map((fm) => (
-                <div key={fm.id} className="bg-white shadow rounded-lg p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-gray-900">
-                          {fm.first_name} {fm.last_name}
-                        </h3>
-                        {fm.relationship && (
-                          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                            {fm.relationship}
-                          </span>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                        {fm.date_of_birth && (
-                          <div>
-                            <span className="font-medium">Birthday:</span>{' '}
-                            {new Date(fm.date_of_birth).toLocaleDateString('en-US', {
-                              month: 'long',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </div>
-                        )}
-                        {fm.nakshatra && (
-                          <div>
-                            <span className="font-medium">Nakshatra:</span> {fm.nakshatra}
-                          </div>
-                        )}
-                        {fm.email && (
-                          <div>
-                            <span className="font-medium">Email:</span> {fm.email}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      <button
-                        onClick={() => handleEdit(fm)}
-                        className="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
-                      >
-                        Edit
-                      </button>
-                      {deleteConfirmId === fm.id ? (
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleDelete(fm.id)}
-                            disabled={saving}
-                            className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-300"
-                          >
-                            Confirm
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirmId(null)}
-                            className="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setDeleteConfirmId(fm.id)}
-                          className="px-4 py-2 text-sm border border-red-300 text-red-700 rounded-md hover:bg-red-50"
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {/* Add More Button */}
-              {!showForm && familyMembers.length < 4 && (
-                <div className="text-center pt-4">
-                  <button
-                    onClick={handleAddNew}
-                    className="text-saffron hover:text-saffron-hover font-medium"
-                  >
-                    + Add Another Family Member ({4 - familyMembers.length} remaining)
-                  </button>
-                </div>
-              )}
-
-              {familyMembers.length >= 4 && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-                  <p className="text-sm text-yellow-800">
-                    Maximum family members reached (4). Contact the office if you need to add more.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </>
+    <FamilyView
+      familyMembers={familyMembers}
+      loading={loading}
+      relationships={RELATIONSHIPS}
+      nakshatras={NAKSHATRAS}
+      showForm={showForm}
+      /* editingMember doubles as the form state; a present id means "editing". */
+      editingMember={editingMember?.id ? editingMember : null}
+      formData={editingMember ?? emptyForm}
+      saving={saving}
+      message={message}
+      deleteConfirmId={deleteConfirmId}
+      onAddNew={handleAddNew}
+      onEdit={handleEdit}
+      onCancel={handleCancel}
+      onChange={handleInputChange}
+      onSubmit={handleSubmit}
+      onRequestDelete={setDeleteConfirmId}
+      onConfirmDelete={handleDelete}
+    />
   )
 }

@@ -3,6 +3,12 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/AuthContext'
+import { ProfileView, type ProfileFormData } from '@/components/member/ProfileView'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { Button } from '@/components/ui/Button'
+import { AppLink } from '@/components/nav/Nav'
+import { UserXIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { formatPhoneNumber, formatZipCode } from '@/lib/utils/formatters'
 import type { Member, Nakshatra } from '@/types/database'
@@ -180,403 +186,40 @@ export default function MemberProfilePage() {
 
   if (loading) {
     return (
-      <>
-        <div className="flex items-center justify-center bg-transparent">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-            <p className="mt-4 text-gray-600">Loading profile...</p>
-          </div>
-        </div>
-      </>
+      <div className="space-y-6" role="status" aria-live="polite">
+        <span className="sr-only">Loading your profile…</span>
+        <Skeleton className="h-10 w-56" />
+        <Skeleton className="h-28 w-full rounded-2xl" />
+        <Skeleton className="h-64 w-full rounded-2xl" />
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
     )
   }
 
   if (!member) {
     return (
-      <>
-        <div className="flex items-center justify-center bg-transparent">
-          <div className="text-center max-w-md">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Profile Not Found</h1>
-            <p className="text-gray-600 mb-6">Unable to load your profile.</p>
-            <button
-              onClick={() => router.push('/member')}
-              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
-            >
-              Back to Dashboard
-            </button>
-          </div>
-        </div>
-      </>
+      <EmptyState
+        icon={UserXIcon}
+        title="No membership found"
+        description="Your account is not yet linked to a membership, so there is no profile to edit."
+        action={
+          <AppLink to="/member">
+            <Button>Back to my portal</Button>
+          </AppLink>
+        }
+      />
     )
   }
 
   return (
-    <>
-      <div className="bg-transparent">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <button
-              onClick={() => router.push('/member')}
-              className="text-sm text-gray-600 hover:text-gray-900 mb-4"
-            >
-              ← Back to Dashboard
-            </button>
-            <h1 className="text-3xl font-bold text-gray-900">Edit Profile</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Update your contact information and preferences
-            </p>
-          </div>
-        </div>
-
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Membership Info Card */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-blue-700 font-medium">Membership Type</p>
-                <p className="text-lg font-bold text-blue-900">
-                  {member.member_class} - {member.current_level}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-blue-700">Membership ID</p>
-                <p className="font-mono font-bold text-blue-900">{member.membership_id}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Message */}
-          {message && (
-            <div className={`mb-6 p-4 rounded-lg ${
-              message.type === 'success'
-                ? 'bg-green-50 border border-green-200 text-green-800'
-                : 'bg-red-50 border border-red-200 text-red-800'
-            }`}>
-              {message.text}
-            </div>
-          )}
-
-          {/* Profile Form */}
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Personal Information (for Personal members) */}
-            {member.member_class === 'Personal' && (
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Primary Member Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      name="first_name"
-                      value={formData.first_name}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      name="last_name"
-                      value={formData.last_name}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nakshatra (Birth Star)
-                    </label>
-                    <select
-                      name="nakshatra"
-                      value={formData.nakshatra}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    >
-                      <option value="">Select Nakshatra</option>
-                      {NAKSHATRAS.map((n) => (
-                        <option key={n} value={n}>{n}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Family Gotra
-                    </label>
-                    <input
-                      type="text"
-                      name="family_gotra"
-                      value={formData.family_gotra}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                      placeholder="e.g., Bharadwaja"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Business Information (for Business members) */}
-            {member.member_class === 'Business' && (
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Business Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Business Name
-                    </label>
-                    <input
-                      type="text"
-                      name="business_name"
-                      value={formData.business_name}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Business EIN
-                    </label>
-                    <input
-                      type="text"
-                      name="business_ein"
-                      value={formData.business_ein}
-                      disabled
-                      className="w-full px-4 py-2 border border-gray-200 rounded-md bg-transparent text-gray-500"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">Contact office to update EIN</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Contact Information */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Contact Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    name="primary_email"
-                    value={formData.primary_email}
-                    disabled
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md bg-transparent text-gray-500"
-                  />
-                  <p className="mt-1 text-xs text-gray-500">Contact office to change email</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Primary Phone
-                  </label>
-                  <input
-                    type="tel"
-                    name="primary_phone"
-                    value={formData.primary_phone}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    placeholder="(555) 123-4567"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Alternate Phone
-                  </label>
-                  <input
-                    type="tel"
-                    name="primary_phone_2"
-                    value={formData.primary_phone_2}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    placeholder="(555) 123-4567"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Secondary Contact (Spouse) - for Personal members only */}
-            {member.member_class === 'Personal' && (
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Secondary Member (Spouse/Partner)</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      name="secondary_first_name"
-                      value={formData.secondary_first_name}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      name="secondary_last_name"
-                      value={formData.secondary_last_name}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      name="secondary_email"
-                      value={formData.secondary_email}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Phone
-                    </label>
-                    <input
-                      type="tel"
-                      name="secondary_phone"
-                      value={formData.secondary_phone}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nakshatra (Birth Star)
-                    </label>
-                    <select
-                      name="secondary_nakshatra"
-                      value={formData.secondary_nakshatra}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    >
-                      <option value="">Select Nakshatra</option>
-                      {NAKSHATRAS.map((n) => (
-                        <option key={n} value={n}>{n}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Address */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Mailing Address</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address Line 1
-                  </label>
-                  <input
-                    type="text"
-                    name="address_line_1"
-                    value={formData.address_line_1}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    placeholder="Street address"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address Line 2
-                  </label>
-                  <input
-                    type="text"
-                    name="address_line_2"
-                    value={formData.address_line_2}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    placeholder="Apt, Suite, Unit, etc. (optional)"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    State
-                  </label>
-                  <input
-                    type="text"
-                    name="state"
-                    value={formData.state}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    placeholder="FL"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    ZIP Code
-                  </label>
-                  <input
-                    type="text"
-                    name="zip"
-                    value={formData.zip}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                    placeholder="32256"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Country
-                  </label>
-                  <input
-                    type="text"
-                    name="country"
-                    value={formData.country}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <div className="flex justify-end gap-4">
-              <button
-                type="button"
-                onClick={() => router.push('/member')}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-6 py-3 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </>
+    <ProfileView
+      member={member}
+      formData={formData as ProfileFormData}
+      nakshatras={NAKSHATRAS}
+      onChange={handleInputChange}
+      onSubmit={handleSubmit}
+      saving={saving}
+      message={message}
+    />
   )
 }
