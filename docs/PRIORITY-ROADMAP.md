@@ -23,7 +23,15 @@
 
 ### Tier 1 — now
 
-- **Design-system port, stage 6: member screens (21 routes).**
+- **Fix the `userData` bug in the two remaining admin files.** `useAuth()` has no
+  `userData`, so `userData?.user?.id` is always undefined:
+  `app/admin/bookings/new/page.tsx` and `app/admin/bookings/[id]/page.tsx`. Beyond the
+  failed member lookup, it feeds `reviewed_by` — **the record of who approved or
+  rejected a booking is being written as null.** Fix alongside those routes in stage 7.
+  (`app/admin/members/import` also has a `userData` but it is a local from a real
+  `supabase.auth.getUser()` call — that one is fine.)
+- ~~**Design-system port, stage 6: member screens (21 routes).**~~ ✅ **Done.**
+  Previous plan, kept for reference:
   Order: `/member` → `/member/pass` → `/member/profile` → `/member/payments` → `/member/donate` →
   `/member/renew` → `/member/bookings/new` → `/member/bookings` + `/member/requests` →
   `/member/bookings/[id]` → the payment/success routes → `/member/events`.
