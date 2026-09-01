@@ -1,14 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { MembershipPass } from '@/components/member/MembershipPass'
+import { AppLink } from '@/components/nav/Nav'
+import { Button } from '@/components/ui/Button'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { IdCardIcon, PrinterIcon, UserXIcon } from 'lucide-react'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import type { Member, FamilyMember } from '@/types/database'
 
 export default function MemberPassPage() {
-  const router = useRouter()
   const { user, member: authMember } = useAuth()
   const [member, setMember] = useState<Member | null>(null)
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
@@ -67,63 +72,57 @@ export default function MemberPassPage() {
 
   if (loading) {
     return (
-      <>
-        <div className="flex items-center justify-center bg-transparent">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-            <p className="mt-4 text-gray-600">Loading pass...</p>
-          </div>
-        </div>
-      </>
+      <div className="mx-auto max-w-xl space-y-5" role="status" aria-live="polite">
+        <span className="sr-only">Loading your pass…</span>
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-[420px] w-full rounded-3xl" />
+      </div>
     )
   }
 
   if (!member) {
     return (
-      <>
-        <div className="flex items-center justify-center bg-transparent p-4">
-          <div className="text-center">
-            <p className="text-gray-600">No membership found</p>
-            <button
-              onClick={() => router.push('/member')}
-              className="mt-4 text-saffron hover:underline"
-            >
-              Go to Dashboard
-            </button>
-          </div>
-        </div>
-      </>
+      <EmptyState
+        icon={UserXIcon}
+        title="No membership found"
+        description="Your account is not yet linked to a membership, so there is no pass to show."
+        action={
+          <AppLink to="/member">
+            <Button>Back to my portal</Button>
+          </AppLink>
+        }
+      />
     )
   }
 
   return (
-    <>
-      <div className="bg-transparent p-4 pt-6">
-        {/* Minimal header */}
-        <div className="max-w-xl mx-auto mb-4">
-          <button
-            onClick={() => router.push('/member')}
-            className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Dashboard
-          </button>
-        </div>
-
-        {/* Membership Pass */}
-        <MembershipPass
-          member={member}
-          familyMembers={familyMembers}
-          qrToken={qrToken}
+    <div className="mx-auto max-w-xl space-y-6">
+      <div className="hs-no-print">
+        <PageHeader
+          eyebrow="Show this at the desk"
+          title="My membership pass"
+          description="Staff scan the code to check you in. It refreshes each time you open this page."
+          actions={
+            <Button
+              variant="secondary"
+              icon={PrinterIcon}
+              onClick={() => window.print()}
+            >
+              Print
+            </Button>
+          }
         />
-
-        {/* Refresh hint */}
-        <p className="text-center text-xs text-gray-400 mt-6">
-          Pull down to refresh
-        </p>
       </div>
-    </>
+
+      <MembershipPass member={member} familyMembers={familyMembers} qrToken={qrToken} />
+
+      <Card tone="sunk" className="hs-no-print flex items-start gap-3">
+        <IdCardIcon className="mt-0.5 h-5 w-5 shrink-0 text-saffron" aria-hidden="true" />
+        <p className="text-[14.5px] leading-relaxed text-ink-2">
+          Add this page to your home screen for quick access at the temple. If the code will not
+          scan, reload the page to issue a fresh one.
+        </p>
+      </Card>
+    </div>
   )
 }
