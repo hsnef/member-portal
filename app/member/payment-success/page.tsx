@@ -2,6 +2,10 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { AppLink } from '@/components/nav/Nav'
+import { Button } from '@/components/ui/Button'
+import { PaymentOutcomeView } from '@/components/member/PaymentOutcomeView'
+import { formatCurrency } from '@/utils/format'
 
 function PaymentSuccessContent() {
   const router = useRouter()
@@ -65,97 +69,61 @@ function PaymentSuccessContent() {
     return () => clearInterval(timer)
   }, [router, confirmingPayment])
 
-  // Show loading while confirming payment
-  if (confirmingPayment) {
-    return (
-      <div className="bg-transparent flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900">Confirming your payment...</h2>
-          <p className="text-gray-600 mt-2">Please wait while we verify your payment.</p>
-        </div>
-      </div>
-    )
+  const numericAmount = amount ? Number(amount) : null
+
+  const description =
+    type === 'membership'
+      ? `Your ${level} membership has been ${level === 'Lifetime' ? 'activated' : 'renewed'} successfully.`
+      : type === 'donation'
+        ? 'Thank you for your generous donation — your support makes a real difference.'
+        : 'Your payment went through. A receipt is on its way to your email.'
+
+  const facts: Array<{ label: string; value: React.ReactNode }> = []
+  if (numericAmount !== null && !Number.isNaN(numericAmount)) {
+    facts.push({ label: 'Amount', value: formatCurrency(numericAmount, true) })
+  }
+  if (type === 'membership' && level) {
+    facts.push({ label: 'Membership', value: level })
   }
 
   return (
-    <div className="bg-transparent flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
-        {/* Success Icon */}
-        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
-          <svg className="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-
-        {/* Error Message if any */}
-        {paymentError && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 text-left">
-            <p className="text-sm text-yellow-800">Note: {paymentError}. Your payment was successful but there may be a delay in recording it.</p>
-          </div>
-        )}
-
-        {/* Success Message */}
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
-
-        {type === 'membership' && (
-          <p className="text-gray-600 mb-6">
-            Your {level} membership has been {level === 'Lifetime' ? 'activated' : 'renewed'} successfully.
-          </p>
-        )}
-
-        {type === 'donation' && (
-          <p className="text-gray-600 mb-6">
-            Thank you for your generous donation of ${amount}! Your support makes a difference.
-          </p>
-        )}
-
-        {/* What's Next */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
-          <h3 className="text-sm font-semibold text-blue-900 mb-2">What's Next?</h3>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>✓ Payment confirmation sent to your email</li>
-            <li>✓ Receipt will be generated shortly</li>
-            {type === 'membership' && <li>✓ Your membership pass has been updated</li>}
-            {type === 'donation' && <li>✓ Tax receipt will be emailed for your records</li>}
-          </ul>
-        </div>
-
-        {/* Actions */}
-        <div className="space-y-3">
-          <button
-            onClick={() => router.push('/member')}
-            className="w-full px-6 py-3 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
-          >
-            Go to Dashboard
-          </button>
-          <button
-            onClick={() => router.push('/member/payments')}
-            className="w-full px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
-          >
-            View Payment History
-          </button>
-        </div>
-
-        {/* Auto-redirect Notice */}
-        <p className="mt-6 text-sm text-gray-500">
-          Redirecting to dashboard in {countdown} seconds...
-        </p>
-      </div>
-    </div>
+    <PaymentOutcomeView
+      state={confirmingPayment ? 'confirming' : 'success'}
+      title="Thank you — you're all set"
+      description={description}
+      facts={facts.length > 0 ? facts : undefined}
+      warning={paymentError}
+      actions={
+        <>
+          <AppLink to="/member">
+            <Button size="lg">Back to my portal</Button>
+          </AppLink>
+          <AppLink to="/member/payments">
+            <Button size="lg" variant="secondary">
+              View payment history
+            </Button>
+          </AppLink>
+        </>
+      }
+      footnote={
+        <>
+          A confirmation email is on its way, and your receipt will be available under Payments.
+          {type === 'donation' && ' A tax receipt will be emailed for your records.'}
+          {' '}Taking you back to your portal in {countdown}s.
+        </>
+      }
+    />
   )
 }
 
 export default function PaymentSuccessPage() {
   return (
-    <>
-      <Suspense fallback={
-        <div className="flex items-center justify-center bg-transparent">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-        </div>
-      }>
-        <PaymentSuccessContent />
-      </Suspense>
-    </>
+    <Suspense
+      fallback={
+        <PaymentOutcomeView state="confirming" title="" description="" />
+      }
+    >
+      <PaymentSuccessContent />
+    </Suspense>
   )
 }
