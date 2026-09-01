@@ -3,6 +3,8 @@ import { Badge, type BadgeTone } from './Badge';
 import type { RequestStatus } from '@/types/design-system';
 
 const statusTone: Record<RequestStatus, BadgeTone> = {
+  Draft: 'neutral',
+  Sent: 'marigold',
   'Pending Approval': 'marigold',
   Approved: 'saffron',
   'Awaiting Payment': 'danger',
@@ -11,7 +13,7 @@ const statusTone: Record<RequestStatus, BadgeTone> = {
   Cancelled: 'neutral'
 };
 
-const animated: RequestStatus[] = ['Pending Approval', 'Awaiting Payment', 'Approved'];
+const animated: RequestStatus[] = ['Sent', 'Pending Approval', 'Awaiting Payment', 'Approved'];
 
 export function StatusBadge({ status }: {status: RequestStatus;}) {
   return (

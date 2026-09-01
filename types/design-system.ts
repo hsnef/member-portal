@@ -78,7 +78,17 @@ export interface Payment {
   membershipId?: string;
 }
 
+/**
+ * Request/booking statuses.
+ *
+ * The first two come from the live `requests` table and were NOT in the design
+ * kit's union -- the kit was written against an earlier vocabulary. The code is
+ * authoritative, so they are added here rather than being mis-mapped onto a
+ * kit status that means something different to a member.
+ */
 export type RequestStatus =
+'Draft' |
+'Sent' |
 'Pending Approval' |
 'Approved' |
 'Awaiting Payment' |

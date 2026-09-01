@@ -11,6 +11,11 @@ interface FilterTabsProps<T extends string> {
   onChange: (value: T) => void;
   label: string;
   counts?: Partial<Record<T, number>>;
+  /**
+   * Display text for an option. Use when the option VALUE is not what a member
+   * should read -- e.g. lowercase keys that map to a database query.
+   */
+  renderLabel?: (option: T) => React.ReactNode;
 }
 
 export function FilterTabs<T extends string>({
@@ -18,7 +23,8 @@ export function FilterTabs<T extends string>({
   value,
   onChange,
   label,
-  counts
+  counts,
+  renderLabel
 }: FilterTabsProps<T>) {
   const groupId = useId();
   return (
@@ -48,7 +54,7 @@ export function FilterTabs<T extends string>({
 
             }
             <span className="relative z-10 whitespace-nowrap">
-              {option}
+              {renderLabel ? renderLabel(option) : option}
               {counts?.[option] !== undefined &&
               <span
                 className={cn(
