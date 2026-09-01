@@ -4,6 +4,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { RenewView, type RenewLevel } from '@/components/member/RenewView'
+import { Alert } from '@/components/ui/Alert'
+import { Button } from '@/components/ui/Button'
+import { Card, CardHeader } from '@/components/ui/Card'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { CreditCardIcon } from 'lucide-react'
+import { formatCurrency } from '@/utils/format'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { getMembershipPricing, type MembershipPricing } from '@/lib/utils/portalSettings'
 
@@ -15,8 +22,8 @@ function RenewMembershipForm({
   onLevelChange
 }: {
   pricing: MembershipPricing
-  selectedLevel: 'annual' | 'lifetime'
-  onLevelChange: (level: 'annual' | 'lifetime') => void
+  selectedLevel: RenewLevel
+  onLevelChange: (level: RenewLevel) => void
 }) {
   const router = useRouter()
   const stripe = useStripe()
@@ -57,64 +64,32 @@ function RenewMembershipForm({
   const amount = pricing[selectedLevel].price
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Membership Level</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {(['annual', 'lifetime'] as const).map((level) => (
-            <button
-              key={level}
-              type="button"
-              onClick={() => onLevelChange(level)}
-              className={`p-6 border-2 rounded-lg transition-all ${
-                selectedLevel === level
-                  ? 'border-saffron bg-orange-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <h4 className="text-xl font-bold text-gray-900 mb-2 capitalize">{level} Membership</h4>
-              <p className="text-3xl font-bold text-saffron mb-2">
-                {pricing[level].displayPrice}
-              </p>
-              <p className="text-sm text-gray-600">
-                {pricing[level].description}
-              </p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {amount > 0 && (
-        <>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Details</h3>
-            <PaymentElement />
+    <form onSubmit={handleSubmit}>
+      <Card>
+        <CardHeader
+          title="Card details"
+          description="Processed by Stripe. HSNEF never sees or stores your card number."
+        />
+        {message && (
+          <div className="mb-5">
+            <Alert tone="danger" title="That payment didn't go through">
+              {message}
+            </Alert>
           </div>
-
-          {message && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-800">{message}</p>
-            </div>
-          )}
-
-          <div className="flex justify-end gap-4 pt-4 border-t">
-            <button
-              type="button"
-              onClick={() => router.push('/member')}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!stripe || loading}
-              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
-            >
-              {loading ? 'Processing...' : `Pay $${amount.toFixed(2)}`}
-            </button>
-          </div>
-        </>
-      )}
+        )}
+        <PaymentElement />
+        <Button
+          type="submit"
+          size="lg"
+          fullWidth
+          icon={CreditCardIcon}
+          loading={loading}
+          disabled={!stripe}
+          className="mt-6"
+        >
+          Pay {formatCurrency(amount, true)}
+        </Button>
+      </Card>
     </form>
   )
 }
@@ -125,11 +100,11 @@ function RenewMembershipContent() {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [pricing, setPricing] = useState<MembershipPricing | null>(null)
   const [loading, setLoading] = useState(true)
-  const [selectedLevel, setSelectedLevel] = useState<'annual' | 'lifetime'>('annual')
+  const [selectedLevel, setSelectedLevel] = useState<RenewLevel>('annual')
   const [updatingPayment, setUpdatingPayment] = useState(false)
 
   // Create or update payment intent based on selected level
-  const createPaymentIntent = useCallback(async (level: 'annual' | 'lifetime', membershipPricing: MembershipPricing) => {
+  const createPaymentIntent = useCallback(async (level: RenewLevel, membershipPricing: MembershipPricing) => {
     if (!member) return null
 
     try {
@@ -156,7 +131,7 @@ function RenewMembershipContent() {
   }, [member])
 
   // Handle level change - create new payment intent
-  const handleLevelChange = async (level: 'annual' | 'lifetime') => {
+  const handleLevelChange = async (level: RenewLevel) => {
     if (level === selectedLevel || !pricing) return
 
     setUpdatingPayment(true)
@@ -237,48 +212,14 @@ function RenewMembershipContent() {
   }
 
   return (
-    <div className="bg-transparent py-12 px-4">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => router.push('/member')}
-            className="text-sm text-gray-600 hover:text-gray-900 mb-4"
-          >
-            ← Back to Dashboard
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">Renew Membership</h1>
-          <p className="mt-2 text-gray-600">
-            Renew your membership and continue enjoying temple benefits
-          </p>
-        </div>
-
-        {/* Current Membership Info */}
-        {member && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-blue-700 font-medium">Current Membership</p>
-                <p className="text-lg font-bold text-blue-900">{member.current_level}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-blue-700">Membership ID</p>
-                <p className="font-mono font-bold text-blue-900">{member.membership_id}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Payment Form */}
-        <div className="bg-white shadow rounded-lg p-6 relative">
-          {updatingPayment && (
-            <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-lg">
-              <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-saffron border-r-transparent"></div>
-                <p className="mt-2 text-sm text-gray-600">Updating payment...</p>
-              </div>
-            </div>
-          )}
+    <RenewView
+      pricing={pricing}
+      selectedLevel={selectedLevel}
+      onLevelChange={handleLevelChange}
+      currentLevel={member?.current_level ?? null}
+      updating={updatingPayment}
+      paymentSurface={
+        clientSecret ? (
           <Elements stripe={stripePromise} options={options} key={clientSecret}>
             <RenewMembershipForm
               pricing={pricing}
@@ -286,15 +227,13 @@ function RenewMembershipContent() {
               onLevelChange={handleLevelChange}
             />
           </Elements>
-        </div>
-
-        {/* Trust Badges */}
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <p>🔒 Secure payment powered by Stripe</p>
-          <p className="mt-1">Your payment information is encrypted and secure</p>
-        </div>
-      </div>
-    </div>
+        ) : (
+          <Card>
+            <Skeleton className="h-40 w-full" />
+          </Card>
+        )
+      }
+    />
   )
 }
 
