@@ -55,8 +55,8 @@ export default function MemberPaymentsPage() {
       memberName,
       membershipId: member.membership_id,
       memberEmail: member.primary_email,
-      memberAddress: member.address_line1
-        ? `${member.address_line1}, ${member.city}, ${member.state} ${member.zip_code}`
+      memberAddress: member.address_line_1
+        ? `${member.address_line_1}, ${member.city}, ${member.state} ${member.zip}`
         : undefined,
       amount: payment.amount,
       paymentDate: payment.payment_date,
