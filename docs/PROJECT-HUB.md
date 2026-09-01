@@ -101,11 +101,38 @@ So **local, dev and production all read and write the same live member database*
 (`gapvsdrzavjaublwkqfm`). Testing on `dev` mutates real member records; a bad migration run against
 dev hits production; local development does too.
 
-**Target:** create `hsnef-member-portal-prod`, point Vercel Production at it, leave
-`gapvsdrzavjaublwkqfm` as dev/preview only. This is not just an env-var swap — it needs the schema
-and migrations applied, auth users migrated, RLS policies verified, Stripe webhook endpoints
-re-pointed, and Supabase redirect/OAuth URLs updated per project. Plan it as its own task with a
-rollback, and do the cutover when nobody is using the portal.
+**Recommended direction — INVERT the obvious plan.** The instinct is to create a new *prod* project.
+But the existing project holds the real member rows and the real `auth.users`, and is what
+production serves today, so that direction means migrating live data and auth users **out** — the
+risky half. Instead:
+
+| | New project = prod | **New project = dev** (recommended) |
+|---|---|---|
+| Migrate real member rows | required | **none** |
+| Migrate auth users | required, and hard | **none** |
+| Production during cutover | at risk | **untouched** |
+| Dev stops writing to live data | yes | yes |
+
+Both reach the actual goal. The inverted one gets there without moving a single real row: the new
+dev database comes up empty and seeds itself, because `20260108000004_test_accounts.sql` and
+`20260110000001_add_test_admin_account.sql` are already migrations. Losing real data on dev is the
+point, not a cost.
+
+**Blocker to fix before any fresh `supabase db push`:** two pairs of migrations share a version
+prefix, and the CLI orders by that prefix and rejects duplicates —
+`20260108000004_{member_audit_log,test_accounts}.sql` and
+`20260111000003_{event_rsvp_payable_flags,zelle_payment_system}.sql`. They applied fine to the
+existing DB because they went in ad-hoc; a clean push to a new project will fail. Renumber two of
+them — safe for a new database, must **not** be replayed against the existing one.
+
+**Not carried by migrations, needs doing by hand:** `auth.users` (only referenced via FK/triggers),
+storage bucket *contents* (the policies are in `20260111000002`, the event images are not), Site URL
+and redirect allow-list, the Google OAuth client, SMTP. Afterwards re-point Vercel env vars per
+environment, the Stripe webhook endpoints, and the Google OAuth redirect URI to the new project's
+`/auth/v1/callback`.
+
+Claude has the Supabase CLI (2.116.0) and can run `supabase link` + `db push` once the project
+exists and it has the ref and DB password. Creating the project is a dashboard/billing action.
 
 ### DEC-007: Vercel Hobby cannot deploy this repo — do NOT solve it by going public
 **2026-08-31 · Open, blocking.** Both Vercel checks fail on the PR with *"Cannot deploy from a
@@ -125,12 +152,50 @@ Publishing children's names and home addresses of temple members is not an accep
 CI convenience. Separately, Vercel's Hobby plan is for non-commercial use; a member portal taking
 Stripe payments is arguably commercial, so Hobby is likely the wrong plan regardless of visibility.
 
-**Preferred fix: Vercel Pro** (~$20/mo) — repo stays private, per-PR previews work, licensing clean.
-If the repo is ever made public for another reason, purge those two CSVs from history **first**
-(`git filter-repo`, then force-push and rotate nothing — no secrets were exposed). That is a history
-rewrite and needs Sujit's explicit go-ahead.
+**Options, narrowed 2026-08-31:**
+
+| Option | Cost | Status |
+|---|---|---|
+| Move projects to the existing **Techsilon** Pro team (`team_fM7R8KAWiXHikgrsEtaIoArc`) | £0 — Pro is per-seat, projects unlimited | ❌ **RULED OUT by Sujit** — cannot move them there |
+| **Vercel Pro** on the account that owns `member` / `dev.member` | ~$20/mo | ⏳ Sujit seeking purchase permission. Ask about the nonprofit discount. |
+| Deploy from **GitHub Actions with a Vercel token** instead of the Git integration | £0 | 🔍 Unexplored, and the most promising free path. `.github/workflows/deploy.yml` **already exists for exactly this** but is `disabled_manually` and failed every run since Jan 2026. The Hobby restriction applies to the *Git integration*; CLI deploys are a different route. Caveat: Hobby is licensed for non-commercial use, and a portal taking Stripe payments is arguably commercial — so this may be a technical workaround for a licensing problem, not a fix. Check the ToS before relying on it. |
+| Make the repo public | £0 | ❌ Not without purging the member-PII CSVs from history first (rewrite + force-push, needs explicit go-ahead). Also does not resolve the commercial-use question. |
+
+**Consequence while unresolved: nothing deploys.** Pushing to `dev` updates GitHub only. The
+`dev.member.hsnef.org` and `member.hsnef.org` sites are serving whatever was last successfully
+deployed, and will keep serving that until this is fixed.
 
 ## Session Handoff
+
+### Session 2 — 2026-08-31 — govkit guardrails + deployment audit
+
+**Shipped:** `chore(govkit): scaffold engineering guardrails` (`63030ca`). All 6 guardrails declared,
+none skipped; `ci` is reported missing by `/govkit-doctor` because govkit does not scaffold
+`ci.yml`. Release gate verified GREEN; pre-push hook verified *actually blocking* `main` with a
+probe commit, and verified not blocking the working branch.
+
+**`dev` fast-forwarded to `63030ca`** (38 ahead of `main`, 0 behind). `redesign/design-system` is
+level with it.
+
+**Findings — three things that were not true of this repo as assumed:**
+1. **Nothing has deployed since January.** `.github/workflows/deploy.yml` is `disabled_manually` and
+   had failed every run before that, so deploys depend entirely on Vercel's Git integration — which
+   Hobby blocks for private org repos. Pushing to `dev` now updates GitHub and nothing else.
+2. **A Vercel Pro team already exists** (`Techsilon`), but Sujit confirmed the HSNEF projects
+   **cannot** be moved to it. See the table in DEC-007 for what remains.
+3. **The migration set cannot be cleanly pushed to a fresh project** as-is — duplicate version
+   prefixes. See DEC-006.
+
+**Open, needs Sujit:**
+- The Vercel plan question (DEC-007). Until then, nothing deploys.
+- PR **#2** is `redesign/design-system → main`, which skips `dev` and would ship a half-finished
+  redesign straight to production. Under the agreed flow it should be `dev → main`, and not until
+  the port is further along. Left open pending a decision — **do not merge it as-is.**
+- The two member-PII CSVs are still committed. Deleting them from HEAD was offered and not yet
+  actioned.
+
+**Next step:** resolve the Vercel plan, then the Supabase split (inverted, per DEC-006). The
+design-system port resumes at stage 6, `/member`.
 
 ### Session 1 — 2026-08-31 — design-system port, stages 1–5 of 8
 
