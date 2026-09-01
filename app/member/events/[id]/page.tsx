@@ -4,42 +4,13 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
+import { EventDetailView, type EventDetail } from '@/components/member/EventDetailView'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { Button } from '@/components/ui/Button'
+import { AppLink } from '@/components/nav/Nav'
+import { CalendarXIcon } from 'lucide-react'
 import Link from 'next/link'
-
-interface Event {
-  id: string
-  event_name: string
-  event_date: string
-  event_time: string
-  location: string
-  short_description: string | null
-  description: string
-  category: string
-  rsvp_enabled: boolean
-  is_payable: boolean
-  max_capacity: number
-  member_price: number
-  non_member_price: number
-  registration_deadline: string | null
-  status: string
-  image_url: string | null
-  contact_email: string | null
-  contact_phone: string | null
-  registration_count?: number
-  is_registered?: boolean
-}
-
-function getCategoryIcon(category: string) {
-  switch (category) {
-    case 'Festival': return '🎉'
-    case 'Puja': return '🙏'
-    case 'Educational': return '📚'
-    case 'Social': return '👥'
-    case 'Cultural': return '🎭'
-    case 'Fundraiser': return '💰'
-    default: return '📅'
-  }
-}
 
 function EventDetailContent() {
   const router = useRouter()
@@ -48,7 +19,7 @@ function EventDetailContent() {
   const { member } = useAuth()
   const supabase = createClient()
 
-  const [event, setEvent] = useState<Event | null>(null)
+  const [event, setEvent] = useState<EventDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [registering, setRegistering] = useState(false)
@@ -190,277 +161,42 @@ function EventDetailContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center bg-transparent">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-          <p className="mt-4 text-gray-600">Loading event details...</p>
-        </div>
+      <div className="space-y-6" role="status" aria-live="polite">
+        <span className="sr-only">Loading this event…</span>
+        <Skeleton className="h-24 w-full rounded-2xl" />
+        <Skeleton className="h-64 w-full rounded-2xl" />
       </div>
     )
   }
 
   if (error || !event) {
     return (
-      <div className="flex items-center justify-center bg-transparent">
-        <div className="text-center max-w-md">
-          <div className="text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Event Not Found</h2>
-          <p className="text-gray-600 mb-6">{error || 'The event you are looking for does not exist.'}</p>
-          <Link
-            href="/member/events"
-            className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover inline-block"
-          >
-            Back to Events
-          </Link>
-        </div>
-      </div>
+      <EmptyState
+        icon={CalendarXIcon}
+        title="Event not found"
+        description={error ?? 'This event may have been unpublished or removed.'}
+        action={
+          <AppLink to="/member/events">
+            <Button>Back to events</Button>
+          </AppLink>
+        }
+      />
     )
   }
 
-  const eventDate = new Date(event.event_date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-
-  const price = getEventPrice()
-
   return (
-    <div className="bg-transparent">
-      {/* Hero Section with Event Image */}
-      <div className="relative">
-        {event.image_url ? (
-          <div className="w-full h-64 md:h-96 relative">
-            <img
-              src={event.image_url}
-              alt={event.event_name}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </div>
-        ) : (
-          <div className="w-full h-64 md:h-96 bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center relative">
-            <span className="text-9xl">{getCategoryIcon(event.category)}</span>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </div>
-        )}
-
-        {/* Back Button */}
-        <div className="absolute top-4 left-4">
-          <Link
-            href="/member/events"
-            className="px-4 py-2 bg-white/90 backdrop-blur-sm text-gray-700 rounded-md hover:bg-white text-sm font-medium shadow"
-          >
-            ← Back to Events
-          </Link>
-        </div>
-
-        {/* Category Badge */}
-        <div className="absolute top-4 right-4">
-          <span className="px-4 py-2 bg-saffron text-white rounded-full text-sm font-semibold shadow">
-            {event.category}
-          </span>
-        </div>
-
-        {/* Registered Badge */}
-        {event.is_registered && (
-          <div className="absolute bottom-4 right-4">
-            <span className="px-4 py-2 bg-green-500 text-white rounded-full text-sm font-semibold shadow flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Registered
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8 -mt-16 relative z-10">
-        {/* Event Info Card */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          {/* Header */}
-          <div className="p-6 md:p-8 border-b">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              {event.event_name}
-            </h1>
-
-            {/* Quick Info Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl">📅</span>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">Date</p>
-                  <p className="font-semibold text-gray-900">{eventDate}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl">⏰</span>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">Time</p>
-                  <p className="font-semibold text-gray-900">{event.event_time}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl">📍</span>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">Location</p>
-                  <p className="font-semibold text-gray-900">{event.location}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl">💰</span>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">Price</p>
-                  <p className="font-semibold text-saffron">
-                    {price === 0 ? 'Free' : `$${price.toFixed(2)}`}
-                    {member?.current_level === 'Annual' || member?.current_level === 'Lifetime' ? (
-                      <span className="text-xs text-green-600 ml-1">(Member)</span>
-                    ) : null}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className="p-6 md:p-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">About This Event</h2>
-            <div
-              className="prose prose-sm max-w-none text-gray-600"
-              dangerouslySetInnerHTML={{ __html: event.description }}
-            />
-          </div>
-
-          {/* Registration Info */}
-          {event.max_capacity > 0 && (
-            <div className="px-6 md:px-8 pb-4">
-              <div className="bg-transparent rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Registration</span>
-                  <span className="text-sm font-semibold text-gray-900">
-                    {event.registration_count} / {event.max_capacity} spots filled
-                  </span>
-                </div>
-                <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-saffron h-2 rounded-full transition-all"
-                    style={{
-                      width: `${Math.min((event.registration_count || 0) / event.max_capacity * 100, 100)}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Contact Info */}
-          {(event.contact_email || event.contact_phone) && (
-            <div className="px-6 md:px-8 pb-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">Contact Information</h3>
-              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                {event.contact_email && (
-                  <a href={`mailto:${event.contact_email}`} className="hover:text-saffron">
-                    📧 {event.contact_email}
-                  </a>
-                )}
-                {event.contact_phone && (
-                  <a href={`tel:${event.contact_phone}`} className="hover:text-saffron">
-                    📞 {event.contact_phone}
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="p-6 md:p-8 bg-transparent border-t">
-            {event.is_registered ? (
-              <div className="space-y-4">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                  <p className="text-green-800 font-semibold">You are registered for this event!</p>
-                  <p className="text-sm text-green-600 mt-1">A confirmation has been sent to your email.</p>
-                </div>
-
-                {cancelConfirm ? (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-red-800 font-medium mb-3">Are you sure you want to cancel your registration?</p>
-                    <div className="flex gap-3">
-                      <button
-                        onClick={handleUnregister}
-                        disabled={cancelling}
-                        className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-300 font-medium"
-                      >
-                        {cancelling ? 'Cancelling...' : 'Yes, Cancel Registration'}
-                      </button>
-                      <button
-                        onClick={() => setCancelConfirm(false)}
-                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-white"
-                      >
-                        Keep Registration
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setCancelConfirm(true)}
-                    className="w-full px-4 py-2 border border-red-300 text-red-600 rounded-md hover:bg-red-50"
-                  >
-                    Cancel Registration
-                  </button>
-                )}
-              </div>
-            ) : !event.rsvp_enabled ? (
-              /* RSVP Disabled - Informational Event */
-              <div className="text-center py-4">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-blue-800 font-medium">No Registration Required</p>
-                  <p className="text-sm text-blue-600 mt-1">This is an informational event. All are welcome to attend!</p>
-                </div>
-              </div>
-            ) : isRegistrationClosed() ? (
-              <button
-                disabled
-                className="w-full px-6 py-3 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed font-semibold"
-              >
-                Registration Closed
-              </button>
-            ) : isEventFull() ? (
-              <button
-                disabled
-                className="w-full px-6 py-3 bg-red-100 text-red-600 rounded-md cursor-not-allowed font-semibold"
-              >
-                Event Full
-              </button>
-            ) : (
-              <button
-                onClick={handleRegister}
-                disabled={registering}
-                className="w-full px-6 py-3 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 font-semibold text-lg"
-              >
-                {registering
-                  ? 'Registering...'
-                  : event.is_payable
-                    ? `Register Now - $${price.toFixed(2)}`
-                    : 'RSVP Now (Free)'}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+    <EventDetailView
+      event={event}
+      price={getEventPrice()}
+      full={isEventFull()}
+      registrationClosed={isRegistrationClosed()}
+      registering={registering}
+      onRegister={handleRegister}
+      cancelConfirm={cancelConfirm}
+      onRequestCancel={setCancelConfirm}
+      onUnregister={handleUnregister}
+      cancelling={cancelling}
+    />
   )
 }
 
