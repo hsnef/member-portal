@@ -9,11 +9,11 @@ export const MAJOR_VERSION = 1
 export const MINOR_VERSION = 0
 export const PATCH_VERSION = 36
 export const COMMIT_COUNT = '36'
-export const COMMIT_HASH = '3be88d2'
-export const COMMIT_DATE = '2026-01-11'
-export const BUILD_DATE = '2026-01-11'
-export const BUILD_TIME = '2026-01-11T16:17:25.470Z'
-export const BRANCH = 'dev'
+export const COMMIT_HASH = 'ef8e981'
+export const COMMIT_DATE = '2026-08-31'
+export const BUILD_DATE = '2026-09-01'
+export const BUILD_TIME = '2026-09-01T01:30:49.937Z'
+export const BRANCH = 'redesign/design-system'
 
 /**
  * Get formatted version string

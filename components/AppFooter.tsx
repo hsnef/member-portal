@@ -15,8 +15,15 @@ import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 export function AppFooter() {
   const pathname = usePathname() ?? ''
 
-  // PortalShell owns the footer in the authenticated sections.
-  if (pathname.startsWith('/member') || pathname.startsWith('/admin')) return null
+  // PortalShell owns the footer in the authenticated sections; /login is a
+  // full-bleed screen that carries its own contact line and version string.
+  if (
+    pathname.startsWith('/member') ||
+    pathname.startsWith('/admin') ||
+    pathname === '/login'
+  ) {
+    return null
+  }
 
   return (
     <footer className="mt-auto border-t border-line bg-surface px-4 py-6 sm:px-6 lg:px-8">
