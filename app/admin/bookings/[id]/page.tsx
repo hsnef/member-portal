@@ -52,7 +52,7 @@ export default function AdminBookingDetailPage() {
   const params = useParams()
   const bookingId = params.id as string
   const supabase = createClient()
-  const { userData } = useAuth()
+  const { user, member: staffMember } = useAuth()
 
   const [booking, setBooking] = useState<Booking | null>(null)
   const [loading, setLoading] = useState(true)
@@ -108,22 +108,17 @@ export default function AdminBookingDetailPage() {
     try {
       setProcessing(true)
 
-      // Get staff info
-      const { data: staffMemberData } = await supabase
-        .from('members')
-        .select('first_name, last_name')
-        .eq('auth_user_id', userData?.user?.id)
-        .single()
-
-      const staffName = staffMemberData
-        ? `${staffMemberData.first_name} ${staffMemberData.last_name}`
-        : 'Staff'
+      // useAuth already resolves the signed-in staff member. The previous
+      // lookup keyed off an undefined value, so it always failed: every
+      // approval was recorded as "Staff" with a null reviewed_by.
+      const staffName =
+        [staffMember?.first_name, staffMember?.last_name].filter(Boolean).join(' ') || 'Staff'
 
       const { error } = await supabase
         .from('service_bookings')
         .update({
           status: 'Approved',
-          reviewed_by: userData?.user?.id,
+          reviewed_by: user?.id ?? null,
           reviewed_by_name: staffName,
           reviewed_at: new Date().toISOString(),
           approval_notes: approvalNotes.trim() || null,
@@ -169,22 +164,17 @@ export default function AdminBookingDetailPage() {
     try {
       setProcessing(true)
 
-      // Get staff info
-      const { data: staffMemberData } = await supabase
-        .from('members')
-        .select('first_name, last_name')
-        .eq('auth_user_id', userData?.user?.id)
-        .single()
-
-      const staffName = staffMemberData
-        ? `${staffMemberData.first_name} ${staffMemberData.last_name}`
-        : 'Staff'
+      // useAuth already resolves the signed-in staff member. The previous
+      // lookup keyed off an undefined value, so it always failed: every
+      // approval was recorded as "Staff" with a null reviewed_by.
+      const staffName =
+        [staffMember?.first_name, staffMember?.last_name].filter(Boolean).join(' ') || 'Staff'
 
       const { error } = await supabase
         .from('service_bookings')
         .update({
           status: 'Rejected',
-          reviewed_by: userData?.user?.id,
+          reviewed_by: user?.id ?? null,
           reviewed_by_name: staffName,
           reviewed_at: new Date().toISOString(),
           rejection_reason: rejectionReason.trim(),

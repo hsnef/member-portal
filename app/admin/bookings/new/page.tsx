@@ -54,7 +54,7 @@ interface CartItem {
 export default function StaffNewBookingPage() {
   const router = useRouter()
   const supabase = createClient()
-  const { userData } = useAuth()
+  const { user, member: staffMember } = useAuth()
 
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -241,16 +241,11 @@ export default function StaffNewBookingPage() {
         initialStatus = 'Paid'
       }
 
-      // Get staff info
-      const { data: staffMemberData } = await supabase
-        .from('members')
-        .select('first_name, last_name')
-        .eq('auth_user_id', userData?.user?.id)
-        .single()
-
-      const staffName = staffMemberData
-        ? `${staffMemberData.first_name} ${staffMemberData.last_name}`
-        : null
+      // useAuth already resolves the signed-in staff member. The previous
+      // lookup keyed off an undefined value and always failed, so a walk-in
+      // booking marked paid recorded a null reviewed_by and no staff name.
+      const staffName =
+        [staffMember?.first_name, staffMember?.last_name].filter(Boolean).join(' ') || null
 
       // Create booking
       const bookingData: any = {
@@ -265,7 +260,7 @@ export default function StaffNewBookingPage() {
 
       // If marking as paid, auto-approve with staff details
       if (markAsPaid) {
-        bookingData.reviewed_by = userData?.user?.id
+        bookingData.reviewed_by = user?.id ?? null
         bookingData.reviewed_by_name = staffName
         bookingData.reviewed_at = new Date().toISOString()
         bookingData.approval_notes = `Walk-in/Phone booking processed by staff. Payment received (${bookingSource}).`
