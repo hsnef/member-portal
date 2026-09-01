@@ -4,6 +4,14 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { AuditLogTimeline } from '@/components/admin/AuditLogTimeline'
 import type { MemberAuditLog } from '@/types/database'
+import { AdminListView } from '@/components/admin/AdminListView'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { ToolbarFilter } from '@/components/ui/Toolbar'
+import { FileClockIcon, DownloadIcon } from 'lucide-react'
+import { formatDate } from '@/utils/format'
+import type { Column } from '@/components/ui/DataTable'
 
 interface Member {
   id: string
@@ -113,174 +121,120 @@ export default function MemberAuditLogPage() {
   const idChangesCount = filteredLogs.filter(log => log.action_type === 'MEMBERSHIP_ID_CHANGED').length
   const fieldUpdatesCount = filteredLogs.filter(log => log.action_type === 'FIELD_UPDATED').length
 
-  return (
-    <>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-start">
-          <div>
-            <button
-              onClick={() => router.push(`/admin/members/${memberId}`)}
-              className="text-sm text-saffron hover:text-[#FF8800] font-medium mb-2 flex items-center"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to Member Details
-            </button>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Audit Log: {member?.name || 'Loading...'}
-            </h1>
-            {member && (
-              <p className="mt-1 text-sm text-gray-600">
-                Member ID: {member.membership_id}
-              </p>
-            )}
-          </div>
-          <button
-            onClick={handleExport}
-            disabled={exporting || logs.length === 0}
-            className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-md font-semibold hover:from-green-700 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
-          >
-            {exporting ? 'Exporting...' : 'Export CSV'}
-          </button>
-        </div>
+  const actionTone: Record<string, 'tulsi' | 'saffron' | 'danger' | 'neutral'> = {
+    CREATE: 'tulsi',
+    UPDATE: 'saffron',
+    DELETE: 'danger',
+  }
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white p-4 rounded-lg shadow">
-            <p className="text-sm text-gray-600">Total Changes</p>
-            <p className="text-2xl font-bold text-gray-900">{totalChanges}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <p className="text-sm text-gray-600">Member Created</p>
-            <p className="text-2xl font-bold text-green-600">{createdCount}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <p className="text-sm text-gray-600">ID Changes</p>
-            <p className="text-2xl font-bold text-purple-600">{idChangesCount}</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <p className="text-sm text-gray-600">Field Updates</p>
-            <p className="text-2xl font-bold text-blue-600">{fieldUpdatesCount}</p>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Action Type Filter */}
-            <div>
-              <label htmlFor="actionType" className="block text-sm font-medium text-gray-700 mb-1">
-                Action Type
-              </label>
-              <select
-                id="actionType"
-                value={actionTypeFilter}
-                onChange={(e) => setActionTypeFilter(e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-              >
-                <option value="All">All Actions</option>
-                <option value="CREATED">Created</option>
-                <option value="MEMBERSHIP_ID_CHANGED">ID Changed</option>
-                <option value="FIELD_UPDATED">Field Updated</option>
-                <option value="BULK_UPDATE">Bulk Update</option>
-              </select>
-            </div>
-
-            {/* Creation Source Filter (only for CREATED) */}
-            <div>
-              <label htmlFor="creationSource" className="block text-sm font-medium text-gray-700 mb-1">
-                Creation Source
-              </label>
-              <select
-                id="creationSource"
-                value={creationSourceFilter}
-                onChange={(e) => setCreationSourceFilter(e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                disabled={actionTypeFilter !== 'All' && actionTypeFilter !== 'CREATED'}
-              >
-                <option value="All">All Sources</option>
-                <option value="AUTO_IMPORT">Auto Import</option>
-                <option value="SELF_REGISTRATION">Self Registration</option>
-                <option value="OFFICE_STAFF">Office Staff</option>
-                <option value="OFFICE_MANAGER">Office Manager</option>
-                <option value="ADMIN">Admin</option>
-              </select>
-            </div>
-
-            {/* From Date */}
-            <div>
-              <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
-                From Date
-              </label>
-              <input
-                type="date"
-                id="fromDate"
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-              />
-            </div>
-
-            {/* To Date */}
-            <div>
-              <label htmlFor="toDate" className="block text-sm font-medium text-gray-700 mb-1">
-                To Date
-              </label>
-              <input
-                type="date"
-                id="toDate"
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-              />
-            </div>
-          </div>
-
-          {/* Clear Filters */}
-          {(actionTypeFilter !== 'All' || creationSourceFilter !== 'All' || fromDate || toDate) && (
-            <div className="mt-3">
-              <button
-                onClick={() => {
-                  setActionTypeFilter('All')
-                  setCreationSourceFilter('All')
-                  setFromDate('')
-                  setToDate('')
-                }}
-                className="text-sm text-saffron hover:text-[#FF8800] font-medium"
-              >
-                Clear all filters
-              </button>
-            </div>
+  const columns: Array<Column<MemberAuditLog>> = [
+    {
+      key: 'action_type',
+      header: 'Action',
+      cell: (l) => (
+        <Badge tone={actionTone[String(l.action_type)] ?? 'neutral'}>{l.action_type}</Badge>
+      ),
+    },
+    {
+      key: 'fields',
+      header: 'Fields changed',
+      cell: (l) => (
+        <span className="truncate text-ink-2">
+          {l.field_names?.length ? l.field_names.join(', ') : '\—'}
+        </span>
+      ),
+    },
+    {
+      key: 'changed_by_name',
+      header: 'By',
+      cell: (l) => (
+        <div className="min-w-0">
+          <p className="truncate text-ink-2">{l.changed_by_name ?? 'System'}</p>
+          {l.changed_by_role && (
+            <p className="mt-0.5 truncate text-[13px] text-ink-3">{l.changed_by_role}</p>
           )}
         </div>
+      ),
+    },
+    {
+      key: 'change_reason',
+      header: 'Reason',
+      secondary: true,
+      cell: (l) => <span className="truncate text-ink-3">{l.change_reason ?? '\—'}</span>,
+    },
+    {
+      key: 'changed_at',
+      header: 'When',
+      align: 'right',
+      sortable: true,
+      cell: (l) => <span className="tnum text-ink-2">{formatDate(l.changed_at)}</span>,
+    },
+  ]
 
-        {/* Timeline */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 bg-gradient-to-r from-orange-500 to-red-600">
-            <h2 className="text-xl font-semibold text-white">Change History</h2>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-              <p className="mt-4 text-gray-600">Loading audit log...</p>
-            </div>
-          ) : (
-            <div className="p-6">
-              <AuditLogTimeline auditLogs={filteredLogs} showMemberName={false} />
-            </div>
-          )}
+  const mobileCard = (l: MemberAuditLog) => (
+    <div className="space-y-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-ink">
+            {l.field_names?.length ? l.field_names.join(', ') : 'Record change'}
+          </p>
+          <p className="tnum mt-0.5 text-[13px] text-ink-3">{formatDate(l.changed_at)}</p>
         </div>
-
-        {/* Result Count */}
-        {!loading && filteredLogs.length > 0 && (
-          <div className="text-sm text-gray-600">
-            Showing {filteredLogs.length} of {logs.length} audit entries
-          </div>
-        )}
+        <Badge tone={actionTone[String(l.action_type)] ?? 'neutral'}>{l.action_type}</Badge>
       </div>
-    </>
+      <p className="truncate text-[13.5px] text-ink-2">by {l.changed_by_name ?? 'System'}</p>
+    </div>
+  )
+
+  return (
+    <AdminListView<MemberAuditLog>
+      eyebrow={member?.name ?? 'Member'}
+      title="Change history"
+      description="Every change made to this member's record, and who made it."
+      noun="entry"
+      actions={
+        <Button
+          variant="secondary"
+          icon={DownloadIcon}
+          loading={exporting}
+          onClick={handleExport}
+        >
+          Export CSV
+        </Button>
+      }
+      rows={logs}
+      columns={columns}
+      rowKey={(l) => l.id}
+      mobileCard={mobileCard}
+      loading={loading}
+      searchPlaceholder="Search by field, person or reason..."
+      searchFields={(l) => [
+        l.field_names?.join(', '),
+        l.changed_by_name,
+        l.change_reason,
+      ]}
+      /* Action type and creation source are applied in the QUERY. */
+      filters={['All', 'CREATE', 'UPDATE', 'DELETE']}
+      filterValue={actionTypeFilter}
+      onFilterChange={setActionTypeFilter}
+      toolbarFilters={
+        <ToolbarFilter
+          label="Source"
+          value={creationSourceFilter}
+          onChange={setCreationSourceFilter}
+          options={['All', 'admin', 'import', 'self_registration']}
+        />
+      }
+      emptyIcon={FileClockIcon}
+      emptyTitle="No changes recorded"
+      emptyDescription="Edits to this member's record will be logged here automatically."
+    >
+      {member && (
+        <Card tone="sunk" spine="kumkum" className="pl-7">
+          <p className="font-serif text-[22px] leading-tight text-ink">{member.name}</p>
+          <p className="tnum mt-1 text-[14px] text-ink-2">{member.membership_id}</p>
+        </Card>
+      )}
+    </AdminListView>
   )
 }

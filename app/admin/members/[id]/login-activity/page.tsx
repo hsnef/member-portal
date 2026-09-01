@@ -4,6 +4,13 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { formatLoginMethod, formatLocation, formatUserAgent } from '@/lib/login-audit-log/utils'
+import { AdminListView } from '@/components/admin/AdminListView'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { ToolbarFilter } from '@/components/ui/Toolbar'
+import { ShieldCheckIcon, DownloadIcon } from 'lucide-react'
+import type { Column } from '@/components/ui/DataTable'
 
 interface LoginLog {
   id: string
@@ -120,266 +127,117 @@ export default function MemberLoginActivityPage() {
   }, {} as Record<string, number>)
   const mostUsedMethod = Object.entries(methodCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
 
-  return (
-    <ProtectedRoute requiredRoles={['Admin', 'Office Manager']}>
-      <>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex justify-between items-start">
-            <div>
-              <button
-                onClick={() => router.push(`/admin/members/${memberId}`)}
-                className="text-sm text-saffron hover:text-[#FF8800] font-medium mb-2 flex items-center"
-              >
-                <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Back to Member Details
-              </button>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Login Activity: {member?.name || 'Loading...'}
-              </h1>
-              {member && (
-                <p className="mt-1 text-sm text-gray-600">
-                  Member ID: {member.membership_id}
-                </p>
-              )}
-            </div>
-            <button
-              onClick={handleExport}
-              disabled={exporting || logs.length === 0}
-              className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-md font-semibold hover:from-green-700 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
-            >
-              {exporting ? 'Exporting...' : 'Export CSV'}
-            </button>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Total Logins</p>
-              <p className="text-2xl font-bold text-gray-900">{totalLogins}</p>
-              <p className="text-xs text-gray-500 mt-1">
-                {successfulLogins} success / {failedLogins} failed
-              </p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Last Login</p>
-              <p className="text-lg font-bold text-blue-600">{lastLogin}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Most Used Method</p>
-              <p className="text-lg font-bold text-purple-600">
-                {formatLoginMethod(mostUsedMethod)}
-              </p>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Login Method Filter */}
-              <div>
-                <label htmlFor="loginMethod" className="block text-sm font-medium text-gray-700 mb-1">
-                  Login Method
-                </label>
-                <select
-                  id="loginMethod"
-                  value={loginMethodFilter}
-                  onChange={(e) => setLoginMethodFilter(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                >
-                  <option value="All">All Methods</option>
-                  <option value="google">Google OAuth</option>
-                  <option value="magic_link">Magic Link</option>
-                  <option value="registration">Registration</option>
-                  <option value="session_restored">Session Restored</option>
-                </select>
-              </div>
-
-              {/* Success Filter */}
-              <div>
-                <label htmlFor="success" className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
-                <select
-                  id="success"
-                  value={successFilter}
-                  onChange={(e) => setSuccessFilter(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                >
-                  <option value="All">All Status</option>
-                  <option value="Success">Successful</option>
-                  <option value="Failed">Failed</option>
-                </select>
-              </div>
-
-              {/* From Date */}
-              <div>
-                <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
-                  From Date
-                </label>
-                <input
-                  type="date"
-                  id="fromDate"
-                  value={fromDate}
-                  onChange={(e) => setFromDate(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                />
-              </div>
-
-              {/* To Date */}
-              <div>
-                <label htmlFor="toDate" className="block text-sm font-medium text-gray-700 mb-1">
-                  To Date
-                </label>
-                <input
-                  type="date"
-                  id="toDate"
-                  value={toDate}
-                  onChange={(e) => setToDate(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-saffron-ring focus:border-saffron"
-                />
-              </div>
-            </div>
-
-            {/* Clear Filters */}
-            {(loginMethodFilter !== 'All' || successFilter !== 'All' || fromDate || toDate) && (
-              <div className="mt-3">
-                <button
-                  onClick={() => {
-                    setLoginMethodFilter('All')
-                    setSuccessFilter('All')
-                    setFromDate('')
-                    setToDate('')
-                  }}
-                  className="text-sm text-saffron hover:text-[#FF8800] font-medium"
-                >
-                  Clear all filters
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Timeline View */}
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="px-6 py-4 bg-gradient-to-r from-orange-500 to-red-600">
-              <h2 className="text-xl font-semibold text-white">Login History</h2>
-            </div>
-
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-                <p className="mt-4 text-gray-600">Loading login activity...</p>
-              </div>
-            ) : logs.length === 0 ? (
-              <div className="text-center py-12 px-6">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No login activity found</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {loginMethodFilter !== 'All' || successFilter !== 'All' || fromDate || toDate
-                    ? 'Try adjusting your filters'
-                    : 'This member has not logged in yet'}
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-200">
-                {logs.map((log) => (
-                  <div key={log.id} className="px-6 py-4 hover:bg-transparent">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3">
-                          {/* Status Icon */}
-                          <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${
-                            log.success ? 'bg-green-100' : 'bg-red-100'
-                          }`}>
-                            {log.success ? (
-                              <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            ) : (
-                              <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            )}
-                          </div>
-
-                          {/* Login Details */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                                log.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                              }`}>
-                                {log.success ? 'Successful Login' : 'Failed Login'}
-                              </span>
-                              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                {formatLoginMethod(log.login_method)}
-                              </span>
-                            </div>
-                            <p className="text-sm font-medium text-gray-900">
-                              {new Date(log.login_at).toLocaleString('en-US', {
-                                weekday: 'short',
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </p>
-                            <div className="mt-2 text-sm text-gray-600 space-y-1">
-                              <p>
-                                <span className="font-medium">IP Address:</span> {log.ip_address || 'N/A'}
-                              </p>
-                              <p>
-                                <span className="font-medium">Location:</span> {formatLocation(log.geo_country, log.geo_city)}
-                              </p>
-                              <p>
-                                <span className="font-medium">Device:</span> {formatUserAgent(log.user_agent)}
-                              </p>
-                              {!log.success && log.failure_reason && (
-                                <p className="text-red-600">
-                                  <span className="font-medium">Reason:</span> {log.failure_reason}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Expandable Details */}
-                        {expandedRow === log.id && (
-                          <div className="mt-4 pl-13 space-y-2 text-sm border-l-2 border-gray-200 pl-4">
-                            <div>
-                              <span className="font-medium text-gray-700">Full User Agent:</span>
-                              <p className="text-gray-600 text-xs mt-1 break-all">{log.user_agent || 'N/A'}</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Actions */}
-                      <button
-                        onClick={() => setExpandedRow(expandedRow === log.id ? null : log.id)}
-                        className="ml-4 text-sm text-saffron hover:text-[#FF8800] font-medium"
-                      >
-                        {expandedRow === log.id ? 'Less' : 'More'}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Result Count */}
-          {!loading && logs.length > 0 && (
-            <div className="text-sm text-gray-600">
-              Showing {logs.length} login events
-            </div>
+  const columns: Array<Column<LoginLog>> = [
+    {
+      key: 'login_at',
+      header: 'When',
+      sortable: true,
+      cell: (l) => (
+        <span className="tnum text-ink-2">{new Date(l.login_at).toLocaleString()}</span>
+      ),
+    },
+    {
+      key: 'login_method',
+      header: 'Method',
+      cell: (l) => <Badge tone="neutral">{l.login_method}</Badge>,
+    },
+    {
+      key: 'where',
+      header: 'From',
+      secondary: true,
+      cell: (l) => (
+        <div className="min-w-0">
+          <p className="tnum truncate text-ink-2">{l.ip_address ?? '\—'}</p>
+          {(l.geo_city || l.geo_country) && (
+            <p className="mt-0.5 truncate text-[13px] text-ink-3">
+              {[l.geo_city, l.geo_country].filter(Boolean).join(', ')}
+            </p>
           )}
         </div>
-      </>
+      ),
+    },
+    {
+      key: 'success',
+      header: 'Result',
+      align: 'right',
+      cell: (l) =>
+        l.success ? (
+          <Badge tone="tulsi">Signed in</Badge>
+        ) : (
+          <Badge tone="danger">{l.failure_reason || 'Failed'}</Badge>
+        ),
+    },
+  ]
+
+  const mobileCard = (l: LoginLog) => (
+    <div className="space-y-2">
+      <div className="flex items-start justify-between gap-3">
+        <p className="tnum min-w-0 truncate text-[14px] text-ink">
+          {new Date(l.login_at).toLocaleString()}
+        </p>
+        {l.success ? (
+          <Badge tone="tulsi">Signed in</Badge>
+        ) : (
+          <Badge tone="danger">Failed</Badge>
+        )}
+      </div>
+      <p className="tnum truncate text-[13.5px] text-ink-2">
+        {l.login_method} \· {l.ip_address ?? 'no IP'}
+        {l.geo_city ? ` \· ${l.geo_city}` : ''}
+      </p>
+    </div>
+  )
+
+  return (
+    <ProtectedRoute requiredRoles={['Admin', 'Office Manager']}>
+      <AdminListView<LoginLog>
+        eyebrow={member?.membership_id ?? 'Member'}
+        title="Sign-in history"
+        description="Every sign-in attempt for this member, successful or not."
+        noun="sign-in"
+        actions={
+          <Button
+            variant="secondary"
+            icon={DownloadIcon}
+            loading={exporting}
+            onClick={handleExport}
+          >
+            Export CSV
+          </Button>
+        }
+        rows={logs}
+        columns={columns}
+        rowKey={(l) => l.id}
+        mobileCard={mobileCard}
+        loading={loading}
+        searchPlaceholder="Search by IP address or method..."
+        searchFields={(l) => [l.ip_address, l.login_method, l.geo_city, l.geo_country]}
+        /* Method and success are applied in the QUERY. */
+        filters={['All', 'true', 'false']}
+        filterLabels={{ All: 'All', true: 'Successful', false: 'Failed' }}
+        filterValue={successFilter}
+        onFilterChange={setSuccessFilter}
+        toolbarFilters={
+          <ToolbarFilter
+            label="Method"
+            value={loginMethodFilter}
+            onChange={setLoginMethodFilter}
+            options={['All', 'google', 'magic_link', 'password']}
+          />
+        }
+        emptyIcon={ShieldCheckIcon}
+        emptyTitle="No sign-in activity"
+        emptyDescription="Sign-in attempts for this member will be recorded here automatically."
+      >
+        {member && (
+          <Card tone="sunk" spine="kumkum" className="pl-7">
+            <p className="font-serif text-[22px] leading-tight text-ink">
+{member.name || member.membership_id}
+            </p>
+            <p className="tnum mt-1 text-[14px] text-ink-2">{member.membership_id}</p>
+          </Card>
+        )}
+      </AdminListView>
     </ProtectedRoute>
   )
 }
