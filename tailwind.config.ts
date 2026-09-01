@@ -1,5 +1,24 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * Design system colours resolve to CSS variables so runtime theming keeps
+ * working. But Tailwind 3 cannot apply an opacity modifier to a bare var():
+ * `bg-kumkum/65` would silently emit nothing, because it needs the colour
+ * broken into channels to compose an alpha.
+ *
+ * Returning a function lets us build the translucent value with color-mix(),
+ * which takes the variable as-is. So `bg-kumkum` and `bg-kumkum/65` both work,
+ * and both still follow the active theme.
+ *
+ * color-mix() is supported in Chrome 111+, Safari 16.2+, Firefox 113+.
+ */
+const token =
+  (name: string) =>
+  ({ opacityValue }: { opacityValue?: string }) =>
+    opacityValue === undefined || opacityValue === ""
+      ? `var(--${name})`
+      : `color-mix(in srgb, var(--${name}) calc(${opacityValue} * 100%), transparent)`;
+
 const config: Config = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -11,67 +30,67 @@ const config: Config = {
     extend: {
       colors: {
         // ---- Legacy (kept for backward compatibility) ----
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        background: token("background"),
+        foreground: token("foreground"),
 
         // ---- HSNEF design system tokens ----
         // Every one resolves to a CSS variable, so runtime theming still works.
-        canvas: "var(--canvas)",
-        "canvas-deep": "var(--canvas-deep)",
-        surface: "var(--surface)",
-        "surface-sunk": "var(--surface-sunk)",
-        line: "var(--line)",
-        "line-strong": "var(--line-strong)",
-        ink: "var(--ink)",
-        "ink-2": "var(--ink-2)",
-        "ink-3": "var(--ink-3)",
-        "ink-inverse": "var(--ink-inverse)",
-        saffron: "var(--saffron)",
-        "saffron-hover": "var(--saffron-hover)",
-        "saffron-soft": "var(--saffron-soft)",
-        "saffron-ring": "var(--saffron-ring)",
-        marigold: "var(--marigold)",
-        "marigold-ink": "var(--marigold-ink)",
-        "marigold-soft": "var(--marigold-soft)",
-        kumkum: "var(--kumkum)",
-        "kumkum-ink": "var(--kumkum-ink)",
-        "kumkum-soft": "var(--kumkum-soft)",
-        tulsi: "var(--tulsi)",
-        "tulsi-ink": "var(--tulsi-ink)",
-        "tulsi-soft": "var(--tulsi-soft)",
-        lotus: "var(--lotus)",
-        "lotus-ink": "var(--lotus-ink)",
-        "lotus-soft": "var(--lotus-soft)",
-        copper: "var(--copper)",
-        "copper-ink": "var(--copper-ink)",
-        "copper-soft": "var(--copper-soft)",
-        sandal: "var(--sandal)",
-        "sandal-ink": "var(--sandal-ink)",
-        "sandal-soft": "var(--sandal-soft)",
-        gold: "var(--gold)",
-        success: "var(--success)",
-        "success-soft": "var(--success-soft)",
-        warning: "var(--warning)",
-        "warning-soft": "var(--warning-soft)",
-        danger: "var(--danger)",
-        "danger-soft": "var(--danger-soft)",
-        neutral: "var(--neutral)",
-        "neutral-soft": "var(--neutral-soft)",
+        canvas: token("canvas"),
+        "canvas-deep": token("canvas-deep"),
+        surface: token("surface"),
+        "surface-sunk": token("surface-sunk"),
+        line: token("line"),
+        "line-strong": token("line-strong"),
+        ink: token("ink"),
+        "ink-2": token("ink-2"),
+        "ink-3": token("ink-3"),
+        "ink-inverse": token("ink-inverse"),
+        saffron: token("saffron"),
+        "saffron-hover": token("saffron-hover"),
+        "saffron-soft": token("saffron-soft"),
+        "saffron-ring": token("saffron-ring"),
+        marigold: token("marigold"),
+        "marigold-ink": token("marigold-ink"),
+        "marigold-soft": token("marigold-soft"),
+        kumkum: token("kumkum"),
+        "kumkum-ink": token("kumkum-ink"),
+        "kumkum-soft": token("kumkum-soft"),
+        tulsi: token("tulsi"),
+        "tulsi-ink": token("tulsi-ink"),
+        "tulsi-soft": token("tulsi-soft"),
+        lotus: token("lotus"),
+        "lotus-ink": token("lotus-ink"),
+        "lotus-soft": token("lotus-soft"),
+        copper: token("copper"),
+        "copper-ink": token("copper-ink"),
+        "copper-soft": token("copper-soft"),
+        sandal: token("sandal"),
+        "sandal-ink": token("sandal-ink"),
+        "sandal-soft": token("sandal-soft"),
+        gold: token("gold"),
+        success: token("success"),
+        "success-soft": token("success-soft"),
+        warning: token("warning"),
+        "warning-soft": token("warning-soft"),
+        danger: token("danger"),
+        "danger-soft": token("danger-soft"),
+        neutral: token("neutral"),
+        "neutral-soft": token("neutral-soft"),
 
         // ---- Runtime theming contract ----
         "theme-bg": {
-          primary: "var(--theme-bg-primary)",
-          secondary: "var(--theme-bg-secondary)",
+          primary: token("theme-bg-primary"),
+          secondary: token("theme-bg-secondary"),
         },
         "theme-text": {
-          primary: "var(--theme-text-primary)",
-          secondary: "var(--theme-text-secondary)",
+          primary: token("theme-text-primary"),
+          secondary: token("theme-text-secondary"),
         },
         "theme-accent": {
-          primary: "var(--theme-accent-primary)",
-          secondary: "var(--theme-accent-secondary)",
+          primary: token("theme-accent-primary"),
+          secondary: token("theme-accent-secondary"),
         },
-        "theme-border": "var(--theme-border)",
+        "theme-border": token("theme-border"),
       },
       fontFamily: {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
