@@ -6,13 +6,17 @@
 
 ### Tier 0 — blocking, do before more feature work
 
+- **Restore deployment (DEC-007). Nothing has deployed since January** — the Actions workflow is
+  disabled and Vercel's Git integration is blocked for private org repos on Hobby. Moving the
+  projects to the existing Techsilon Pro team is **ruled out**. Remaining: buy Pro on the owning
+  account (permission pending — ask about the nonprofit discount), or investigate re-enabling
+  `deploy.yml` to deploy via the Vercel CLI with a token, which sidesteps the Git-integration
+  restriction but may not sidestep Hobby's non-commercial licensing. **Do not fix this by making the
+  repo public** — see the PII item below.
 - **Split the Supabase projects (DEC-006).** All three environments share one live database today,
-  so dev testing writes to real member data. Create `hsnef-member-portal-prod`, migrate, re-point
-  Vercel Production, verify RLS, re-point Stripe webhooks and OAuth redirect URLs.
-- **Fix the Vercel plan (DEC-007).** Hobby cannot deploy a private org repo, so both PR checks fail
-  and nothing deploys. **Do not fix this by making the repo public** — two committed CSVs carry 6
-  households of member PII including children's names and home addresses. Vercel Pro is the clean
-  fix; the PII purge is required first only if the repo goes public for some other reason.
+  so dev testing writes to real member data. **Make the NEW project `dev`, not prod** — that reaches
+  the same goal without migrating a single real member row or auth user, and leaves production
+  untouched. Renumber the two duplicate migration prefixes first or the fresh `db push` will fail.
 - **Remove the member-data CSVs regardless.** `docs/reference/data/current-member-data-import-template*.csv`
   should not be in the repo at all, private or not. Delete from HEAD now; purge from history if/when
   the repo's visibility changes.
