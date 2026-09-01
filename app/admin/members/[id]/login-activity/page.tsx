@@ -28,7 +28,7 @@ interface Member {
 export default function MemberLoginActivityPage() {
   const router = useRouter()
   const params = useParams()
-  const memberId = memberId as string
+  const memberId = params.id as string
   const [logs, setLogs] = useState<LoginLog[]>([])
   const [member, setMember] = useState<Member | null>(null)
   const [loading, setLoading] = useState(true)

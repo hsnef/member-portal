@@ -14,7 +14,7 @@ interface Member {
 export default function MemberAuditLogPage() {
   const router = useRouter()
   const params = useParams()
-  const memberId = memberId as string
+  const memberId = params.id as string
   const [logs, setLogs] = useState<MemberAuditLog[]>([])
   const [member, setMember] = useState<Member | null>(null)
   const [loading, setLoading] = useState(true)
