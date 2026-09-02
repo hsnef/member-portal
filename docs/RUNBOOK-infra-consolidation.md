@@ -19,7 +19,7 @@ GitHub main  ──► Vercel PRODUCTION  ──► Supabase  gapvsdrzavjaublwkq
 - [ ] Phase 3 — apply the events migration
 - [ ] Phase 4 — clean the test data
 - [ ] Phase 5 — create the dev Supabase project
-- [ ] Phase 6 — merge the PR
+- [x] Phase 6 — merge the PR — **DONE 2026-09-02**
 
 ---
 
@@ -114,6 +114,34 @@ Original instructions, for reference — **Settings → Environment Variables**,
 
 Claude was blocked from copying these out of `.env.local` to an external service.
 That is the correct behaviour — do it by hand.
+
+---
+
+## Phase 6 — Merge the PR — DONE 2026-09-02
+
+PR #4 merged as a **merge commit** (2 parents, not a squash — `main` is now 110
+commits). The production deployment built and went **READY** from `main`, and
+`devportal-iota.vercel.app` serves the redesign: HTTP 200 with `--saffron`,
+`--kumkum` and `--marigold` in the CSS and zero legacy hex values.
+
+`member.hsnef.org` still returns **308** — Cloudflare, Phase 2. Production is
+built and healthy; only DNS stands between it and the public.
+
+### Side effect worth knowing: the dev URL is now behind Vercel login
+
+`dev.member.hsnef.org` redirects to `vercel.com/login`. Before the repoint it
+served a *production* deployment (because `dev` was the production branch) and
+production deployments are not protected. It now serves a *preview*, and
+`ssoProtection` is `all_except_custom_domains` — an exemption that only covers
+**production** custom domains.
+
+**This was left in place deliberately.** Every environment still shares one
+Supabase database (DEC-006), so before today an unauthenticated dev portal sat
+in front of live member data. Requiring a Vercel login is the safer state.
+Whoever needs access needs Vercel team membership.
+
+To reverse it: set `ssoProtection` to null on the project, or
+**Settings → Deployment Protection → Vercel Authentication → Disabled**.
 
 ---
 
