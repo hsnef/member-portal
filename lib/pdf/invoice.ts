@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { PDF } from './theme'
 import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 
 interface InvoiceData {
@@ -52,15 +53,19 @@ export function generateInvoice(data: InvoiceData): jsPDF {
   }
 
   // Status badge
-  doc.setFillColor(data.status === 'Paid' ? 34 : data.status === 'Sent' ? 59 : 156,
-                   data.status === 'Paid' ? 197 : data.status === 'Sent' ? 130 : 163,
-                   data.status === 'Paid' ? 94 : data.status === 'Sent' ? 246 : 175)
+  const statusColor =
+    data.status === 'Paid'
+      ? PDF.success
+      : data.status === 'Sent'
+        ? PDF.warning
+        : PDF.neutral
+  doc.setFillColor(...statusColor)
   doc.roundedRect(150, 82, 40, 8, 2, 2, 'F')
-  doc.setTextColor(255, 255, 255)
+  doc.setTextColor(...PDF.white)
   doc.setFontSize(9)
   doc.setFont('helvetica', 'bold')
   doc.text(data.status.toUpperCase(), 170, 88, { align: 'center' })
-  doc.setTextColor(0, 0, 0)
+  doc.setTextColor(...PDF.ink)
 
   // Horizontal line
   doc.line(20, 95, 190, 95)
@@ -116,7 +121,8 @@ export function generateInvoice(data: InvoiceData): jsPDF {
       [data.requestType + ' - ' + data.serviceDescription.substring(0, 50), `$${data.amount.toFixed(2)}`]
     ],
     theme: 'striped',
-    headStyles: { fillColor: [255, 153, 51] },
+    headStyles: { fillColor: [...PDF.kumkum], textColor: [...PDF.white] },
+    alternateRowStyles: { fillColor: [...PDF.surfaceSunk] },
     styles: { fontSize: 10 },
     columnStyles: {
       0: { cellWidth: 140 },
@@ -126,15 +132,15 @@ export function generateInvoice(data: InvoiceData): jsPDF {
 
   // Total amount box
   const finalY = (doc as any).lastAutoTable.finalY || itemsY + 50
-  doc.setFillColor(255, 153, 51) // Orange color
+  doc.setFillColor(...PDF.kumkum) // white text on this passes AA
   doc.rect(130, finalY + 10, 60, 25, 'F')
-  doc.setTextColor(255, 255, 255)
+  doc.setTextColor(...PDF.white)
   doc.setFontSize(12)
   doc.setFont('helvetica', 'bold')
   doc.text('Total Amount', 160, finalY + 18, { align: 'center' })
   doc.setFontSize(18)
   doc.text(`$${data.amount.toFixed(2)}`, 160, finalY + 28, { align: 'center' })
-  doc.setTextColor(0, 0, 0)
+  doc.setTextColor(...PDF.ink)
 
   // Payment instructions
   if (data.status === 'Sent') {

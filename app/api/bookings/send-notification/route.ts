@@ -19,8 +19,8 @@ function getBookingSubmittedEmail(memberName: string, booking: any, items: any[]
     subject: `Booking Submitted - Pending Approval`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #FF9933;">
-          <h1 style="color: #FF9933; margin: 0;">HSNEF</h1>
+        <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #c75b12;">
+          <h1 style="color: #c75b12; margin: 0;">HSNEF</h1>
           <p style="color: #666; margin: 5px 0 0 0;">Membership Portal</p>
         </div>
 
@@ -29,13 +29,13 @@ function getBookingSubmittedEmail(memberName: string, booking: any, items: any[]
           <p>Dear ${memberName},</p>
           <p>Your service booking has been submitted and is pending approval by our staff.</p>
 
-          <div style="background-color: #FFF5ED; border-left: 4px solid #FF9933; padding: 15px; margin: 20px 0;">
+          <div style="background-color: #fdefe2; border-left: 4px solid #c75b12; padding: 15px; margin: 20px 0;">
             <p style="margin: 0; font-weight: bold;">Booking Reference: ${booking.id.slice(0, 8).toUpperCase()}</p>
             <p style="margin: 10px 0 0 0;">Total Amount: $${booking.total_amount.toFixed(2)}</p>
           </div>
 
           <p><strong>Services Requested:</strong></p>
-          <pre style="background-color: #f5f5f5; padding: 15px; border-radius: 5px;">${itemsList}</pre>
+          <pre style="background-color: #faf5ec; padding: 15px; border-radius: 5px;">${itemsList}</pre>
 
           <p style="color: #666;">You will receive another email once your booking is reviewed. Payment will be requested after approval.</p>
         </div>
@@ -64,27 +64,27 @@ function getBookingApprovedEmail(memberName: string, booking: any, items: any[],
     subject: `Booking Approved - Payment Required`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #FF9933;">
-          <h1 style="color: #FF9933; margin: 0;">HSNEF</h1>
+        <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #c75b12;">
+          <h1 style="color: #c75b12; margin: 0;">HSNEF</h1>
           <p style="color: #666; margin: 5px 0 0 0;">Membership Portal</p>
         </div>
 
         <div style="padding: 30px 0;">
-          <div style="background-color: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-            <h2 style="color: #065F46; margin: 0;">✓ Booking Approved!</h2>
+          <div style="background-color: #eaf2ec; border: 1px solid #eaf2ec; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+            <h2 style="color: #4e7a63; margin: 0;">✓ Booking Approved!</h2>
           </div>
 
           <p>Dear ${memberName},</p>
           <p>Great news! Your service booking has been approved. Please proceed with payment to confirm your booking.</p>
 
-          <div style="background-color: #FFF5ED; border-left: 4px solid #FF9933; padding: 15px; margin: 20px 0;">
+          <div style="background-color: #fdefe2; border-left: 4px solid #c75b12; padding: 15px; margin: 20px 0;">
             <p style="margin: 0; font-weight: bold;">Booking Reference: ${booking.id.slice(0, 8).toUpperCase()}</p>
-            <p style="margin: 10px 0; font-size: 24px; color: #FF9933; font-weight: bold;">$${booking.total_amount.toFixed(2)}</p>
+            <p style="margin: 10px 0; font-size: 24px; color: #c75b12; font-weight: bold;">$${booking.total_amount.toFixed(2)}</p>
             <p style="margin: 0;">${itemsList}</p>
           </div>
 
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${paymentLink}" style="display: inline-block; background-color: #FF9933; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: bold;">
+            <a href="${paymentLink}" style="display: inline-block; background-color: #c75b12; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: bold;">
               Pay Now
             </a>
           </div>

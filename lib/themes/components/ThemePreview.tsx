@@ -38,7 +38,7 @@ export function ThemePreview({ theme, className = '' }: ThemePreviewProps) {
   }
 
   const buttonStyles: React.CSSProperties = {
-    backgroundColor: theme.cssVariables['--theme-accent-primary'] || '#FF9933',
+    backgroundColor: theme.cssVariables['--theme-accent-primary'] || '#c75b12',
     color: '#ffffff',
     borderRadius: theme.cssVariables['--theme-border-radius-button'] || '6px',
   }
@@ -99,7 +99,7 @@ export function ThemePreview({ theme, className = '' }: ThemePreviewProps) {
         <div className="text-center">
           <div
             className="w-full h-12 rounded border border-gray-300 mb-1"
-            style={{ backgroundColor: theme.cssVariables['--theme-accent-primary'] || '#FF9933' }}
+            style={{ backgroundColor: theme.cssVariables['--theme-accent-primary'] || '#c75b12' }}
           />
           <p className="text-xs text-gray-600">Accent</p>
         </div>

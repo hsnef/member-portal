@@ -16,6 +16,7 @@ import { Card, CardHeader } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { CreditCardIcon } from 'lucide-react'
 import { formatCurrency } from '@/utils/format'
+import { stripeAppearance } from '@/components/member/CheckoutView'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
@@ -377,12 +378,7 @@ function DonateContent() {
 
   const options = clientSecret ? {
     clientSecret,
-    appearance: {
-      theme: 'stripe' as const,
-      variables: {
-        colorPrimary: '#c75b12',
-      },
-    },
+    appearance: stripeAppearance,
   } : undefined
 
   return (

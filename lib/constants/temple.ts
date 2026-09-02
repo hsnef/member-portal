@@ -32,12 +32,15 @@ export const TEMPLE_CONFIG = {
     memberPortal: 'https://member.hsnef.org',
   },
 
-  // Branding Colors
+  // Branding colours.
+  // These mirror the design system tokens in app/globals.css. Prefer the
+  // Tailwind token classes (bg-saffron, text-kumkum) in the app; these
+  // literals exist for surfaces that cannot read CSS variables.
   colors: {
-    primary: '#FF9933',     // Saffron orange
-    primaryDark: '#E68A2E', // Darker saffron
-    maroon: '#800000',      // Temple maroon
-    gold: '#FFD700',        // Gold accent
+    primary: '#c75b12',     // saffron
+    primaryDark: '#a94a0c', // saffron-hover
+    maroon: '#7b2d26',      // kumkum
+    gold: '#c9962c',        // gold
   },
 
   // Receipt/Invoice Messaging

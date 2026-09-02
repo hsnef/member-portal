@@ -271,13 +271,13 @@ export function ThemeBuilder({ initialTheme, onSave, onCancel }: ThemeBuilderPro
               />
               <ColorPicker
                 label="Accent Primary"
-                value={formData.cssVariables?.['--theme-accent-primary'] || '#FF9933'}
+                value={formData.cssVariables?.['--theme-accent-primary'] || '#c75b12'}
                 onChange={(color) => handleCSSVariableChange('--theme-accent-primary', color)}
                 required
               />
               <ColorPicker
                 label="Accent Secondary"
-                value={formData.cssVariables?.['--theme-accent-secondary'] || '#800000'}
+                value={formData.cssVariables?.['--theme-accent-secondary'] || '#7b2d26'}
                 onChange={(color) => handleCSSVariableChange('--theme-accent-secondary', color)}
               />
               <ColorPicker

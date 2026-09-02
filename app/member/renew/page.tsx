@@ -13,6 +13,7 @@ import { CreditCardIcon } from 'lucide-react'
 import { formatCurrency } from '@/utils/format'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { getMembershipPricing, type MembershipPricing } from '@/lib/utils/portalSettings'
+import { stripeAppearance } from '@/components/member/CheckoutView'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
@@ -203,12 +204,7 @@ function RenewMembershipContent() {
 
   const options = {
     clientSecret,
-    appearance: {
-      theme: 'stripe' as const,
-      variables: {
-        colorPrimary: '#c75b12',
-      },
-    },
+    appearance: stripeAppearance,
   }
 
   return (

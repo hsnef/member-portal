@@ -37,18 +37,18 @@ export function getPaymentFailureEmail(data: PaymentFailureEmailData) {
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <!-- Header -->
-      <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #FF9933;">
-        <h1 style="color: #FF9933; margin: 0; font-size: 24px;">${TEMPLE_CONFIG.name}</h1>
+      <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #c75b12;">
+        <h1 style="color: #c75b12; margin: 0; font-size: 24px;">${TEMPLE_CONFIG.name}</h1>
         <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Membership Portal</p>
       </div>
 
       <!-- Alert Banner -->
-      <div style="background-color: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; padding: 16px; margin: 24px 0;">
+      <div style="background-color: #fbebe8; border: 1px solid #fbebe8; border-radius: 8px; padding: 16px; margin: 24px 0;">
         <div style="display: flex; align-items: flex-start;">
           <span style="font-size: 24px; margin-right: 12px;">⚠️</span>
           <div>
-            <h2 style="color: #991B1B; margin: 0 0 8px 0; font-size: 18px;">Payment Failed</h2>
-            <p style="color: #7F1D1D; margin: 0; font-size: 14px;">
+            <h2 style="color: #b23a2e; margin: 0 0 8px 0; font-size: 18px;">Payment Failed</h2>
+            <p style="color: #b23a2e; margin: 0; font-size: 14px;">
               Your recent payment could not be processed. Please try again or use a different payment method.
             </p>
           </div>
@@ -56,29 +56,29 @@ export function getPaymentFailureEmail(data: PaymentFailureEmailData) {
       </div>
 
       <!-- Payment Details -->
-      <div style="background-color: #F9FAFB; border-radius: 8px; padding: 20px; margin: 24px 0;">
-        <h3 style="margin: 0 0 16px 0; color: #374151; font-size: 16px;">Payment Details</h3>
+      <div style="background-color: #fffbf4; border-radius: 8px; padding: 20px; margin: 24px 0;">
+        <h3 style="margin: 0 0 16px 0; color: #2b2018; font-size: 16px;">Payment Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
-            <td style="padding: 8px 0; color: #6B7280; font-size: 14px;">Member Name:</td>
-            <td style="padding: 8px 0; color: #111827; font-size: 14px; font-weight: 600;">${data.memberName}</td>
+            <td style="padding: 8px 0; color: #6a5b4b; font-size: 14px;">Member Name:</td>
+            <td style="padding: 8px 0; color: #2b2018; font-size: 14px; font-weight: 600;">${data.memberName}</td>
           </tr>
           <tr>
-            <td style="padding: 8px 0; color: #6B7280; font-size: 14px;">Membership ID:</td>
-            <td style="padding: 8px 0; color: #111827; font-size: 14px; font-family: monospace;">${data.membershipId}</td>
+            <td style="padding: 8px 0; color: #6a5b4b; font-size: 14px;">Membership ID:</td>
+            <td style="padding: 8px 0; color: #2b2018; font-size: 14px; font-family: monospace;">${data.membershipId}</td>
           </tr>
           <tr>
-            <td style="padding: 8px 0; color: #6B7280; font-size: 14px;">Category:</td>
-            <td style="padding: 8px 0; color: #111827; font-size: 14px;">${data.category}</td>
+            <td style="padding: 8px 0; color: #6a5b4b; font-size: 14px;">Category:</td>
+            <td style="padding: 8px 0; color: #2b2018; font-size: 14px;">${data.category}</td>
           </tr>
           <tr>
-            <td style="padding: 8px 0; color: #6B7280; font-size: 14px;">Amount:</td>
-            <td style="padding: 8px 0; color: #DC2626; font-size: 18px; font-weight: 700;">$${data.amount.toFixed(2)}</td>
+            <td style="padding: 8px 0; color: #6a5b4b; font-size: 14px;">Amount:</td>
+            <td style="padding: 8px 0; color: #b23a2e; font-size: 18px; font-weight: 700;">$${data.amount.toFixed(2)}</td>
           </tr>
           ${data.errorMessage ? `
           <tr>
-            <td style="padding: 8px 0; color: #6B7280; font-size: 14px;">Reason:</td>
-            <td style="padding: 8px 0; color: #991B1B; font-size: 14px;">${data.errorMessage}</td>
+            <td style="padding: 8px 0; color: #6a5b4b; font-size: 14px;">Reason:</td>
+            <td style="padding: 8px 0; color: #b23a2e; font-size: 14px;">${data.errorMessage}</td>
           </tr>
           ` : ''}
         </table>
@@ -86,8 +86,8 @@ export function getPaymentFailureEmail(data: PaymentFailureEmailData) {
 
       <!-- What to do -->
       <div style="margin: 24px 0;">
-        <h3 style="color: #374151; font-size: 16px; margin: 0 0 12px 0;">What You Can Do</h3>
-        <ul style="color: #4B5563; font-size: 14px; padding-left: 20px; margin: 0;">
+        <h3 style="color: #2b2018; font-size: 16px; margin: 0 0 12px 0;">What You Can Do</h3>
+        <ul style="color: #6a5b4b; font-size: 14px; padding-left: 20px; margin: 0;">
           <li style="margin-bottom: 8px;">Check that your card details are correct</li>
           <li style="margin-bottom: 8px;">Ensure sufficient funds are available</li>
           <li style="margin-bottom: 8px;">Try a different payment method</li>
@@ -98,29 +98,29 @@ export function getPaymentFailureEmail(data: PaymentFailureEmailData) {
       <!-- CTA Button -->
       <div style="text-align: center; margin: 32px 0;">
         <a href="${data.retryUrl}"
-           style="display: inline-block; background-color: #FF9933; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+           style="display: inline-block; background-color: #c75b12; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
           Try Payment Again
         </a>
       </div>
 
       <!-- Help Section -->
-      <div style="background-color: #EFF6FF; border-radius: 8px; padding: 16px; margin: 24px 0;">
-        <h4 style="color: #1E40AF; margin: 0 0 8px 0; font-size: 14px;">Need Help?</h4>
-        <p style="color: #1E3A8A; margin: 0; font-size: 14px;">
+      <div style="background-color: #f4ede3; border-radius: 8px; padding: 16px; margin: 24px 0;">
+        <h4 style="color: #6a5b4b; margin: 0 0 8px 0; font-size: 14px;">Need Help?</h4>
+        <p style="color: #6a5b4b; margin: 0; font-size: 14px;">
           If you continue to experience issues, please contact the temple office at
-          <a href="mailto:${TEMPLE_CONFIG.contact.email}" style="color: #1E40AF;">${TEMPLE_CONFIG.contact.email}</a>
+          <a href="mailto:${TEMPLE_CONFIG.contact.email}" style="color: #6a5b4b;">${TEMPLE_CONFIG.contact.email}</a>
           or call ${TEMPLE_CONFIG.contact.phone}.
         </p>
       </div>
 
       <!-- Footer -->
-      <div style="border-top: 1px solid #E5E7EB; padding-top: 20px; margin-top: 32px; text-align: center;">
-        <p style="color: #9CA3AF; font-size: 12px; margin: 0;">
+      <div style="border-top: 1px solid #f1e6d5; padding-top: 20px; margin-top: 32px; text-align: center;">
+        <p style="color: #9b8c7a; font-size: 12px; margin: 0;">
           ${TEMPLE_CONFIG.name}<br>
           ${TEMPLE_CONFIG.address.full}<br>
-          <a href="${TEMPLE_CONFIG.contact.website}" style="color: #FF9933;">${TEMPLE_CONFIG.contact.website}</a>
+          <a href="${TEMPLE_CONFIG.contact.website}" style="color: #c75b12;">${TEMPLE_CONFIG.contact.website}</a>
         </p>
-        <p style="color: #9CA3AF; font-size: 11px; margin: 16px 0 0 0;">
+        <p style="color: #9b8c7a; font-size: 11px; margin: 16px 0 0 0;">
           This email was sent from the HSNEF Membership Portal. Please do not reply directly to this email.
         </p>
       </div>
@@ -182,18 +182,18 @@ export function getPaymentSuccessEmail(data: PaymentSuccessEmailData) {
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <!-- Header -->
-      <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #FF9933;">
-        <h1 style="color: #FF9933; margin: 0; font-size: 24px;">${TEMPLE_CONFIG.name}</h1>
+      <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #c75b12;">
+        <h1 style="color: #c75b12; margin: 0; font-size: 24px;">${TEMPLE_CONFIG.name}</h1>
         <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Membership Portal</p>
       </div>
 
       <!-- Success Banner -->
-      <div style="background-color: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 16px; margin: 24px 0;">
+      <div style="background-color: #eaf2ec; border: 1px solid #eaf2ec; border-radius: 8px; padding: 16px; margin: 24px 0;">
         <div style="display: flex; align-items: flex-start;">
           <span style="font-size: 24px; margin-right: 12px;">✅</span>
           <div>
-            <h2 style="color: #166534; margin: 0 0 8px 0; font-size: 18px;">Payment Successful!</h2>
-            <p style="color: #15803D; margin: 0; font-size: 14px;">
+            <h2 style="color: #4e7a63; margin: 0 0 8px 0; font-size: 18px;">Payment Successful!</h2>
+            <p style="color: #4e7a63; margin: 0; font-size: 14px;">
               Thank you for your payment. Your transaction has been processed successfully.
             </p>
           </div>
@@ -201,28 +201,28 @@ export function getPaymentSuccessEmail(data: PaymentSuccessEmailData) {
       </div>
 
       <!-- Payment Details -->
-      <div style="background-color: #F9FAFB; border-radius: 8px; padding: 20px; margin: 24px 0;">
-        <h3 style="margin: 0 0 16px 0; color: #374151; font-size: 16px;">Payment Details</h3>
+      <div style="background-color: #fffbf4; border-radius: 8px; padding: 20px; margin: 24px 0;">
+        <h3 style="margin: 0 0 16px 0; color: #2b2018; font-size: 16px;">Payment Details</h3>
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
-            <td style="padding: 8px 0; color: #6B7280; font-size: 14px;">Member Name:</td>
-            <td style="padding: 8px 0; color: #111827; font-size: 14px; font-weight: 600;">${data.memberName}</td>
+            <td style="padding: 8px 0; color: #6a5b4b; font-size: 14px;">Member Name:</td>
+            <td style="padding: 8px 0; color: #2b2018; font-size: 14px; font-weight: 600;">${data.memberName}</td>
           </tr>
           <tr>
-            <td style="padding: 8px 0; color: #6B7280; font-size: 14px;">Membership ID:</td>
-            <td style="padding: 8px 0; color: #111827; font-size: 14px; font-family: monospace;">${data.membershipId}</td>
+            <td style="padding: 8px 0; color: #6a5b4b; font-size: 14px;">Membership ID:</td>
+            <td style="padding: 8px 0; color: #2b2018; font-size: 14px; font-family: monospace;">${data.membershipId}</td>
           </tr>
           <tr>
-            <td style="padding: 8px 0; color: #6B7280; font-size: 14px;">Category:</td>
-            <td style="padding: 8px 0; color: #111827; font-size: 14px;">${data.category}</td>
+            <td style="padding: 8px 0; color: #6a5b4b; font-size: 14px;">Category:</td>
+            <td style="padding: 8px 0; color: #2b2018; font-size: 14px;">${data.category}</td>
           </tr>
           <tr>
-            <td style="padding: 8px 0; color: #6B7280; font-size: 14px;">Date:</td>
-            <td style="padding: 8px 0; color: #111827; font-size: 14px;">${data.paymentDate}</td>
+            <td style="padding: 8px 0; color: #6a5b4b; font-size: 14px;">Date:</td>
+            <td style="padding: 8px 0; color: #2b2018; font-size: 14px;">${data.paymentDate}</td>
           </tr>
           <tr>
-            <td style="padding: 8px 0; color: #6B7280; font-size: 14px;">Amount:</td>
-            <td style="padding: 8px 0; color: #059669; font-size: 18px; font-weight: 700;">$${data.amount.toFixed(2)}</td>
+            <td style="padding: 8px 0; color: #6a5b4b; font-size: 14px;">Amount:</td>
+            <td style="padding: 8px 0; color: #4e7a63; font-size: 18px; font-weight: 700;">$${data.amount.toFixed(2)}</td>
           </tr>
         </table>
       </div>
@@ -230,31 +230,31 @@ export function getPaymentSuccessEmail(data: PaymentSuccessEmailData) {
       <!-- Receipt Button -->
       <div style="text-align: center; margin: 32px 0;">
         <a href="${data.receiptUrl}"
-           style="display: inline-block; background-color: #FF9933; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+           style="display: inline-block; background-color: #c75b12; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
           View Receipt
         </a>
       </div>
 
       ${data.category === 'Donation' ? `
       <!-- Tax Deductible Notice -->
-      <div style="background-color: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 8px; padding: 16px; margin: 24px 0;">
-        <h4 style="color: #065F46; margin: 0 0 8px 0; font-size: 14px;">📋 Tax Deductible Donation</h4>
-        <p style="color: #047857; margin: 0; font-size: 14px;">
+      <div style="background-color: #eaf2ec; border: 1px solid #eaf2ec; border-radius: 8px; padding: 16px; margin: 24px 0;">
+        <h4 style="color: #4e7a63; margin: 0 0 8px 0; font-size: 14px;">📋 Tax Deductible Donation</h4>
+        <p style="color: #4e7a63; margin: 0; font-size: 14px;">
           ${TEMPLE_CONFIG.messaging.taxDeductible}
         </p>
       </div>
       ` : ''}
 
       <!-- Footer -->
-      <div style="border-top: 1px solid #E5E7EB; padding-top: 20px; margin-top: 32px; text-align: center;">
-        <p style="color: #6B7280; font-size: 14px; margin: 0 0 16px 0;">
+      <div style="border-top: 1px solid #f1e6d5; padding-top: 20px; margin-top: 32px; text-align: center;">
+        <p style="color: #6a5b4b; font-size: 14px; margin: 0 0 16px 0;">
           ${TEMPLE_CONFIG.messaging.thankYou}
         </p>
-        <p style="color: #9CA3AF; font-size: 12px; margin: 0;">
+        <p style="color: #9b8c7a; font-size: 12px; margin: 0;">
           ${TEMPLE_CONFIG.name}<br>
           ${TEMPLE_CONFIG.address.full}<br>
           Tax ID: ${TEMPLE_CONFIG.taxId}<br>
-          <a href="${TEMPLE_CONFIG.contact.website}" style="color: #FF9933;">${TEMPLE_CONFIG.contact.website}</a>
+          <a href="${TEMPLE_CONFIG.contact.website}" style="color: #c75b12;">${TEMPLE_CONFIG.contact.website}</a>
         </p>
       </div>
     </body>

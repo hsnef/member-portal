@@ -44,8 +44,9 @@ export function ColorPicker({
   // Preset color palettes
   const presetColors = [
     '#FFFBF7', '#FFFFFF', '#3E362E', '#6B5D52',
-    '#FFD8B1', '#87CEEB', '#E8E0D8', '#FF9933',
-    '#800000', '#1a1a1a', '#666666', '#e5e5e5',
+    '#c75b12', '#a94a0c', '#f5a524', '#7b2d26',
+    '#4e7a63', '#b0526b', '#a8541f', '#7a6a45',
+    '#2b2018', '#6a5b4b', '#f1e6d5', '#fffbf4',
   ]
 
   return (
@@ -72,7 +73,7 @@ export function ColorPicker({
           placeholder="#000000"
           className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           pattern="^#([0-9A-F]{3}|[0-9A-F]{6})$"
-          title="Hex color code (e.g., #FF9933)"
+          title="Hex color code (e.g., #c75b12)"
         />
 
         {/* Visual swatch */}

@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { PDF } from './theme'
 import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 
 interface ReceiptData {
@@ -102,15 +103,15 @@ export function generateReceipt(data: ReceiptData): jsPDF {
 
   // Amount summary box
   const finalY = (doc as any).lastAutoTable.finalY || detailsY + 50
-  doc.setFillColor(255, 153, 51) // Orange color
+  doc.setFillColor(...PDF.kumkum) // white text on this passes AA
   doc.rect(130, finalY + 10, 60, 25, 'F')
-  doc.setTextColor(255, 255, 255)
+  doc.setTextColor(...PDF.white)
   doc.setFontSize(12)
   doc.setFont('helvetica', 'bold')
   doc.text('Total Amount', 160, finalY + 18, { align: 'center' })
   doc.setFontSize(16)
   doc.text(`$${data.amount.toFixed(2)}`, 160, finalY + 28, { align: 'center' })
-  doc.setTextColor(0, 0, 0)
+  doc.setTextColor(...PDF.ink)
 
   // Tax deductible notice (for donations)
   if (data.category === 'Donation') {

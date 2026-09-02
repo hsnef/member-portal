@@ -36,8 +36,16 @@
   `/member/renew` → `/member/bookings/new` → `/member/bookings` + `/member/requests` →
   `/member/bookings/[id]` → the payment/success routes → `/member/events`.
   One route per commit. Exemplar map below.
-- **Then stage 7** (admin, ~40 routes — batch by archetype: lists, details, forms) **and stage 8**
-  (emails, PDFs, Stripe `appearance`).
+- ~~**Stage 7** (admin, 40 routes)~~ ✅ **Done.**
+- **Stage 8** — the non-React surfaces: `lib/email/templates.ts`, `lib/email/templates/payment.ts`,
+  `lib/email/mailer.ts`, the inline HTML in `app/api/bookings/send-notification`, and
+  `lib/pdf/{receipt,invoice}.ts`.
+- **Then: review everything under `docs/` for alignment (agreed with Sujit 2026-09-01).**
+  Any design element, colour, route, screenshot or component name referenced in documentation
+  must match what the code now does. Known drift to fix: `#FF9933` in `lib/constants/temple.ts`
+  and the testing guides, the ~26 `portal.hsnef.org` references, the role-gate tables that
+  disagree with the code (DEC-004), and `CLAUDE.md` rule 9 naming root `*.md` files that were
+  moved into `docs/`.
 
 **Blocked on Sujit:**
 - `tailwind-merge` dependency approval. The kit's `cn()` needs it (17 components, 44 call sites);
