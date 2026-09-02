@@ -45,6 +45,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .select('*')
         .eq('auth_user_id', userId)
 
+      // Did the link attempt come back with a definitive "this address has no
+      // member record"? Only a real 404 counts. A network failure or a 500 must
+      // never be treated as an answer -- see the eviction check below.
+      let linkDefinitelyFoundNothing = false
+
       // If no members found, try to auto-link by email via server API
       if ((!membersResult.data || membersResult.data.length === 0) && userEmail) {
         console.log('[AuthContext] No members found by auth_user_id, trying server-side auto-link')
@@ -71,6 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } else {
             const errorData = await linkResponse.json().catch(() => ({}))
             console.warn('[AuthContext] Server auto-link failed:', linkResponse.status, errorData)
+            // 404 is the route's way of saying no member record exists for this
+            // address. Any other status is a fault, not a verdict.
+            if (linkResponse.status === 404) linkDefinitelyFoundNothing = true
           }
         } catch (linkError) {
           console.error('[AuthContext] Error calling link-member API:', linkError)
@@ -120,6 +128,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setRoles([])
       } else {
         setRoles(rolesResult.data.map((r: { role: UserRole }) => r.role))
+      }
+
+      // Evict an account that belongs to nobody.
+      //
+      // /login refuses an unknown address before sending a sign-in link, but
+      // Google sign-in cannot be gated that way: the flow goes to Google and the
+      // address only comes back afterwards. Without this, any Google account
+      // could sign in and hold a permanent account that no membership will ever
+      // claim -- exactly the stranded state /login now prevents.
+      //
+      // Every one of these must hold before signing anyone out, because the cost
+      // of a false positive is ejecting a real member:
+      //   - the member lookup SUCCEEDED and genuinely returned nothing
+      //   - the roles lookup SUCCEEDED and genuinely returned nothing, so staff
+      //     who hold a role but no member row are never touched
+      //   - link-member answered 404 specifically. A network error or a 500 is a
+      //     fault, not a verdict, and leaves the session alone.
+      const noMembers = !membersResult.error && (membersResult.data?.length ?? 0) === 0
+      const noRoles = !rolesResult.error && (rolesResult.data?.length ?? 0) === 0
+
+      if (noMembers && noRoles && linkDefinitelyFoundNothing) {
+        console.warn('[AuthContext] Account has no membership and no role; signing out')
+        await supabase.auth.signOut()
+        setUser(null)
+        setMembers([])
+        setMember(null)
+        setActiveMemberId(null)
+        setRoles([])
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login?reason=no-membership'
+        }
+        return
       }
     } catch (error) {
       console.error('[AuthContext] Error in fetchMemberAndRoles:', error)

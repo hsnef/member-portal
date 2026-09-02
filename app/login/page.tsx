@@ -26,6 +26,16 @@ function LoginForm() {
     const errorParam = searchParams.get('error')
     if (errorParam) {
       setMessage({ type: 'error', text: decodeURIComponent(errorParam) })
+      return
+    }
+    // AuthContext signs out an account with no membership and no role, and
+    // sends it here. Say why, or being bounced back to the login page with no
+    // explanation reads as the sign-in silently failing.
+    if (searchParams.get('reason') === 'no-membership') {
+      setMessage({
+        type: 'error',
+        text: `That account is not linked to a membership, so there is nothing for it to open. If you are a member, the temple office can add your address — contact ${TEMPLE_CONFIG.contact.email}.`,
+      })
     }
   }, [searchParams])
 

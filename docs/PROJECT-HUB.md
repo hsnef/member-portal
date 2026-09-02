@@ -35,6 +35,8 @@ _Last checked 2026-09-01._
 
 Who can sign in and what each role unlocks: **[`docs/ACCESS-AND-ROLES.md`](ACCESS-AND-ROLES.md)**
 (live account list: `node scripts/list-access.mjs`).
+What each role can actually do: **[`docs/ROLES-GUIDE.md`](ROLES-GUIDE.md)**.
+Bringing a new developer on: **[`docs/ONBOARDING.md`](ONBOARDING.md)**.
 
 ## Architecture at a glance
 
