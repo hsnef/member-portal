@@ -14,7 +14,7 @@ GitHub main  ──► Vercel PRODUCTION  ──► Supabase  gapvsdrzavjaublwkq
 
 **Progress — tick these as you go, so a later session knows where you stopped:**
 
-- [x] Phase 1 — Vercel down to one project — **done 2026-09-02, except the two env vars in 1.7**
+- [x] Phase 1 — Vercel down to one project — **DONE 2026-09-02**
 - [ ] Phase 2 — fix `member.hsnef.org` (it is DOWN)
 - [ ] Phase 3 — apply the events migration
 - [ ] Phase 4 — clean the test data
@@ -98,10 +98,14 @@ to git branch **`dev`**.
 branch is ambiguous — Vercel treats it as a branch deployment that may not exist
 yet, and the URL can 404 until the next push. Flip production first, pin second.
 
-### 1.7 — Add the two missing variables — STILL TO DO
+### 1.7 — Add the two missing variables — DONE 2026-09-02
 
-**Settings → Environment Variables**, scope **All Environments**. Both values are
-already in your local `.env.local`; copy them across.
+Added by Sujit. Verified via the API: **25 distinct variables, every one scoped to
+production, preview and development** — `CRON_SECRET` and `ZELLE_TOKEN_SECRET`
+included. Nothing is missing.
+
+Original instructions, for reference — **Settings → Environment Variables**, scope
+**All Environments**, values from `.env.local`:
 
 | Name | Why it matters |
 |---|---|
