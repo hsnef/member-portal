@@ -28,6 +28,11 @@ _Last checked 2026-09-01._
 
 ### Start here next session
 
+0. **If infrastructure work is in flight, go straight to
+   [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md).**
+   It is the step-by-step for the Vercel consolidation, the `member.hsnef.org`
+   outage, the events migration, the Supabase split and the PR #3 merge, and its
+   checkboxes record how far it got.
 1. Read this Current Status, then **DEC-008 and DEC-009** below.
 2. Read the **Session 3** handoff at the bottom — it lists every bug fixed and every
    decision still owed.

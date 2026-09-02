@@ -2,10 +2,27 @@
 
 > What to work on next, and why. Start each session by reading this + `gh issue list`. This file captures the WHY and ORDER; GitHub Issues capture the WHAT and STATUS.
 
+## START HERE — the active runbook
+
+**[`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md)** is a
+step-by-step walk-through of the current infrastructure work: consolidating the two
+Vercel projects into one, fixing `member.hsnef.org` (which is DOWN — Cloudflare
+redirect loop, not reaching Vercel at all), applying the events migration, splitting
+Supabase, and finally merging PR #3. It carries its own progress checkboxes, so if a
+session ended mid-way, the ticks say where.
+
+Everything in Tier 0 below is either covered by that runbook or superseded by it.
+Where the two disagree, the runbook is newer.
+
 ## Current Priority Tiers (as of 2026-08-31)
 
 ### Tier 0 — blocking, do before more feature work
 
+- ~~**Restore deployment (DEC-007).**~~ **RESOLVED 2026-09-01** — the repo was made
+  public, Vercel builds again, and `dev.member.hsnef.org` is live on the design system.
+  The repo is staying public for now, which keeps the PII history readable (DEC-010).
+  The remaining deployment work is Vercel project consolidation — see the runbook above.
+  Superseded text follows:
 - **Restore deployment (DEC-007). Nothing has deployed since January** — the Actions workflow is
   disabled and Vercel's Git integration is blocked for private org repos on Hobby. Moving the
   projects to the existing Techsilon Pro team is **ruled out**. Remaining: buy Pro on the owning
