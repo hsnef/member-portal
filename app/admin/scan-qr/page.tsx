@@ -6,6 +6,26 @@ import { createClient } from '@/lib/supabase/client'
 import { verifyQRToken } from '@/lib/qr-token'
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library'
 import type { Member, FamilyMember } from '@/types/database'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card, CardHeader } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
+import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
+import { DescriptionList } from '@/components/ui/DescriptionList'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { Field, Input, Select } from '@/components/ui/Field'
+import { FilterTabs } from '@/components/ui/FilterTabs'
+import { IconTile } from '@/components/ui/IconTile'
+import { formatDate } from '@/utils/format'
+import {
+  QrCodeIcon,
+  CameraIcon,
+  SearchIcon,
+  UserIcon,
+  UsersIcon,
+  CheckIcon,
+  RotateCcwIcon,
+} from 'lucide-react'
 
 function ScanQRContent() {
   const router = useRouter()
@@ -245,338 +265,200 @@ function ScanQRContent() {
     ? `${member.first_name} ${member.last_name}`
     : member?.business_name
 
+  const levelTone: Record<string, 'kumkum' | 'saffron' | 'tulsi' | 'neutral'> = {
+    Lifetime: 'kumkum',
+    Annual: 'saffron',
+    Community: 'tulsi',
+  }
+
+  const memberName = member
+    ? member.member_class === 'Business'
+      ? member.business_name || member.membership_id
+      : [member.first_name, member.last_name].filter(Boolean).join(' ') || member.membership_id
+    : ''
+
   return (
-    <div className="bg-transparent">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Scan Membership QR Code</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Verify members and record check-ins
-              </p>
-            </div>
-            <button
-              onClick={() => router.push('/admin')}
-              className="text-sm text-gray-600 hover:text-gray-900 font-medium"
-            >
-              ← Back to Dashboard
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Office console"
+        title="Check a member in"
+        description="Scan their pass, or look them up by name, email or phone."
+      />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Scan Mode Toggle */}
-        {!member && (
-          <div className="mb-6 flex justify-center space-x-4">
-            <button
-              onClick={() => setScanMode('camera')}
-              className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-                scanMode === 'camera'
-                  ? 'bg-saffron text-white'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-transparent'
-              }`}
-            >
-              📷 Camera Scan
-            </button>
-            <button
-              onClick={() => setScanMode('manual')}
-              className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-                scanMode === 'manual'
-                  ? 'bg-saffron text-white'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-transparent'
-              }`}
-            >
-              🔍 Manual Lookup
-            </button>
-          </div>
-        )}
+      {error && (
+        <Alert tone="danger" title="Could not verify that">
+          {error}
+        </Alert>
+      )}
 
-        {/* Camera Scanning Mode */}
-        {scanMode === 'camera' && !member && (
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="text-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Point Camera at QR Code</h2>
-              <p className="text-sm text-gray-600">
-                Position the QR code within the camera frame
-              </p>
-            </div>
-
-            {cameraError ? (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-                <p className="text-red-800 font-medium mb-4">{cameraError}</p>
-                <button
-                  onClick={() => setScanMode('manual')}
-                  className="px-6 py-2 bg-saffron text-white rounded-lg hover:bg-saffron-hover"
-                >
-                  Switch to Manual Lookup
-                </button>
+      {/* ---- Result ---- */}
+      {member ? (
+        <div className="space-y-6">
+          <Card spine="tulsi" className="pl-7">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex min-w-0 items-start gap-4">
+                <IconTile icon={UserIcon} tone="tulsi" size="lg" shape="arch" />
+                <div className="min-w-0">
+                  <p className="truncate font-serif text-[30px] leading-tight text-ink">
+                    {memberName}
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <Badge tone={levelTone[member.current_level] ?? 'neutral'}>
+                      {member.current_level}
+                    </Badge>
+                    <span className="tnum text-[14px] text-ink-3">{member.membership_id}</span>
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div className="relative">
-                <video
-                  ref={videoRef}
-                  className="w-full max-w-md mx-auto rounded-lg border-4 border-gray-300"
-                  style={{ maxHeight: '400px' }}
-                />
-                {scanning && (
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-4 border-saffron rounded-lg pointer-events-none">
-                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-saffron"></div>
-                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-saffron"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-saffron"></div>
-                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-saffron"></div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button variant="secondary" icon={RotateCcwIcon} onClick={resetScan}>
+                  Scan another
+                </Button>
+                <Button icon={CheckIcon} onClick={recordCheckIn}>
+                  Check in
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <DescriptionList
+                columns={2}
+                items={[
+                  { label: 'Email', value: member.primary_email ?? '\—' },
+                  {
+                    label: 'Phone',
+                    value: member.primary_phone ?? '\—',
+                    numeric: true,
+                  },
+                  { label: 'Class', value: member.member_class },
+                  {
+                    label: 'Member since',
+                    value: member.member_since ? formatDate(member.member_since) : '\—',
+                    numeric: true,
+                  },
+                ]}
+              />
+            </div>
+          </Card>
+
+          {familyMembers.length > 0 && (
+            <Card>
+              <CardHeader
+                title="Household"
+                description="Everyone covered by this membership."
+              />
+              <ul className="grid gap-3 sm:grid-cols-2">
+                {familyMembers.map((fm) => (
+                  <li key={fm.id} className="flex items-center gap-3">
+                    <IconTile icon={UsersIcon} tone="lotus" size="sm" />
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-ink">
+                        {fm.first_name} {fm.last_name}
+                      </p>
+                      <p className="truncate text-[13px] text-ink-3">{fm.relationship}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+        </div>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-start">
+          <Card>
+            <CardHeader title="How would you like to find them?" />
+
+            <FilterTabs
+              label="Lookup method"
+              options={['camera', 'manual']}
+              value={scanMode}
+              onChange={(v) => setScanMode(v as 'camera' | 'manual')}
+              renderLabel={(v) => (v === 'camera' ? 'Scan a pass' : 'Look them up')}
+            />
+
+            {scanMode === 'camera' ? (
+              <div className="mt-5">
+                {cameraError ? (
+                  <Alert tone="warning" title="No camera available">
+                    {cameraError} You can still look the member up by name, email or phone.
+                  </Alert>
+                ) : (
+                  <div className="overflow-hidden rounded-2xl border border-line bg-ink">
+                    <video ref={videoRef} className="h-auto w-full" />
                   </div>
                 )}
+                <p className="mt-3 flex items-center gap-2 text-[13.5px] text-ink-3">
+                  <CameraIcon className="h-4 w-4" aria-hidden="true" />
+                  {scanning
+                    ? 'Point the camera at the QR code on their pass.'
+                    : 'Starting the camera...'}
+                </p>
               </div>
-            )}
-
-            {verifying && (
-              <div className="mt-4 text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-saffron border-r-transparent"></div>
-                <p className="mt-2 text-gray-600">Verifying member...</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Manual Lookup Mode */}
-        {scanMode === 'manual' && !member && (
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Manual Member Lookup</h2>
-
-            <div className="space-y-4">
-              {/* Search Type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Search By
-                </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[
-                    { value: 'id', label: 'Membership ID' },
-                    { value: 'name', label: 'Name' },
-                    { value: 'email', label: 'Email' },
-                    { value: 'phone', label: 'Phone' },
-                  ].map((type) => (
-                    <button
-                      key={type.value}
-                      onClick={() => setManualSearchType(type.value as any)}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                        manualSearchType === type.value
-                          ? 'bg-saffron text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+            ) : (
+              <div className="mt-5 space-y-5">
+                <Field label="Search by">
+                  {({ id }) => (
+                    <Select
+                      id={id}
+                      value={manualSearchType}
+                      onChange={(e) =>
+                        setManualSearchType(
+                          e.target.value as 'id' | 'name' | 'email' | 'phone'
+                        )
+                      }
                     >
-                      {type.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                      <option value="id">Membership number</option>
+                      <option value="name">Name</option>
+                      <option value="email">Email</option>
+                      <option value="phone">Phone</option>
+                    </Select>
+                  )}
+                </Field>
 
-              {/* Search Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {manualSearchType === 'id' && 'Enter Membership ID'}
-                  {manualSearchType === 'name' && 'Enter Name'}
-                  {manualSearchType === 'email' && 'Enter Email Address'}
-                  {manualSearchType === 'phone' && 'Enter Phone Number'}
-                </label>
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={manualInput}
-                    onChange={(e) => setManualInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleManualSearch()}
-                    placeholder={
-                      manualSearchType === 'id' ? '10000001' :
-                      manualSearchType === 'name' ? 'John Doe' :
-                      manualSearchType === 'email' ? 'member@example.com' :
-                      '555-1234'
-                    }
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                  />
-                  <button
-                    onClick={handleManualSearch}
-                    disabled={!manualInput.trim() || verifying}
-                    className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
-                  >
-                    {verifying ? 'Searching...' : 'Search'}
-                  </button>
-                </div>
-              </div>
-            </div>
+                <Field label="Details">
+                  {({ id }) => (
+                    <Input
+                      id={id}
+                      value={manualInput}
+                      onChange={(e) => setManualInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleManualSearch()
+                        }
+                      }}
+                      className={manualSearchType === 'name' ? undefined : 'tnum'}
+                    />
+                  )}
+                </Field>
 
-            {verifying && (
-              <div className="mt-4 text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-solid border-saffron border-r-transparent"></div>
-                <p className="mt-2 text-gray-600">Searching for member...</p>
+                <Button
+                  icon={SearchIcon}
+                  fullWidth
+                  loading={verifying}
+                  disabled={!manualInput.trim()}
+                  onClick={handleManualSearch}
+                >
+                  Find member
+                </Button>
               </div>
             )}
-          </div>
-        )}
+          </Card>
 
-        {/* Error Display */}
-        {error && !member && (
-          <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-6">
-            <div className="text-center">
-              <div className="text-5xl mb-3">❌</div>
-              <h3 className="text-lg font-bold text-red-800 mb-2">Verification Failed</h3>
-              <p className="text-red-700">{error}</p>
-              <button
-                onClick={resetScan}
-                className="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                Try Again
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Member Verified Display */}
-        {member && (
-          <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-            {/* Success Header */}
-            <div className={`${getMembershipColor()} px-6 py-4 text-white`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-5xl mb-2">✅</div>
-                  <h2 className="text-2xl font-bold">Member Verified</h2>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm opacity-90">Membership Type</p>
-                  <p className="text-3xl font-bold">{member.current_level.toUpperCase()}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Member Details */}
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <p className="text-sm text-gray-500 uppercase tracking-wide mb-1">Member Name</p>
-                  <p className="text-2xl font-bold text-gray-900">{displayName}</p>
-                </div>
-
-                <div>
-                  <p className="text-sm text-gray-500 uppercase tracking-wide mb-1">Membership ID</p>
-                  <p className="text-2xl font-mono font-bold text-saffron">{member.membership_id}</p>
-                </div>
-
-                <div>
-                  <p className="text-sm text-gray-500 uppercase tracking-wide mb-1">Type</p>
-                  <p className="text-lg font-semibold text-gray-900">{member.member_class}</p>
-                </div>
-
-                <div>
-                  <p className="text-sm text-gray-500 uppercase tracking-wide mb-1">Status</p>
-                  <p className="text-lg font-semibold text-green-600">
-                    {member.current_level === 'Lifetime' ? 'Active (No Expiry)' : 'Active'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Contact Info */}
-              <div className="border-t border-gray-200 pt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-500">Email</p>
-                    <p className="text-gray-900">{member.primary_email}</p>
-                  </div>
-                  {member.primary_phone && (
-                    <div>
-                      <p className="text-gray-500">Phone</p>
-                      <p className="text-gray-900">{member.primary_phone}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Family Members */}
-              {member.member_class === 'Personal' && familyMembers.length > 0 && (
-                <div className="border-t border-gray-200 pt-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Family Members</h3>
-                  <div className="space-y-2">
-                    {familyMembers.map((family) => (
-                      <div key={family.id} className="flex items-center py-2 border-b border-gray-100 last:border-0">
-                        <div className="w-3 h-3 bg-saffron rounded-full mr-3"></div>
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900">
-                            {family.first_name} {family.last_name}
-                          </p>
-                          {family.relationship && (
-                            <p className="text-sm text-gray-500">{family.relationship}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Founding Member Badge */}
-              {member.is_founding_member && (
-                <div className="border-t border-gray-200 pt-6">
-                  <div className="inline-flex items-center px-4 py-2 bg-amber-100 text-amber-800 rounded-lg">
-                    <span className="text-2xl mr-2">⭐</span>
-                    <span className="font-bold">FOUNDING MEMBER</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-transparent px-6 py-4 border-t border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Quick Actions</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <button
-                  onClick={recordCheckIn}
-                  className="px-4 py-3 text-sm bg-green-600 hover:bg-green-700 text-white rounded-md font-medium"
-                >
-                  ✓ Record Check-In
-                </button>
-                <button
-                  onClick={() => router.push(`/admin/members/${member.id}`)}
-                  className="px-4 py-3 text-sm bg-white border border-gray-300 rounded-md hover:bg-transparent font-medium"
-                >
-                  👤 View Full Profile
-                </button>
-                <button
-                  onClick={() => alert('Payment recording coming soon')}
-                  className="px-4 py-3 text-sm bg-white border border-gray-300 rounded-md hover:bg-transparent font-medium"
-                >
-                  💳 Record Payment
-                </button>
-                <button
-                  onClick={() => alert('Service booking coming soon')}
-                  className="px-4 py-3 text-sm bg-white border border-gray-300 rounded-md hover:bg-transparent font-medium"
-                >
-                  📅 Book Service
-                </button>
-              </div>
-            </div>
-
-            {/* Scan Next Button */}
-            <div className="px-6 py-4 bg-white border-t border-gray-200 text-center">
-              <button
-                onClick={resetScan}
-                className="px-8 py-3 bg-saffron hover:bg-saffron-hover text-white font-semibold rounded-lg text-lg"
-              >
-                Scan Next Member →
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+          <Card tone="sunk">
+            <EmptyState
+              icon={QrCodeIcon}
+              title="Nobody scanned yet"
+              description="Once a pass is scanned or a member found, their details and household appear here so you can check them in."
+            />
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
 
 export default function ScanQRPage() {
-  return (
-    <>
-      <ScanQRContent />
-    </>
-  )
+  return <ScanQRContent />
 }

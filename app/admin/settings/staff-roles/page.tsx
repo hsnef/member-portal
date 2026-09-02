@@ -3,6 +3,17 @@
 import { useEffect, useState } from 'react'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { createClient } from '@/lib/supabase/client'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card, CardHeader } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { Field, Select } from '@/components/ui/Field'
+import { IconTile } from '@/components/ui/IconTile'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { MemberPicker } from '@/components/admin/MemberPicker'
+import { ShieldCheckIcon, UserIcon, UserPlusIcon, XIcon } from 'lucide-react'
 
 type UserRole = 'Admin' | 'Office Manager' | 'Office Staff'
 
@@ -291,302 +302,167 @@ export default function StaffRolesPage() {
     return `Remove ${role} role`
   }
 
+  const roleTone: Record<string, 'kumkum' | 'saffron' | 'tulsi' | 'neutral'> = {
+    Admin: 'kumkum',
+    'Office Manager': 'saffron',
+    'Office Staff': 'tulsi',
+    Member: 'neutral',
+  }
+
+  /* This file's local UserRole is already staff-only -- `Member` is held by
+     everyone and is not something the office grants. */
+  const STAFF_ONLY: UserRole[] = ['Office Staff', 'Office Manager', 'Admin']
+
   return (
     <ProtectedRoute requiredRoles={['Admin']}>
-      <>
-        <div className="space-y-6">
-          {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Staff Role Management</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Assign and manage staff roles for portal access. Only Admins can access this page.
-            </p>
-          </div>
+      <div className="space-y-7">
+        <PageHeader
+          eyebrow="Settings"
+          title="Staff roles"
+          description="Who can use the office console, and what each of them can do."
+        />
 
-          {/* Role Descriptions */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-blue-800 mb-3">Available Roles</h3>
-            <div className="space-y-2">
-              {(Object.keys(ROLE_DESCRIPTIONS) as UserRole[]).map(role => (
-                <div key={role} className="flex items-start gap-3">
-                  <span className={`px-2 py-0.5 text-xs font-semibold rounded ${ROLE_COLORS[role]}`}>
-                    {role}
-                  </span>
-                  <span className="text-sm text-blue-700">{ROLE_DESCRIPTIONS[role]}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Assign New Role Section */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Assign Role to Member</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Search for any registered member to assign them a staff role. Members must register on the portal first.
-            </p>
-
-            <div className="space-y-4">
-              {/* Search */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Search Any Member (not just current staff)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                    placeholder="Search by name, email, or membership ID..."
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                  />
-                  <button
-                    onClick={handleSearch}
-                    disabled={searching}
-                    className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300"
-                  >
-                    {searching ? 'Searching...' : 'Search'}
-                  </button>
-                </div>
+        <Card tone="sunk" spine="kumkum" className="pl-7">
+          <CardHeader title="What each role can do" />
+          <dl className="space-y-3">
+            {STAFF_ONLY.map((role) => (
+              <div key={role} className="flex items-start gap-3">
+                <Badge tone={roleTone[role] ?? 'neutral'}>{role}</Badge>
+                <dd className="text-[14px] leading-relaxed text-ink-2">
+                  {ROLE_DESCRIPTIONS[role]}
+                </dd>
               </div>
+            ))}
+          </dl>
+          <p className="mt-4 text-[13.5px] text-ink-3">
+            Roles are additive and every staff member is also a Member, so they keep their own
+            membership and portal.
+          </p>
+        </Card>
 
-              {/* Search Results */}
-              {searchResults.length > 0 && (
-                <div className="border border-gray-200 rounded-md max-h-60 overflow-y-auto">
-                  {searchResults.map(member => (
-                    <button
-                      key={member.id}
-                      onClick={() => setSelectedMember(member)}
-                      className={`w-full px-4 py-3 text-left hover:bg-transparent border-b border-gray-100 last:border-b-0 ${
-                        selectedMember?.id === member.id ? 'bg-orange-50' : ''
-                      }`}
+        <Card>
+          <CardHeader
+            title="Give someone a role"
+            description="Find the member first, then choose what they should be able to do."
+          />
+          <div className="space-y-5">
+            <MemberPicker
+              title="Which member?"
+              description="They need a membership record before they can be given a staff role."
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
+              onSearch={handleSearch}
+              searching={searching}
+              results={searchResults}
+              selected={selectedMember}
+              onSelect={(m) =>
+                setSelectedMember(searchResults.find((r) => r.id === m.id) ?? null)
+              }
+              onClear={() => setSelectedMember(null)}
+            />
+
+            {selectedMember && (
+              <>
+                {!selectedMember.auth_user_id && (
+                  <Alert tone="warning" title="They have not signed in yet">
+                    A role can only be given to someone with portal access. Send them an
+                    invitation from their member record first.
+                  </Alert>
+                )}
+
+                <Field label="Role">
+                  {({ id }) => (
+                    <Select
+                      id={id}
+                      value={selectedRole}
+                      onChange={(e) => setSelectedRole(e.target.value as UserRole)}
                     >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="font-medium text-gray-900">
-                            {member.first_name} {member.last_name}
-                          </span>
-                          {member.is_test_account && (
-                            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold bg-purple-100 text-purple-800 rounded">
-                              TEST
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-xs text-gray-500 font-mono">{member.membership_id}</span>
-                      </div>
-                      <div className="text-sm text-gray-600">{member.primary_email}</div>
-                      {!member.auth_user_id && (
-                        <div className="text-xs text-yellow-600 mt-1">
-                          ⚠ Not registered yet
-                        </div>
+                      {STAFF_ONLY.map((role) => (
+                        <option key={role} value={role}>
+                          {role}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
+                </Field>
+
+                <Button
+                  icon={UserPlusIcon}
+                  loading={assigning}
+                  disabled={!selectedMember.auth_user_id}
+                  onClick={handleAssignRole}
+                >
+                  Give the {selectedRole} role
+                </Button>
+              </>
+            )}
+          </div>
+        </Card>
+
+        <div>
+          <h2 className="font-serif text-[24px] leading-tight text-ink">Current staff</h2>
+
+          {loading ? (
+            <div className="mt-4 space-y-3">
+              <Skeleton className="h-20 w-full rounded-2xl" />
+              <Skeleton className="h-20 w-full rounded-2xl" />
+            </div>
+          ) : staffMembers.length === 0 ? (
+            <div className="mt-4">
+              <EmptyState
+                icon={ShieldCheckIcon}
+                title="No staff yet"
+                description="Give a member the Office Staff, Office Manager or Admin role and they will appear here."
+              />
+            </div>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {staffMembers.map((staff) => (
+                <Card as="li" key={staff.user_id} className="flex flex-wrap items-start gap-4">
+                  <IconTile icon={UserIcon} tone="kumkum" size="md" shape="arch" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold text-ink">
+                      {[staff.first_name, staff.last_name].filter(Boolean).join(' ')}
+                      {staff.is_test_account && (
+                        <span className="ml-2">
+                          <Badge tone="neutral">Test account</Badge>
+                        </span>
                       )}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Selected Member & Role Selection */}
-              {selectedMember && (
-                <div className="bg-transparent rounded-lg p-4 space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Selected Member:</p>
-                    <p className="font-semibold text-gray-900">
-                      {selectedMember.first_name} {selectedMember.last_name}
-                      <span className="ml-2 text-sm font-normal text-gray-600">
-                        ({selectedMember.primary_email})
-                      </span>
                     </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Role to Assign
-                    </label>
-                    <div className="flex gap-3">
-                      {(['Office Staff', 'Office Manager', 'Admin'] as UserRole[]).map(role => (
-                        <label
-                          key={role}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-md cursor-pointer border ${
-                            selectedRole === role
-                              ? 'border-saffron bg-orange-50'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="role"
-                            value={role}
-                            checked={selectedRole === role}
-                            onChange={() => setSelectedRole(role)}
-                            className="text-saffron focus:ring-saffron-ring"
-                          />
-                          <span className={`text-sm font-medium ${ROLE_COLORS[role]} px-2 py-0.5 rounded`}>
-                            {role}
+                    <p className="truncate text-[13.5px] text-ink-3">{staff.primary_email}</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {staff.roles.map((role) => (
+                          <span key={role} className="inline-flex items-center gap-1">
+                            <Badge tone={roleTone[role] ?? 'neutral'}>{role}</Badge>
+                            <button
+                              type="button"
+                              aria-label={`Remove the ${role} role from ${staff.first_name}`}
+                              disabled={removing === `${staff.user_id}-${role}`}
+                              onClick={() =>
+                                handleRemoveRole(
+                                  staff.user_id,
+                                  role,
+                                  `${staff.first_name} ${staff.last_name}`,
+                                  staff.is_test_account
+                                )
+                              }
+                              className="rounded-lg p-1 text-ink-3 transition-colors hover:bg-danger-soft hover:text-danger disabled:opacity-50"
+                            >
+                              <XIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
                           </span>
-                        </label>
                       ))}
                     </div>
                   </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleAssignRole}
-                      disabled={assigning || !selectedMember.auth_user_id}
-                      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 font-semibold"
-                    >
-                      {assigning ? 'Assigning...' : `Assign ${selectedRole} Role`}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedMember(null)
-                        setSearchResults([])
-                        setSearchQuery('')
-                      }}
-                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-
-                  {!selectedMember.auth_user_id && (
-                    <p className="text-sm text-yellow-600">
-                      ⚠ This member must register on the portal first before a role can be assigned.
-                    </p>
+                  {staff.user_id === currentUserId && (
+                    <p className="text-[13px] text-ink-3">This is you</p>
                   )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Current Staff Members */}
-          <div className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">Current Staff Members</h2>
-              <p className="text-sm text-gray-600 mt-1">
-                {staffMembers.length} member{staffMembers.length !== 1 ? 's' : ''} with assigned roles
-              </p>
-            </div>
-
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-                <p className="mt-4 text-gray-600">Loading staff members...</p>
-              </div>
-            ) : staffMembers.length === 0 ? (
-              <div className="text-center py-12 text-gray-600">
-                <p>No staff members with roles assigned yet.</p>
-                <p className="text-sm mt-2">Use the form above to assign roles to members.</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-transparent">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Member
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Membership ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Roles
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {staffMembers.map((staff) => (
-                      <tr key={staff.user_id} className="hover:bg-transparent">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="text-sm font-medium text-gray-900">
-                              {staff.first_name} {staff.last_name}
-                            </div>
-                            {staff.is_test_account && (
-                              <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold bg-purple-100 text-purple-800 rounded">
-                                TEST
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {staff.primary_email}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 py-1 text-xs font-mono bg-gray-100 text-gray-700 rounded">
-                            {staff.membership_id}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-wrap gap-1">
-                            {staff.roles.map(role => (
-                              <span
-                                key={role}
-                                className={`px-2 py-1 text-xs font-semibold rounded ${ROLE_COLORS[role]}`}
-                              >
-                                {role}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                          <div className="flex justify-end gap-2">
-                            {staff.roles.map(role => {
-                              const disabled = removing === `${staff.user_id}-${role}` || isRemoveDisabled(staff, role)
-                              return (
-                                <button
-                                  key={role}
-                                  onClick={() => handleRemoveRole(staff.user_id, role, `${staff.first_name} ${staff.last_name}`, staff.is_test_account)}
-                                  disabled={disabled}
-                                  className={`text-xs ${
-                                    isRemoveDisabled(staff, role)
-                                      ? 'text-gray-300 cursor-not-allowed'
-                                      : 'text-red-600 hover:text-red-800 disabled:text-gray-400'
-                                  }`}
-                                  title={getRemoveTooltip(staff, role)}
-                                >
-                                  {removing === `${staff.user_id}-${role}` ? 'Removing...' : `Remove ${role}`}
-                                </button>
-                              )
-                            })}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* Help Text */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-yellow-800 mb-2">Important Notes</h3>
-            <ul className="text-sm text-yellow-700 list-disc list-inside space-y-1">
-              <li>Members must register on the portal before a role can be assigned</li>
-              <li>A member can have multiple roles if needed</li>
-              <li>Removing all roles from a member will revoke their staff access</li>
-              <li>Changes take effect immediately after assignment</li>
+                </Card>
+              ))}
             </ul>
-          </div>
-
-          {/* Admin Protection Notice */}
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-red-800 mb-2">Admin Role Protection</h3>
-            <ul className="text-sm text-red-700 list-disc list-inside space-y-1">
-              <li>There must always be at least one non-test Admin account</li>
-              <li>The last non-test Admin cannot remove their own Admin role</li>
-              <li>Test Admins can be removed freely (for testing purposes)</li>
-              <li>If you need to transfer Admin access, assign Admin to another user first</li>
-            </ul>
-          </div>
+          )}
         </div>
-      </>
+      </div>
     </ProtectedRoute>
   )
 }
