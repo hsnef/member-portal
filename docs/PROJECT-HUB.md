@@ -261,10 +261,34 @@ Fixed: its 42 columns kept, rows replaced with two obviously synthetic ones.
 `docs/reference/data/current-member-data-import-template*.csv` untracked and
 gitignored; they stay on disk for whoever runs an import.
 
-**Not fixed:** the data remains in git history (added in `77fdbef` and `41c13ef`,
-long before the redesign branch), and the repo is currently **public**. Only a
-history rewrite or making the repo private removes that exposure — and making it
-private stops the Vercel deploys. That trade-off is unresolved and is Sujit's.
+**History rewritten 2026-09-02.** `git filter-repo` stripped the three CSV paths
+from all 101 commits. `dev`, `redesign/design-system` and `main` were force-pushed
+(main's content is byte-identical; only SHAs changed, and the pre-push hook was
+bypassed once with explicit approval). Two branches that still carried the data
+were deleted: `backup/pre-pii-rewrite` and — found only by sweeping every remote
+branch — `feature/theme-system`, a stale branch merged back in PR #1. The CSVs now
+appear in **no** published branch.
+
+**STILL EXPOSED, and this is the important part.** GitHub does not delete orphaned
+objects on a force-push. Verified immediately afterwards:
+
+```
+GET raw.githubusercontent.com/hsnef/member-portal/77fdbef.../current-member-data-import-template.csv
+  -> HTTP 200
+```
+
+The old commits remain fetchable by exact SHA until GitHub garbage-collects them.
+**To actually close this:** ask GitHub Support to purge the cached views and run
+gc on the repository (they do this routinely for exposed secrets), or make the
+repo private, which immediately blocks anonymous access to those SHAs.
+
+Mitigating: the repo was public for roughly one day, and had 0 forks and 0 stars
+when checked. An attacker would also need the exact SHA. Treat the six households'
+data as exposed regardless, and treat any key ever committed as compromised.
+
+A complete copy of the pre-rewrite history is bundled OUTSIDE the repo at
+`<scratchpad>/pre-pii-rewrite.bundle` (1.9 MB, `git bundle verify` passed). It
+contains the PII, so it must not be committed anywhere.
 
 The import feature itself was already safe and is unchanged: the CSV is parsed in
 the browser with PapaParse and rows go straight to Supabase, so an uploaded sheet
