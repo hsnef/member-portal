@@ -2,16 +2,27 @@
 
 > The single source of truth for architecture decisions, current state, and session-to-session context. `/sdlc status` reads this file. Keep it current — a stale hub poisons the next session's context.
 
-_Last checked 2026-08-31._
+_Last checked 2026-09-01._
 
 ## Current Status
 
-- **Stage:** Live. `main` → https://member.hsnef.org, `dev` → https://dev.member.hsnef.org.
-  A design-system redesign is in flight on `redesign/design-system` (branched off `dev` at `1df4acd`).
-- **Health:** tests **none installed** · build **clean** (85/85 pages) · lint **failing** (pre-existing) ·
-  types **~469 pre-existing errors** · CI ok. See [`release-gate.config.json`](../release-gate.config.json)
-  for which of these actually gate today and why.
-- **Now:** design-system port, stages 1–5 of 8 complete. Next: stage 6, member screens.
+- **Stage:** Design-system port **complete — all 8 stages**, on `dev`, awaiting the
+  `dev` → `main` merge in **[PR #3](https://github.com/hsnef/member-portal/pull/3)**
+  (Sujit merges). `dev` is 81 commits ahead of `main`.
+- **Health:** tests **none installed** · build **clean** (85/85 pages) · lint failing (pre-existing) ·
+  types **159 errors**, down from a 469 baseline (DEC-008) · CI ok.
+- **Reality check:** despite the flow diagram below, **nothing has actually deployed since
+  January** — Vercel Hobby cannot build a private org repo (DEC-007). Pushing to `dev`
+  updates GitHub and nothing else.
+- **Blocking a real launch:** DEC-009 (events feature is broken against the DB),
+  DEC-007 (no deploys), and the Supabase dev/prod split.
+
+### Start here next session
+
+1. Read this Current Status, then **DEC-008 and DEC-009** below.
+2. Read the **Session 3** handoff at the bottom — it lists every bug fixed and every
+   decision still owed.
+3. `git log --oneline -20` on `dev`. If this file and git disagree, trust git and fix this file.
 
 ## Architecture at a glance
 
