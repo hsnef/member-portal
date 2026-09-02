@@ -33,119 +33,62 @@ GitHub main  ──► Vercel PRODUCTION  ──► Supabase  gapvsdrzavjaublwkq
    project in the dashboard, but production's URL will always be
    `gapvsdrzavjaublwkqfm.supabase.co`. That is fine; just do not go hunting for
    a "prod" ref later.
-3. **Two Vercel projects exist today.** `member` holds `member.hsnef.org`, builds
-   `dev` as a *Preview*, and is **failing**. `dev.member` holds
-   `dev.member.hsnef.org`, builds `dev` as *Production*, and **works**. You are
-   keeping `dev.member` and discarding `member`.
+3. **There is now ONE Vercel project, `member`** (done 2026-09-02). The old
+   empty project is retired as `member-legacy` with its git connection removed,
+   so it cannot build. Its **production branch is still `dev`** — flipping it to
+   `main` is step 1.5 and has to be done in the dashboard.
 
 ---
 
 ## Phase 1 — Vercel down to one project
 
-> **Status 2026-09-02: done except two steps that need the dashboard.**
->
-> Done via the Vercel API: env vars compared (**`member` had ZERO variables** —
-> that, not scoping, is why every one of its builds failed, and it means nothing
-> was lost); `member.hsnef.org` released; the old project **renamed to
-> `member-legacy` and its git connection removed** rather than deleted, so it
-> can no longer build or post checks but is still there if you want it — delete
-> it whenever; `dev.member` renamed to **`member`**; `member.hsnef.org`
-> re-attached. **PR #4 now shows a single green Vercel check.**
->
-> **STILL TO DO — 1.5 and 1.7, both dashboard-only:**
->
-> 1. **Production branch is still `dev`.** The API silently ignores this field on
->    three different payloads; it has to be the dashboard. `vercel.com/hsnef/member`
->    → **Settings → Git → Production Branch** → `main`. **Until you do this,
->    merging PR #4 will NOT deploy to production**, and `member.hsnef.org` serves
->    the `dev` branch.
-> 2. **Immediately after that**, pin `dev.member.hsnef.org` to the `dev` branch
->    under **Settings → Domains** — otherwise it starts serving `main`.
-> 3. **Add `CRON_SECRET` and `ZELLE_TOKEN_SECRET`** (values are in your
->    `.env.local`). Claude was blocked from copying secrets out of `.env.local`
->    to an external service, which is the right call — do it by hand.
+**Status: done on 2026-09-02 except two dashboard-only steps (1.5 and 1.7).**
 
+### What was found
 
+The `member` project had **zero environment variables**. Not wrongly scoped —
+none at all. That is why every one of its builds failed, and it means nothing was
+lost by retiring it. `dev.member` holds all 23, each scoped to development,
+preview and production.
 
-**Why:** two projects building the same branch is the cause of the failing check
-on the PR. The `member` project builds `dev` as a Preview and almost certainly
-has no Preview-scoped environment variables. `dev.member` has every variable set
-to **All Environments** (confirmed 2026-09-02 from the dashboard), which is why
-it is the one worth keeping.
+### What was done, via the Vercel API
 
-### 1.1 — Record what the doomed project holds
+| Step | |
+|---|---|
+| 1.1 | Compared both projects' variables. `member`: 0. `dev.member`: 23. Nothing unique on `member` |
+| 1.2 | Released `member.hsnef.org` from the old project |
+| 1.3 | **Not deleted.** Its git connection was removed and it was renamed `member-legacy`, so it can no longer build or post a check. Still recoverable — delete it whenever you like |
+| 1.4 | `dev.member` renamed to `member` |
+| 1.6 | `member.hsnef.org` attached to the kept project |
+| 1.8 | Verified: PR #4 shows **one** Vercel check, and it passes |
 
-Open `vercel.com/hsnef/member` → **Settings → Environment Variables**.
+### 1.5 — Point production at `main` — STILL TO DO
 
-Compare with `dev.member`'s list. **If `member` has any variable `dev.member`
-does not, copy it across now.** Expected answer: none — but check, because this
-is the last moment you can.
+`vercel.com/hsnef/member` → **Settings → Git** → **Production Branch** → change
+`dev` to `main` → Save.
 
-Then **Settings → Domains**, and note every domain attached. Expected:
-`member.hsnef.org`.
+The API ignores this field — three different payload shapes were tried and all
+returned success while leaving it unchanged. It has to be the dashboard.
 
-### 1.2 — Release the domain
+> **Until this is done, merging PR #4 will not deploy to production**, and
+> `member.hsnef.org` serves whatever is on `dev`.
 
-`vercel.com/hsnef/member` → **Settings → Domains** → remove `member.hsnef.org`.
+**Immediately afterwards:** **Settings → Domains** → open `dev.member.hsnef.org`
+and assign it to the **`dev` branch**. It is currently on production, so once the
+production branch flips it would start serving `main`.
 
-*Why first:* a domain can live on only one Vercel project. It cannot be added to
-the project you are keeping while this one still holds it.
+### 1.7 — Add the two missing variables — STILL TO DO
 
-*Impact:* none in practice — that hostname is not serving the app today anyway.
+**Settings → Environment Variables**, scope **All Environments**. Both values are
+already in your local `.env.local`; copy them across.
 
-### 1.3 — Delete the `member` project
+| Name | Why it matters |
+|---|---|
+| `CRON_SECRET` | Without it the nightly login-log cleanup returns an error and silently never runs |
+| `ZELLE_TOKEN_SECRET` | The code falls back to `QR_TOKEN_SECRET`; if that ever went missing it falls back to a **literal string committed in this now-public repo**, which would let anyone forge Zelle payment tokens |
 
-`vercel.com/hsnef/member` → **Settings → General** → scroll to the bottom →
-**Delete Project**.
-
-*Why:* Vercel project names must be unique in a team, so this name must be free
-before the rename in 1.4.
-
-### 1.4 — Rename `dev.member` to `member`
-
-`vercel.com/hsnef/dev.member` → **Settings → General** → **Project Name** →
-`member` → Save.
-
-### 1.5 — Point production at `main`
-
-Same project → **Settings → Git** → **Production Branch** → change `dev` to
-`main` → Save.
-
-> **This is the step that changes behaviour.** From here `main` deploys to
-> Production and `dev` deploys as a Preview. The variables are already scoped to
-> All Environments, so previews keep working — which is exactly why this step
-> comes after 1.4 and not before.
-
-### 1.6 — Reattach the domains
-
-Same project → **Settings → Domains**:
-
-- Add `member.hsnef.org`, left on the production branch.
-- `dev.member.hsnef.org` should already be listed. Open it and **assign it to the
-  `dev` branch**, not to production. Without this it will start serving whatever
-  is on `main`.
-
-### 1.7 — Add the two missing variables
-
-**Settings → Environment Variables**, scope **All Environments**:
-
-| Name | Value | Why it matters |
-|---|---|---|
-| `CRON_SECRET` | a long random string | Without it the nightly login-log cleanup returns an error and silently never runs |
-| `ZELLE_TOKEN_SECRET` | a long random string | The code currently falls back to `QR_TOKEN_SECRET`; if that ever goes missing it falls back to a **literal string committed in this now-public repo**, which would let anyone forge Zelle payment tokens |
-
-Generate a value:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-### 1.8 — Verify
-
-Push anything to `dev`, or hit **Redeploy** on the latest deployment.
-
-**Expect:** exactly ONE Vercel check on the PR, and it passes. If two still
-appear, the old project was not deleted.
+Claude was blocked from copying these out of `.env.local` to an external service.
+That is the correct behaviour — do it by hand.
 
 ---
 
