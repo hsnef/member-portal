@@ -49,25 +49,41 @@ These are standing rules for every session. They are not one-off setup notes.
 
 ## Read these first
 
+**The design-system port is COMPLETE** (stages 1-8, finished 2026-09-01). Every
+route, plus emails, PDFs and the Stripe card iframe, is on the system. What
+follows is how to keep it that way, not how to do the port.
+
 | File | What it gives you |
 |---|---|
-| `docs/ROUTE_MAP.md` | All 46 routes → which kit file to copy for each. **The authoritative task list.** |
-| `docs/PORT_GUIDE.md` | Phase order, port seams, known bugs, non-React surfaces |
-| `pages/StyleGuide.tsx` | The system rendered — tokens, tones, motifs, every component |
-| `index.css` + `tailwind.config.js` | The tokens. Copy verbatim. |
+| `docs/PROJECT-HUB.md` | Current state, the decisions log (DEC-001..007), session handoffs |
+| `docs/PRIORITY-ROADMAP.md` | What to work on next |
+| `app/globals.css` + `tailwind.config.ts` | The tokens. The single source for colour. |
+| `components/{ui,brand,nav,auth,layout}` | The primitives. Reuse before inventing. |
+| `components/admin/Admin{List,Form}View.tsx` | The two office-console archetypes |
+| `design-kit/pages/StyleGuide.tsx` | The system rendered, for reference |
+
+`design-kit/` remains read-only reference. Its `docs/ROUTE_MAP.md` and
+`docs/PORT_GUIDE.md` are **historical** — written against a pre-January
+snapshot, wrong about routes, roles and dead links. See DEC-003.
 
 ## Non-negotiable rules
 
-1. **Never invent a layout.** Every route maps to an exemplar in `docs/ROUTE_MAP.md`.
-   Open that exemplar, copy its structure, change the content. If a route feels
-   like it needs a new layout, stop and ask.
+1. **Never invent a layout.** Reuse an existing archetype: `AdminListView` for
+   any office list, `AdminFormView` + `FormSection` for any create/edit form,
+   `RecordHeader` + `DescriptionList` for a detail page, `PortalShell` for the
+   chrome. If something genuinely does not fit, stop and ask rather than adding
+   a twelfth way of laying out a table.
 2. **Never change business logic.** Supabase queries, Stripe calls, `lib/auth`,
    RLS, API routes, and `types/database.ts` stay exactly as they are. You are
    replacing the returned JSX and nothing else.
 3. **Never hardcode a colour.** No hex values in `className`. Use the tokens:
    `saffron marigold kumkum tulsi lotus copper sandal neutral` and
    `ink ink-2 ink-3 canvas surface surface-sunk line line-strong`.
-   `#FF9933` and `#E68A2E` must reach zero occurrences in `app/` and `components/`.
+   `#FF9933` and `#E68A2E` are at zero across the codebase; keep them there.
+   The only deliberate exception is `lib/themes/themes/built-in/default.ts`,
+   which IS the legacy palette by definition. Surfaces that cannot read CSS
+   variables restate the tokens in `lib/email/theme.ts` and `lib/pdf/theme.ts` —
+   change those together with `app/globals.css`.
 4. **Never import `react-router-dom`.** The kit routes through
    `components/nav/Nav.tsx`. In the target, use `next/link` and `next/navigation`
    directly — see the replacement code in that file's header comment.
@@ -156,7 +172,7 @@ a sibling presentational component takes plain props and renders.
 
 - A route has functionality not covered by any exemplar
 - A change would touch a Supabase query, RLS policy, or API route
-- A role gate in the original doesn't match `docs/ROUTE_MAP.md`
+- A role gate in the code doesn't match the table above (the code wins; say so)
 - You are about to delete a feature to make a layout work
 
 ---

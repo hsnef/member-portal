@@ -593,13 +593,29 @@ All test accounts:
 
 ---
 
-## Things Manager CANNOT Do
+## What Office Manager CAN and CANNOT Do
 
-- Assign Admin roles to users
-- Delete member records permanently
-- Edit payments older than 90 days
-- Access system configuration beyond portal settings
-- Full role management (can view but limited edits)
+_Verified against the route gates on 2026-09-01._
+
+**CANNOT** -- gated to Admin only:
+
+| Cannot | Route |
+|---|---|
+| Manage staff roles (assign or remove any role) | `/admin/settings/staff-roles` |
+| Change the portal theme | `/admin/settings/appearance` |
+
+**CAN** -- everything Office Staff can, plus:
+
+- Portal settings and membership pricing (`/admin/portal-settings`)
+- Zelle configuration (`/admin/zelle/settings`)
+- Test accounts (`/admin/test-accounts`)
+- Sign-in activity, portal-wide and per member (`/admin/login-activity`)
+
+Note: role management is **entirely** Admin-only -- a Manager cannot view that
+page at all, so the previous line "can view but limited edits" was wrong.
+Claims here about deleting member records and a 90-day payment edit window
+describe intended behaviour that is not enforced by any route gate; treat them
+as unverified until the code implements them.
 
 ---
 

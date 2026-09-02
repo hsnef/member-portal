@@ -479,16 +479,18 @@ All test accounts have purple "TEST" badge and are excluded from reports.
 
 ---
 
-### TC-STF-25: View Test Accounts Page
+### TC-STF-25: Access Denied - Test Accounts
 
 **Steps:**
 1. Navigate to Admin > Test Accounts (or /admin/test-accounts)
 
 **Expected Results:**
-- List of all 5 test accounts displayed
-- Registration status shown for each
-- "Clean Test Data" button available
-- Password reset functionality
+- Access denied - Office Staff cannot open this page
+- The Settings hub shows the card with "Requires the Admin or Office Manager role"
+
+_Corrected 2026-09-01: this case previously expected Staff to SEE the test
+accounts list. `/admin/test-accounts` is gated to `['Admin','Office Manager']`,
+so a tester following the old steps would have reported a false failure._
 
 ---
 
@@ -523,16 +525,36 @@ All test accounts have purple "TEST" badge and are excluded from reports.
 
 ---
 
-## Things Staff CANNOT Do
+## What Office Staff CAN and CANNOT Do
 
-- Approve or reject membership applications
-- Edit existing payments (only record new ones)
-- Modify member profiles
-- Access audit logs
-- Change portal settings
-- Manage user roles
-- Delete records
-- Manage services or purohits
+_Verified against the route gates on 2026-09-01. The previous version of this
+list was wrong on five of eight lines -- it described an intended permission
+model that the code does not implement. See DEC-004 in `docs/PROJECT-HUB.md`._
+
+**CANNOT** -- these routes are gated above Office Staff:
+
+| Cannot | Route | Requires |
+|---|---|---|
+| Change portal settings | `/admin/portal-settings` | Office Manager, Admin |
+| Manage staff roles | `/admin/settings/staff-roles` | Admin |
+| Change the portal theme | `/admin/settings/appearance` | Admin |
+| Configure Zelle | `/admin/zelle/settings` | Office Manager, Admin |
+| Open test accounts | `/admin/test-accounts` | Office Manager, Admin |
+| View sign-in activity | `/admin/login-activity` | Office Manager, Admin |
+
+**CAN** -- these are open to any staff role, contrary to what this guide used
+to say:
+
+- Approve and reject membership applications (`/admin/pending-registrations`)
+- Create and edit member records (`/admin/members/new`, `/[id]/edit`)
+- Import members (`/admin/members/import`)
+- View the member audit trail (`/admin/audit-logs`)
+- Manage the service catalog (`/admin/services`)
+- Manage priests (`/admin/settings/priests`)
+- Record payments and raise requests
+
+If any of the CAN items should in fact be restricted, that is a code change,
+not a documentation change -- raise it rather than editing this table.
 
 ---
 

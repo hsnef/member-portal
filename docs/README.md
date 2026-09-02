@@ -2,6 +2,18 @@
 
 This directory contains all project documentation organized by category. Use this index to navigate to the documentation you need.
 
+## Start here
+
+| Document | What it is |
+|----------|------------|
+| [`PROJECT-HUB.md`](PROJECT-HUB.md) | **Current state.** Architecture, the decisions log (DEC-001..007), session handoffs. `/sdlc status` reads this. |
+| [`PRIORITY-ROADMAP.md`](PRIORITY-ROADMAP.md) | **What to work on next**, in tiers. |
+| [`../CLAUDE.md`](../CLAUDE.md) | Working rules, the design system, and the route/role gates. |
+
+Everything below is reference material. **`status/` is historical** — those
+files are point-in-time records, deliberately not updated, and each carries a
+banner saying so. Do not use them to decide anything current.
+
 ## 📚 Quick Navigation
 
 - [Setup Guides](#setup-guides) - Deployment, configuration, and environment setup

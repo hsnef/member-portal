@@ -561,7 +561,9 @@ After deployment, verify:
 - `app/join/page.tsx` - Added terms checkbox, validation, acceptance recording
 - `app/register/page.tsx` - Added terms checkbox, validation, acceptance recording
 - `app/login/page.tsx` - Updated terminology throughout
-- `components/admin/AdminLayout.tsx` - Added TermsAcceptanceModal
+- `components/layout/PortalShell.tsx` - renders TermsAcceptanceModal
+  (was `components/admin/AdminLayout.tsx`, removed in the 2026-08 design-system
+  port; the gate now covers `/member` as well as `/admin`)
 - `package.json` - Added react-markdown dependency
 
 ---

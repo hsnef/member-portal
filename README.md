@@ -270,16 +270,29 @@ Custom implementation:
 
 ## Row-Level Security (RLS)
 
-All tables have RLS enabled with role-based policies:
+All tables have RLS enabled with role-based policies.
 
-| Role | Permissions |
+**Two layers, and they are not the same.** RLS controls what the DATABASE will
+return. Route gates (`ProtectedRoute`, and the `app/{member,admin}/layout.tsx`
+section gates) control which PAGES a role can open. A role can be allowed the
+data but not the page, or the reverse. When they disagree, RLS is the security
+boundary and the route gate is a convenience.
+
+| Role | RLS — data access |
 |------|-------------|
 | **Member** | View/edit own data, family, payments, events |
-| **Office Staff** | View all members, create payments/requests, book services |
-| **Office Manager** | All Staff permissions + financial corrections (90 days), view audit logs |
-| **Admin** | Full access + role management + unrestricted data changes |
+| **Office Staff** | View all members, create payments/requests, book services, **read the member audit log** |
+| **Office Manager** | All Staff permissions, plus financial corrections |
+| **Admin** | Full access, role management, unrestricted data changes |
 
-See `supabase/migrations/20260104000002_rls_policies.sql` for complete policy definitions.
+_Corrected 2026-09-01: this table previously listed audit-log access as Office
+Manager and above. `member_audit_log_select_staff` in
+`supabase/migrations/20260108000004_member_audit_log.sql` grants it to Office
+Staff as well, and `/admin/audit-logs` is open to any staff role to match._
+
+For the **route** gates, see `CLAUDE.md`. See
+`supabase/migrations/20260104000002_rls_policies.sql` for complete policy
+definitions.
 
 ## Founding Members
 
