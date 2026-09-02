@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { isTraditionalLoginEnabled } from '@/lib/utils/portalSettings'
 import { LoginView } from '@/components/auth/LoginView'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 
 function LoginForm() {
   const searchParams = useSearchParams()
@@ -131,6 +132,28 @@ function LoginForm() {
     try {
       setLoading(true)
       setMessage(null)
+
+      // Refuse unknown addresses before Supabase is asked for a link.
+      // `signInWithOtp` creates an account for any address it is given, and an
+      // account with no member record behind it can do nothing in this portal
+      // and has no way to fix itself. See the route for why it allows both a
+      // member record and an existing auth account.
+      const gate = await fetch('/api/auth/check-member-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+        .then((r) => r.json())
+        .catch(() => ({ allowed: true }))
+
+      if (!gate.allowed) {
+        setMessage({
+          type: 'error',
+          text: `We do not have a membership on file for ${email}. If you are a member, the temple office can add your address — contact ${TEMPLE_CONFIG.contact.email}.`,
+        })
+        setLoading(false)
+        return
+      }
 
       const { error } = await supabase.auth.signInWithOtp({
         email,
