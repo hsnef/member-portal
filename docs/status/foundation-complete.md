@@ -1,5 +1,12 @@
 # ✅ HSNEF Membership Portal - Foundation Complete
 
+> **Historical — a point-in-time record, not current state.**
+> This file describes how things stood when it was written. It is kept for
+> background and is deliberately NOT updated as the code changes, so expect
+> stale colours, routes, component names and URLs. For current state see
+> [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 **Date:** January 4, 2026
 **Status:** Foundation Architecture Complete
 **Next Phase:** Feature Implementation

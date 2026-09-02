@@ -96,7 +96,7 @@ TestPassword123!
 
 ## Public User Testing
 
-**URL:** https://portal.hsnef.org (or localhost:3000)
+**URL:** https://member.hsnef.org (or localhost:3000)
 
 ### Test Case 1: View Home Page
 1. Navigate to the home page

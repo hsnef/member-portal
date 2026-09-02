@@ -237,7 +237,7 @@ Reference materials, specifications, and design documents.
 
 - **Root README:** [`../../README.md`](../../README.md) - Project overview and getting started
 - **Main Website:** [hsnef.org](https://hsnef.org)
-- **Portal URL:** [portal.hsnef.org](https://portal.hsnef.org)
+- **Portal URL:** [member.hsnef.org](https://member.hsnef.org)
 
 ---
 

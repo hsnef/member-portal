@@ -13,7 +13,7 @@ Last updated: [Date]
 
 ## 1. Acceptance of Terms
 
-By accessing or using the HSNEF membership portal located at `https://portal.hsnef.org` (the “Portal”), you agree to be bound by these Terms of Use (“Terms”).
+By accessing or using the HSNEF membership portal located at `https://member.hsnef.org` (the “Portal”), you agree to be bound by these Terms of Use (“Terms”).
 If you do not agree to these Terms, you must not use the Portal.
 
 ## 2. Purpose of the Portal

@@ -28,6 +28,8 @@ import { adminNav, memberNav, visibleNav, STAFF_ROLES, type NavItem } from '@/li
 import { useAuth } from '@/lib/auth/AuthContext'
 import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 import { getVersionString, getDeploymentDateString } from '@/lib/constants/version'
+import TermsAcceptanceModal from '@/components/TermsAcceptanceModal'
+import { TestDataToggle } from '@/components/admin/TestDataToggle'
 import { cn } from '@/utils/cn'
 import { tones } from '@/utils/tones'
 
@@ -101,6 +103,12 @@ export function PortalShell({ section, children }: PortalShellProps) {
       </div>
 
       {mobileItems.length > 0 && <MobileNav items={mobileItems} pathname={pathname} />}
+
+      {/* Terms gate. This used to live in the deleted AdminLayout, so it only
+          ever covered /admin; rendering it here covers /member too, which is
+          where most people accept terms in practice. The modal self-gates --
+          it checks acceptance and renders nothing once accepted. */}
+      <TermsAcceptanceModal />
     </div>
   )
 }
@@ -293,6 +301,11 @@ function TopBar({
         </AppLink>
 
         <div className="ml-auto flex items-center gap-3">
+          {/* Staff-only test-data switch. Self-gates on canToggleTestData, so it
+              renders nothing for anyone who cannot use it. Lived in the deleted
+              AdminLayout. */}
+          {isAdmin && <TestDataToggle />}
+
           {isAdmin ? (
             <Badge tone="kumkum" className="hidden sm:inline-flex">
               {roles.filter((r) => r !== 'Member')[0] ?? 'Staff'}

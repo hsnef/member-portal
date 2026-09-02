@@ -152,7 +152,7 @@ This prevents:
 - Reply-to: `member-portal@hsnef.org`
 - Domain verified in: Resend
 
-**Why portal.hsnef.org?**
+**Why member.hsnef.org?**
 - This domain is verified in Resend
 - `member.hsnef.org` is your app domain (not email domain)
 - Emails from any environment show same sender (consistent for users)

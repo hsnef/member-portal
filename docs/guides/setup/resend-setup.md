@@ -34,12 +34,12 @@ Complete guide to configure Resend for the HSNEF Membership Portal.
 
 ### 2. Add and Verify Your Domain
 
-**You need to verify `portal.hsnef.org` to send from `noreply@portal.hsnef.org`**
+**You need to verify `member.hsnef.org` to send from `noreply@portal.hsnef.org`**
 
 1. **Add Domain in Resend**
    - Go to [resend.com/domains](https://resend.com/domains)
    - Click **Add Domain**
-   - Enter: `portal.hsnef.org`
+   - Enter: `member.hsnef.org`
    - Click **Add**
 
 2. **Add DNS Records**
@@ -49,7 +49,7 @@ Complete guide to configure Resend for the HSNEF Membership Portal.
    **SPF Record:**
    ```
    Type: TXT
-   Name: portal.hsnef.org (or @)
+   Name: member.hsnef.org (or @)
    Value: v=spf1 include:_spf.resend.com ~all
    ```
 
@@ -166,7 +166,7 @@ After deploying to Vercel:
 
 ```bash
 # Check SPF
-nslookup -type=TXT portal.hsnef.org
+nslookup -type=TXT member.hsnef.org
 
 # Check DKIM
 nslookup -type=TXT resend._domainkey.portal.hsnef.org

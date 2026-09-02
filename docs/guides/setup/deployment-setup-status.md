@@ -50,17 +50,17 @@ These steps need to be completed manually in the Vercel dashboard. Follow `verce
 - [ ] Configure build settings
 - [ ] Add all environment variables (production values)
 - [ ] Deploy project
-- [ ] Add custom domain: `portal.hsnef.org`
+- [ ] Add custom domain: `member.hsnef.org`
 - [ ] Configure DNS records for custom domain
 - [ ] Wait for SSL certificate provisioning
-- [ ] Update `NEXT_PUBLIC_APP_URL` to `https://portal.hsnef.org`
+- [ ] Update `NEXT_PUBLIC_APP_URL` to `https://member.hsnef.org`
 - [ ] Redeploy after domain is active
 
 ### Stripe Webhook Configuration
 - [ ] Create webhook endpoint for dev: `https://dev-portal.vercel.app/api/stripe/webhook`
 - [ ] Copy dev webhook signing secret
 - [ ] Add `STRIPE_WEBHOOK_SECRET` to `dev-msp` Vercel project
-- [ ] Create webhook endpoint for prod: `https://portal.hsnef.org/api/stripe/webhook`
+- [ ] Create webhook endpoint for prod: `https://member.hsnef.org/api/stripe/webhook`
 - [ ] Copy prod webhook signing secret
 - [ ] Add `STRIPE_WEBHOOK_SECRET` to `prod-hsnef` Vercel project
 
@@ -72,7 +72,7 @@ These steps need to be completed manually in the Vercel dashboard. Follow `verce
 - [ ] Edit OAuth 2.0 Client ID
 - [ ] Add redirect URIs:
   - `https://dev-portal.vercel.app/auth/callback`
-  - `https://portal.hsnef.org/auth/callback`
+  - `https://member.hsnef.org/auth/callback`
   - `http://localhost:3000/auth/callback` (if not already added)
   - Supabase callback URL (if not already added)
 - [ ] Save changes
@@ -80,11 +80,11 @@ These steps need to be completed manually in the Vercel dashboard. Follow `verce
 #### Supabase Redirect URLs
 - [ ] Go to Supabase Dashboard
 - [ ] Navigate to Authentication → URL Configuration
-- [ ] Set Site URL: `https://portal.hsnef.org` (or dev for testing)
+- [ ] Set Site URL: `https://member.hsnef.org` (or dev for testing)
 - [ ] Add Redirect URLs (comma-separated):
   ```
   https://dev-portal.vercel.app/auth/callback,https://dev-portal.vercel.app/**,
-  https://portal.hsnef.org/auth/callback,https://portal.hsnef.org/**,
+  https://member.hsnef.org/auth/callback,https://member.hsnef.org/**,
   http://localhost:3000/auth/callback,http://localhost:3000/**
   ```
 - [ ] Save changes
@@ -119,7 +119,7 @@ After manual setup is complete:
 - [ ] Test dev deployment at `https://dev-portal.vercel.app`
 - [ ] Test authentication flows in dev (Google OAuth, Magic Link)
 - [ ] Verify version number displays in footer
-- [ ] Test prod deployment at `https://portal.hsnef.org`
+- [ ] Test prod deployment at `https://member.hsnef.org`
 - [ ] Test authentication flows in prod
 - [ ] Verify all critical user flows work
 - [ ] Test payment flows (if applicable)
@@ -139,7 +139,7 @@ Once Vercel projects are set up, follow this order:
    - Update `NEXT_PUBLIC_APP_URL` after deployments
 
 3. **Configure Custom Domain** (production only)
-   - Add `portal.hsnef.org` to `prod-hsnef` project
+   - Add `member.hsnef.org` to `prod-hsnef` project
    - Configure DNS records
    - Wait for SSL certificate
 

@@ -155,7 +155,7 @@ If your Vercel project watches the `feature/theme-system` branch:
    # Push to GitHub
    git push origin main
    ```
-   - Vercel deploys to: `https://portal.hsnef.org` (production)
+   - Vercel deploys to: `https://member.hsnef.org` (production)
 
 ---
 
@@ -242,7 +242,7 @@ Your Computer ✅ → GitHub ✅ → Dev Server ✅ (https://dev-portal.vercel.a
 ### Scenario 4: Merged to Main Branch
 
 ```
-Your Computer ✅ → GitHub ✅ → Production Server ✅ (https://portal.hsnef.org)
+Your Computer ✅ → GitHub ✅ → Production Server ✅ (https://member.hsnef.org)
 ```
 - **Live for all users**
 - Be careful!

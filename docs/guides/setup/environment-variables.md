@@ -74,13 +74,13 @@ If using SMTP instead of Resend:
 
 | Variable | Description | Example | Required | Different per Env |
 |----------|-------------|---------|----------|-------------------|
-| `NEXT_PUBLIC_APP_URL` | Application URL | `https://dev-portal.vercel.app` (dev)<br>`https://portal.hsnef.org` (prod) | Yes | **Yes** |
+| `NEXT_PUBLIC_APP_URL` | Application URL | `https://dev-portal.vercel.app` (dev)<br>`https://member.hsnef.org` (prod) | Yes | **Yes** |
 | `QR_TOKEN_SECRET` | Secret key for QR token signing | Random 32+ character string | Yes | Optional |
 
 **Note:**
 - `NEXT_PUBLIC_APP_URL` must match the actual deployment URL:
   - Dev: `https://dev-portal.vercel.app`
-  - Prod: `https://portal.hsnef.org`
+  - Prod: `https://member.hsnef.org`
 - `QR_TOKEN_SECRET`: Generate a secure random string (e.g., `openssl rand -base64 32`)
 
 ### Optional: AI/Chatbot (OpenRouter)
@@ -105,7 +105,7 @@ STRIPE_WEBHOOK_SECRET=whsec_dev_webhook_secret
 Set these in Vercel project settings → Environment Variables → Production:
 
 ```
-NEXT_PUBLIC_APP_URL=https://portal.hsnef.org
+NEXT_PUBLIC_APP_URL=https://member.hsnef.org
 STRIPE_WEBHOOK_SECRET=whsec_prod_webhook_secret
 ```
 

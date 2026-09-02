@@ -91,7 +91,8 @@ This document outlines the step-by-step implementation plan for the Member Audit
 - `components/admin/GlobalAuditLogView.tsx`
 
 **Files to Modify:**
-- `components/admin/AdminLayout.tsx` - Add navigation item
+- `lib/navigation.ts` - Add the nav item (was `components/admin/AdminLayout.tsx`,
+  removed in the 2026-08 design-system port; nav is now data, rendered by PortalShell)
 
 **Estimated Time:** 3-4 hours
 

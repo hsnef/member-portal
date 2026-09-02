@@ -193,7 +193,7 @@ If magic links aren't working:
 
 ### Custom Domain Setup (Future)
 
-When you add a custom domain (e.g., `portal.hsnef.org`):
+When you add a custom domain (e.g., `member.hsnef.org`):
 
 1. Add custom domain in Vercel
 2. Update Supabase Site URL to custom domain

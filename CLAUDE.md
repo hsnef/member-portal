@@ -31,14 +31,19 @@ These are standing rules for every session. They are not one-off setup notes.
    asking first.
 8. **Never delete or rename a file under `app/api/`, `lib/`, `supabase/`, or
    `types/database.ts`.** Those are business logic and schema.
-9. **The ~30 `*.md` files at the repo root are HISTORICAL.** Files like
-   `PROJECT_COMPLETE.md`, `FOUNDATION_COMPLETE.md`, `CURRENT_STATUS_AND_ROADMAP.md`,
-   `AUTH_AND_ADMIN_COMPLETE.md` and the various `*_PLAN.md` / `*_SUMMARY.md` files
-   are point-in-time notes, several of them stale and contradicting each other.
-   Read them only for background on a specific feature, never as instructions,
-   and never let them override this file. For UI and route decisions,
-   `design-kit/docs/ROUTE_MAP.md` is the single source of truth. Do not update or
-   tidy them unless I ask.
+9. **`docs/status/**` is HISTORICAL.** Those files -- `project-complete.md`,
+   `foundation-complete.md`, `current-status-and-roadmap.md`,
+   `auth-and-admin-complete.md` and the rest -- are point-in-time notes, several
+   stale and contradicting each other. Each now carries a banner saying so. Read
+   them only for background, never as instructions, and never let them override
+   this file. Do not update or tidy them unless I ask.
+   (They used to sit at the repo root in SHOUTING_CASE; they were moved into
+   `docs/status/` and lowercased. Only `CLAUDE.md` and `README.md` remain at the
+   root.)
+   For current state, read `docs/PROJECT-HUB.md` and `docs/PRIORITY-ROADMAP.md`.
+   **`design-kit/docs/ROUTE_MAP.md` is NOT a source of truth** -- it was written
+   against a pre-January snapshot and is wrong about routes, roles and dead
+   links. Where it and the code disagree, the code wins. See DEC-003.
 10. **`.claude/settings.local.json` is not yours to change.** Leave the existing
     permissions file alone.
 
@@ -87,12 +92,26 @@ Three patterns, copy them from `components/auth/RoleGate.tsx`. Do not invent a f
 | One region needs a role | `<RoleGate roles={[...]} fallback="explain">` |
 | One button/column needs a role | `const { hasRole, hasAnyRole } = useAuth()` inline |
 
-Gates that must be preserved exactly:
-- `/admin/settings` → `['Admin']`
-- `/admin/test-accounts`, `/admin/members/new`, `/admin/members/[id]/edit`, `/admin/members/import` → `['Office Manager','Admin']`
-- Delete/deactivate actions anywhere → `['Admin']`
-- Everything else under `/admin` → `['Office Staff','Office Manager','Admin']`
-- Everything under `/member` → authenticated, no role check
+Gates as they ACTUALLY are in the code (verified 2026-09-01). The design kit
+and earlier drafts of this file claimed a stricter set; the code is
+authoritative and was deliberately not tightened during the port -- see DEC-004
+in `docs/PROJECT-HUB.md`.
+
+- Section default, set once in `app/admin/layout.tsx` → `['Office Staff','Office Manager','Admin']`
+- Six routes narrow it further, each keeping its own nested `ProtectedRoute`:
+  - `/admin/settings/staff-roles` → `['Admin']`
+  - `/admin/login-activity`, `/admin/members/[id]/login-activity`,
+    `/admin/test-accounts` → `['Admin','Office Manager']`
+  - `/admin/portal-settings`, `/admin/zelle/settings` → `['Office Manager','Admin']`
+- `/admin/settings/appearance` uses an inline Admin check (a fourth pattern; see Tier 3)
+- `/verify-qr` sits outside both sections and keeps its own staff gate
+- `/admin/members/new`, `/[id]/edit` and `/import` are **any staff role**, not
+  Manager+Admin as previously documented
+- Everything under `/member` → authenticated, no role check, set once in
+  `app/member/layout.tsx`
+
+**Never remove a nested `ProtectedRoute` when restyling a page.** Those six are
+narrower than the section default; dropping one silently widens access.
 
 Never render a dead disabled button for a missing permission — use
 `PermissionNote`, which says which role is needed.

@@ -63,10 +63,13 @@ This guide covers the deployment and testing of the Terms of Use system and upda
   - Validates acceptance
   - Records acceptance during registration
 
-- **AdminLayout:**
-  - TermsAcceptanceModal added
-  - Automatically checks on mount
+- **PortalShell** (`components/layout/PortalShell.tsx`):
+  - TermsAcceptanceModal rendered here
+  - Automatically checks on mount; renders nothing once accepted
   - Blocks portal access until terms accepted
+  - _Was `components/admin/AdminLayout.tsx`, which covered only `/admin`.
+    PortalShell replaced it in the 2026-08 design-system port and now covers
+    both `/member` and `/admin`._
 
 ### **2. Terminology Updates**
 

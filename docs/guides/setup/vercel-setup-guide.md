@@ -112,7 +112,7 @@ Add all the same environment variables, but with production-specific values:
 
 1. Most variables are the same (Supabase, etc.)
 2. Update these for production:
-   - `NEXT_PUBLIC_APP_URL` = `https://portal.hsnef.org` (custom domain - set after adding domain)
+   - `NEXT_PUBLIC_APP_URL` = `https://member.hsnef.org` (custom domain - set after adding domain)
    - `STRIPE_WEBHOOK_SECRET` = Different webhook secret (create separate webhook in Stripe)
    - `STRIPE_SECRET_KEY` / `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` = Live keys (if using live mode for prod)
 
@@ -130,7 +130,7 @@ Add all the same environment variables, but with production-specific values:
 
 1. Go to **`prod-hsnef`** project → **Settings** → **Domains**
 2. Click **"Add Domain"**
-3. Enter: `portal.hsnef.org`
+3. Enter: `member.hsnef.org`
 4. Click **"Add"**
 
 ### 3.2 Configure DNS Records
@@ -158,7 +158,7 @@ After domain is configured and SSL is active:
 
 1. Go to **Project Settings** → **Environment Variables**
 2. Update `NEXT_PUBLIC_APP_URL`:
-   - Value: `https://portal.hsnef.org`
+   - Value: `https://member.hsnef.org`
 3. **Redeploy** project
 
 ## Step 4: Configure Stripe Webhooks
@@ -185,7 +185,7 @@ After domain is configured and SSL is active:
 
 1. In Stripe Dashboard → **Webhooks**
 2. Click **"Add endpoint"**
-3. **Endpoint URL**: `https://portal.hsnef.org/api/stripe/webhook`
+3. **Endpoint URL**: `https://member.hsnef.org/api/stripe/webhook`
 4. **Events to listen to**: Same as above
 5. Click **"Add endpoint"**
 6. Copy the **Signing secret**
@@ -233,7 +233,7 @@ For `prod-hsnef` project, you can require manual approval:
 5. Add to **Authorized redirect URIs**:
    ```
    https://dev-portal.vercel.app/auth/callback
-   https://portal.hsnef.org/auth/callback
+   https://member.hsnef.org/auth/callback
    ```
    (Add actual dev URL if different)
 6. Click **Save**
@@ -243,11 +243,11 @@ For `prod-hsnef` project, you can require manual approval:
 1. Go to [Supabase Dashboard](https://app.supabase.com)
 2. Select your project
 3. Navigate to **Authentication** → **URL Configuration**
-4. In **Site URL**, set to: `https://portal.hsnef.org` (or `https://dev-portal.vercel.app` for testing)
+4. In **Site URL**, set to: `https://member.hsnef.org` (or `https://dev-portal.vercel.app` for testing)
 5. In **Redirect URLs**, add (comma-separated):
    ```
    https://dev-portal.vercel.app/auth/callback,https://dev-portal.vercel.app/**,
-   https://portal.hsnef.org/auth/callback,https://portal.hsnef.org/**,
+   https://member.hsnef.org/auth/callback,https://member.hsnef.org/**,
    http://localhost:3000/auth/callback,http://localhost:3000/**
    ```
 6. Click **Save**
@@ -266,7 +266,7 @@ For `prod-hsnef` project, you can require manual approval:
 
 ### 7.2 Test Prod Deployment
 
-1. Visit: `https://portal.hsnef.org`
+1. Visit: `https://member.hsnef.org`
 2. Verify site loads
 3. Test authentication
 4. Verify all functionality works
@@ -319,7 +319,7 @@ After setup is complete:
 - [ ] `prod-hsnef` project created and configured
 - [ ] `prod-hsnef` environment variables added
 - [ ] `prod-hsnef` deployed successfully
-- [ ] Custom domain `portal.hsnef.org` added and configured
+- [ ] Custom domain `member.hsnef.org` added and configured
 - [ ] DNS records configured
 - [ ] SSL certificate active
 - [ ] Stripe webhooks configured for both environments

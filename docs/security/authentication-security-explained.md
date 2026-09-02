@@ -205,7 +205,7 @@ All three methods are secure when used properly. Here's a comparison:
    - Report suspicious activity immediately
 
 3. **Use HTTPS**
-   - Always access the portal via HTTPS (https://portal.hsnef.org)
+   - Always access the portal via HTTPS (https://member.hsnef.org)
    - Never use HTTP in production
 
 4. **Log Out When Done**

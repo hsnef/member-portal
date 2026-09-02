@@ -203,7 +203,9 @@ In admin header:
 5. `app/admin/bookings/page.tsx` - Toggle support + badges
 6. `app/admin/payments/page.tsx` - Toggle support + badges
 7. `app/layout.tsx` - Added TestDataProvider
-8. `components/admin/AdminLayout.tsx` - Added TestDataToggle
+8. `components/layout/PortalShell.tsx` - hosts the shell (was
+   `components/admin/AdminLayout.tsx`, removed in the 2026-08 port).
+   **NOTE: TestDataToggle was not carried across and is not currently rendered.**
 9. `app/admin/settings/page.tsx` - Updated test accounts description
 
 ### Key Patterns:

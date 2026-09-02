@@ -222,7 +222,7 @@ Optional:
 
 **Location**: https://resend.com/domains
 
-- [ ] Domain `portal.hsnef.org` is verified
+- [ ] Domain `member.hsnef.org` is verified
 - [ ] DNS records (SPF, DKIM) are properly configured
 - [ ] API key is valid and active
 
@@ -372,7 +372,7 @@ If webhooks fail:
 
 **Location**: https://resend.com/domains
 
-- [ ] Domain `portal.hsnef.org` shows as "Verified"
+- [ ] Domain `member.hsnef.org` shows as "Verified"
 - [ ] SPF record is added to DNS
 - [ ] DKIM record is added to DNS
 - [ ] Can send test email from Resend dashboard
@@ -511,7 +511,7 @@ Quick reference for overall setup:
 ### External Services
 - [ ] Supabase: All redirect URLs configured (including localhost!)
 - [ ] Google OAuth: All callback URLs configured (including localhost!)
-- [ ] Resend: Domain `portal.hsnef.org` verified, DNS records added
+- [ ] Resend: Domain `member.hsnef.org` verified, DNS records added
 - [ ] Stripe: 2 webhooks created (dev + production)
 - [ ] Cloudflare: DNS pointing to Vercel correctly
 

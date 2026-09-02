@@ -118,7 +118,7 @@ Complete guide to configure Google OAuth and Magic Link authentication for the H
 
 2. **Set Site URL**
    - Development: `http://localhost:3000`
-   - Production: `https://portal.hsnef.org`
+   - Production: `https://member.hsnef.org`
 
 3. **Add Redirect URLs**
 
@@ -126,8 +126,8 @@ Complete guide to configure Google OAuth and Magic Link authentication for the H
    ```
    http://localhost:3000/auth/callback
    http://localhost:3000/admin
-   https://portal.hsnef.org/auth/callback
-   https://portal.hsnef.org/admin
+   https://member.hsnef.org/auth/callback
+   https://member.hsnef.org/admin
    ```
 
 4. **Click Save**
@@ -262,7 +262,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 
 # Application URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-# Production: https://portal.hsnef.org
+# Production: https://member.hsnef.org
 
 # Resend for emails (already configured)
 RESEND_API_KEY=re_your-resend-api-key

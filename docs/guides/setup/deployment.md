@@ -5,7 +5,7 @@ This guide covers the deployment setup for the HSNEF Membership Portal with sepa
 ## Environment Overview
 
 - **Dev Environment**: `dev` branch → Vercel `dev-msp` project → `dev-portal.vercel.app`
-- **Prod Environment**: `main` branch → Vercel `prod-hsnef` project → `portal.hsnef.org`
+- **Prod Environment**: `main` branch → Vercel `prod-hsnef` project → `member.hsnef.org`
 
 Both environments use the same Supabase dev project and database.
 
@@ -93,7 +93,7 @@ git push -u origin feature/your-feature-name
 
 4. **Add Custom Domain (Production)**
    - In `prod-hsnef` project, go to Settings → Domains
-   - Add domain: `portal.hsnef.org`
+   - Add domain: `member.hsnef.org`
    - Configure DNS records as instructed by Vercel
    - Wait for DNS propagation and SSL certificate
 
@@ -127,7 +127,7 @@ Configure the following environment variables in both Vercel projects:
 - `QR_TOKEN_SECRET` - Secret key for QR token signing (same or different per env)
 - `NEXT_PUBLIC_APP_URL` - 
   - Dev: `https://dev-portal.vercel.app`
-  - Prod: `https://portal.hsnef.org`
+  - Prod: `https://member.hsnef.org`
 
 #### Optional
 - `OPENROUTER_API_KEY` - For chatbot feature (if enabled)
@@ -154,7 +154,7 @@ Configure the following environment variables in both Vercel projects:
    Add all the following URLs:
    ```
    https://dev-portal.vercel.app/auth/callback
-   https://portal.hsnef.org/auth/callback
+   https://member.hsnef.org/auth/callback
    http://localhost:3000/auth/callback
    https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback
    ```
@@ -170,14 +170,14 @@ Configure the following environment variables in both Vercel projects:
    - Go to Authentication → URL Configuration
 
 2. **Configure Site URL**
-   - Set to: `https://portal.hsnef.org` (production URL)
+   - Set to: `https://member.hsnef.org` (production URL)
    - Note: This can be either dev or prod URL; redirect URLs handle both
 
 3. **Configure Redirect URLs**
    Add all the following URLs (comma-separated):
    ```
    https://dev-portal.vercel.app/auth/callback,https://dev-portal.vercel.app/**,
-   https://portal.hsnef.org/auth/callback,https://portal.hsnef.org/**,
+   https://member.hsnef.org/auth/callback,https://member.hsnef.org/**,
    http://localhost:3000/auth/callback,http://localhost:3000/**
    ```
 
@@ -201,7 +201,7 @@ Each environment needs its own webhook endpoint configured in Stripe:
 5. Add to Vercel `dev-msp` project as `STRIPE_WEBHOOK_SECRET`
 
 ### Prod Environment Webhook
-1. Add endpoint: `https://portal.hsnef.org/api/stripe/webhook`
+1. Add endpoint: `https://member.hsnef.org/api/stripe/webhook`
 2. Select same events
 3. Copy the webhook signing secret
 4. Add to Vercel `prod-hsnef` project as `STRIPE_WEBHOOK_SECRET`
@@ -259,7 +259,7 @@ vercel --prod --scope prod-hsnef
    git merge dev
    git push origin main
    ```
-2. Vercel automatically deploys to `portal.hsnef.org`
+2. Vercel automatically deploys to `member.hsnef.org`
 3. Verify deployment at production URL
 4. Test critical flows in production
 

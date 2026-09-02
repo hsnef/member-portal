@@ -6,20 +6,21 @@
     <title>HSNEF Member Portal - User Reference Manual</title>
     <style>
         :root {
-            --primary-color: #FF9933;
-            --primary-dark: #E68A2E;
-            --secondary-color: #138808;
-            --accent-blue: #000080;
-            --text-primary: #1a1a1a;
-            --text-secondary: #4a4a4a;
-            --text-muted: #6b7280;
-            --bg-light: #f8fafc;
-            --bg-card: #ffffff;
-            --border-color: #e5e7eb;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --error-color: #ef4444;
-            --info-color: #3b82f6;
+            /* Mirrors the portal's design system -- see app/globals.css. */
+            --primary-color: #c75b12;   /* saffron */
+            --primary-dark: #a94a0c;    /* saffron-hover */
+            --secondary-color: #4e7a63; /* tulsi */
+            --accent-blue: #7b2d26;     /* kumkum */
+            --text-primary: #2b2018;    /* ink */
+            --text-secondary: #6a5b4b;  /* ink-2 */
+            --text-muted: #9b8c7a;      /* ink-3 */
+            --bg-light: #fffbf4;        /* canvas */
+            --bg-card: #ffffff;         /* surface */
+            --border-color: #f1e6d5;    /* line */
+            --success-color: #4e7a63;   /* tulsi */
+            --warning-color: #a06c05;   /* warning */
+            --error-color: #b23a2e;     /* danger */
+            --info-color: #6a5b4b;      /* neutral -- the system has no blue */
         }
 
         * {
@@ -66,7 +67,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, #FF9933 0%, #E68A2E 50%, #138808 100%);
+            background-color: #7b2d26;
             color: white;
             text-align: center;
             padding: 60px 40px;
@@ -328,7 +329,7 @@
 
         /* Code/Path */
         code {
-            background: #f1f5f9;
+            background: #faf5ec;
             padding: 2px 6px;
             border-radius: 4px;
             font-family: 'Consolas', 'Monaco', monospace;
@@ -457,7 +458,7 @@
 
         /* Keyboard shortcuts */
         kbd {
-            background: #f1f5f9;
+            background: #faf5ec;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 2px 6px;

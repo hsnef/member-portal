@@ -86,9 +86,15 @@
   the release gate.
 - **Raise `scripts/source-doc-map.json` severities from `warn` to `gate`**, schema first, as each
   mapped doc catches up.
-- **Fix `EMAIL_FROM`.** Sends from `noreply@portal.hsnef.org`, but `portal.hsnef.org` is superseded
-  by `member.hsnef.org`. Mail only sends while Resend still has the old domain verified. Check the
-  Resend dashboard, then align — in Vercel for dev **and** prod, not just locally.
+- ~~Fix `EMAIL_FROM`~~ — **RESOLVED 2026-09-01: it was already correct, and my earlier advice to
+  change it was wrong.** DNS shows `portal.hsnef.org` has no A record serving a site but DOES carry
+  a `resend._domainkey` TXT record, so it is the verified Resend sending domain. `member.hsnef.org`
+  serves the portal but is NOT verified in Resend. **Changing `EMAIL_FROM` to `member.hsnef.org`
+  would break email sending.** Leave it. The domain does two different jobs and only one of them
+  moved.
+- **Separate, real issue: `hsnef.org` publishes THREE `v=spf1` records.** RFC 7208 allows one;
+  multiple records make SPF evaluate to permerror, which can hurt deliverability for anything
+  sending as `@hsnef.org`. Worth consolidating into a single record.
 - **Correct the role-gate docs** so `CLAUDE.md` / `ROUTE_MAP.md` match the code (see DEC-004), or
   change the code deliberately. Right now they disagree and the docs are the wrong one.
 

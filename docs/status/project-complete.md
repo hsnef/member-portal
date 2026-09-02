@@ -1,5 +1,12 @@
 # HSNEF Member Portal - Project Complete 🎉
 
+> **Historical — a point-in-time record, not current state.**
+> This file describes how things stood when it was written. It is kept for
+> background and is deliberately NOT updated as the code changes, so expect
+> stale colours, routes, component names and URLs. For current state see
+> [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 ## Project Summary
 
 The HSNEF Member Portal is now **100% COMPLETE** with all core features implemented! This is a comprehensive membership management system for the Hindu Society of North East Florida temple.

@@ -18,14 +18,14 @@ Fix Google OAuth redirect issue on:
 
 4. **Set Site URL**:
    ```
-   https://portal.hsnef.org
+   https://member.hsnef.org
    ```
 
 5. **In "Redirect URLs" section, add ALL these** (keep localhost):
    ```
    http://localhost:3000/**
    https://dev-portalhsnef-oxemr6fhv-hsnef-member-portal.vercel.app/**
-   https://portal.hsnef.org/**
+   https://member.hsnef.org/**
    ```
 
    *Note: Add your Project 2 staging URL later when you know it*
@@ -46,7 +46,7 @@ Fix Google OAuth redirect issue on:
    https://gapvsdrzavjaublwkqfm.supabase.co/auth/v1/callback
    http://localhost:3000/auth/callback
    https://dev-portalhsnef-oxemr6fhv-hsnef-member-portal.vercel.app/auth/callback
-   https://portal.hsnef.org/auth/callback
+   https://member.hsnef.org/auth/callback
    ```
 
 6. Click **Save**
@@ -264,7 +264,7 @@ Once logged in:
 
 Before moving on, make sure:
 
-- [ ] Supabase Site URL is set to `https://portal.hsnef.org`
+- [ ] Supabase Site URL is set to `https://member.hsnef.org`
 - [ ] Supabase Redirect URLs includes all 3 URLs (localhost, dev, prod)
 - [ ] Google OAuth has Supabase callback URL
 - [ ] Google OAuth has all 4 redirect URIs (Supabase + 3 app URLs)

@@ -10,7 +10,7 @@ Focus on correctness of the domain model, membership lifecycle, RBAC, audit logg
 This membership portal is a supplement to the main HSNEF website (hsnef.org) and focuses purely on membership and membership services. For all core informational content about HSNEF (Bylaws, office bearers, priests, deities, temple hours, static pages, etc.), the portal MUST link back to the main website and MUST NOT duplicate or maintain separate copies of that information.
 
 1. High-Level Goal
-Create a secure member portal running on a subdomain (e.g., portal.hsnef.org) that:
+Create a secure member portal running on a subdomain (e.g., member.hsnef.org) that:
 
 Manages membership lifecycle (Community, Annual, Lifetime)
 
@@ -831,7 +831,7 @@ Visual style:
 
 “Traditional Hindu temple colors but clean and modern.”
 
-Primary saffron (one of #FF9933, #FF7722, #FF7A0E, #FF902B).
+Primary saffron (one of #c75b12, #FF7722, #FF7A0E, #FF902B).
 
 Complementary: warm maroon, muted gold, off‑white/cream.
 
