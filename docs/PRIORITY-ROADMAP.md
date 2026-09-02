@@ -4,6 +4,13 @@
 
 ## START HERE — the active runbook
 
+> **Most urgent item as of 2026-09-02:** `dev.member.hsnef.org` is publicly
+> reachable (deliberately — testers need it) **and still points at the production
+> database**, because all environments share one Supabase project. Anyone testing
+> on the dev URL is writing to live member records. **Phase 5 of the runbook —
+> creating a separate dev Supabase project — is now the highest-value work left.**
+
+
 **[`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md)** is a
 step-by-step walk-through of the current infrastructure work: consolidating the two
 Vercel projects into one, fixing `member.hsnef.org` (which is DOWN — Cloudflare

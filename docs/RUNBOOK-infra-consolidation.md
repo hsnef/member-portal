@@ -127,21 +127,27 @@ commits). The production deployment built and went **READY** from `main`, and
 `member.hsnef.org` still returns **308** — Cloudflare, Phase 2. Production is
 built and healthy; only DNS stands between it and the public.
 
-### Side effect worth knowing: the dev URL is now behind Vercel login
+### Both URLs are public, deliberately — and what that costs
 
-`dev.member.hsnef.org` redirects to `vercel.com/login`. Before the repoint it
-served a *production* deployment (because `dev` was the production branch) and
-production deployments are not protected. It now serves a *preview*, and
-`ssoProtection` is `all_except_custom_domains` — an exemption that only covers
-**production** custom domains.
+Repointing `dev.member.hsnef.org` to the `dev` branch briefly put it behind
+Vercel's login, because it began serving a *preview* rather than a production
+deployment and `ssoProtection` only exempts **production** custom domains.
 
-**This was left in place deliberately.** Every environment still shares one
-Supabase database (DEC-006), so before today an unauthenticated dev portal sat
-in front of live member data. Requiring a Vercel login is the safer state.
-Whoever needs access needs Vercel team membership.
+**That was reverted on purpose.** `ssoProtection` is now `null`. The requirement
+is that anyone can reach both `member.hsnef.org` and `dev.member.hsnef.org` —
+testers are invited to try the site and will not have Vercel accounts, so a login
+wall makes the dev URL useless for its actual job. Both return HTTP 200 with no
+authentication.
 
-To reverse it: set `ssoProtection` to null on the project, or
-**Settings → Deployment Protection → Vercel Authentication → Disabled**.
+> **This raises the stakes on Phase 5.** Every environment still shares ONE
+> Supabase database (DEC-006). So a publicly reachable dev portal now sits in
+> front of **live member data**, and anyone testing on `dev.member.hsnef.org` is
+> reading and writing real member records — bookings, profiles, payments.
+>
+> The fix is not a login wall; it is Phase 5. Once `dev` points at its own
+> Supabase project, the dev URL can stay wide open and cost nothing, because
+> there will be nothing real behind it. **Until then, treat every action taken on
+> the dev URL as an action against production.**
 
 ---
 
