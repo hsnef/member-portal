@@ -10,7 +10,8 @@ _Last checked 2026-09-01._
   `dev` → `main` merge in **[PR #3](https://github.com/hsnef/member-portal/pull/3)**
   (Sujit merges). `dev` is 81 commits ahead of `main`.
 - **Health:** tests **none installed** · build **clean** (85/85 pages) · lint failing (pre-existing) ·
-  types **159 errors**, down from a 469 baseline (DEC-008) · CI ok.
+  types **see `npx tsc --noEmit`** — a large but finite pile of real schema drift,
+  down from a state where the schema did not resolve at all (DEC-008) · CI ok.
 - **Reality check:** despite the flow diagram below, **nothing has actually deployed since
   January** — Vercel Hobby cannot build a private org repo (DEC-007). Pushing to `dev`
   updates GitHub and nothing else.
@@ -188,7 +189,12 @@ implicit index signatures to type ALIASES, not INTERFACES — so every table fai
 `supabase-js` 2.89 and drops the `Database` generic; proven by comparison, since
 supabase-js's own `createClient` resolved correctly while ssr's did not.
 
-469 → 159 errors; `never` 418 → 1. **Open:** upgrade `@supabase/ssr` and remove
+The `never` epidemic went from 418 occurrences to 1. For the current error
+count run `npx tsc --noEmit` — do not trust a number written here.
+**A caution:** 78f49c1's message and an earlier version of this file both said
+"469 -> 159". The 159 was a mis-measurement and is wrong; re-measured on the
+same commit with the same command it is 209. Treat the direction as real and
+the figures as unreliable. **Open:** upgrade `@supabase/ssr` and remove
 the return-type annotations in `lib/supabase/{client,server}.ts`. That package
 handles PKCE cookies, so it needs its own testing pass.
 
@@ -233,7 +239,8 @@ choosing.** Until then, treat events as non-functional.
 sweep, shell, login, 21 member routes, 40 admin routes, and the non-React
 surfaces (emails, PDFs, Stripe). Every page in the app is on the system.
 
-**Type errors 469 -> 159**, `never` 418 -> 1. See DEC-008.
+**The Supabase schema resolves again** and `never` went 418 -> 1. See DEC-008 —
+including why the "159" figure quoted in that commit is wrong.
 
 **Nine bugs found and fixed**, all previously invisible because
 `next.config.ts` sets `ignoreBuildErrors` and every one was reported by the
