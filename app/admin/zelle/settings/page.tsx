@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { createClient } from '@/lib/supabase/client'
 import { formatPhoneNumber } from '@/lib/utils/formatters'
+import { AdminFormView, FormSection } from '@/components/admin/AdminFormView'
+import { Field, Input, Textarea } from '@/components/ui/Field'
+import { Alert } from '@/components/ui/Alert'
+import { WalletIcon, SettingsIcon, MailIcon } from 'lucide-react'
 
 interface ZelleSettingsData {
   enabled: boolean
@@ -175,249 +179,144 @@ export default function ZelleSettingsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <ProtectedRoute requiredRoles={['Office Manager', 'Admin']}>
-        <>
-          <div className="flex justify-center items-center min-h-[400px]">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-              <p className="mt-4 text-gray-600">Loading settings...</p>
-            </div>
-          </div>
-        </>
-      </ProtectedRoute>
-    )
-  }
-
   if (!hasAccess) {
     return (
       <ProtectedRoute requiredRoles={['Office Manager', 'Admin']}>
-        <>
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Access Denied</h2>
-            <p className="text-gray-600 mb-6">
-              Only Admin and Office Manager can configure Zelle settings.
-            </p>
-            <button
-              onClick={() => router.push('/admin/zelle')}
-              className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
-            >
-              Back to Zelle Payments
-            </button>
-          </div>
-        </>
+        <div />
       </ProtectedRoute>
     )
   }
 
   return (
     <ProtectedRoute requiredRoles={['Office Manager', 'Admin']}>
-      <>
-        <div className="space-y-6 max-w-3xl">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Zelle Settings</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Configure Zelle payment options for the portal
-              </p>
-            </div>
-            <button
-              onClick={() => router.push('/admin/zelle')}
-              className="text-sm text-gray-600 hover:text-gray-900"
-            >
-              ← Back to Zelle Payments
-            </button>
-          </div>
+      <AdminFormView
+        eyebrow="Settings"
+        title="Zelle payments"
+        description="Members transfer straight to the temple's bank. The office confirms each one."
+        backHref="/admin/zelle"
+        backLabel="Back to the queue"
+        onSubmit={(e) => {
+          e.preventDefault()
+          handleSave()
+        }}
+        saving={saving}
+        saveLabel="Save settings"
+        loading={loading}
+        error={message?.type === 'error' ? message.text : null}
+        success={message?.type === 'success' ? message.text : null}
+        disabled={settings.enabled && !settings.email.trim() && !settings.phone.trim()}
+        disabledReason="Add a Zelle email or phone number before turning this on."
+      >
+        <FormSection icon={WalletIcon} tone="tulsi" title="Availability">
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={settings.enabled}
+              onChange={(e) => setSettings({ ...settings, enabled: e.target.checked })}
+              className="mt-1 h-4 w-4 rounded border-line-strong text-saffron focus:ring-saffron-ring"
+            />
+            <span>
+              <span className="block text-[15px] text-ink">Offer Zelle at checkout</span>
+              <span className="block text-[13.5px] text-ink-3">
+                Members see Zelle alongside card payment when donating or paying an invoice.
+              </span>
+            </span>
+          </label>
 
-          {/* Status Message */}
-          {message && (
-            <div
-              className={`p-4 rounded-md ${
-                message.type === 'success'
-                  ? 'bg-green-50 text-green-800 border border-green-200'
-                  : 'bg-red-50 text-red-800 border border-red-200'
-              }`}
-            >
-              <p className="text-sm">{message.text}</p>
+          {settings.enabled && !settings.email.trim() && !settings.phone.trim() && (
+            <div className="mt-4">
+              <Alert tone="warning" title="Members cannot pay yet">
+                Zelle is switched on but there is no email or phone for them to send to. Add at
+                least one below.
+              </Alert>
             </div>
           )}
+        </FormSection>
 
-          {/* Main Settings Card */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            {/* Enable/Disable Toggle */}
-            <div className="px-6 py-5 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">Enable Zelle Payments</h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    When enabled, members can pay via Zelle for donations, memberships, and services.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setSettings(prev => ({ ...prev, enabled: !prev.enabled }))}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-saffron-ring focus:ring-offset-2 ${
-                    settings.enabled ? 'bg-saffron' : 'bg-gray-200'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      settings.enabled ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
-
-            {/* Zelle Account Details */}
-            <div className="px-6 py-5 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Receiving Account</h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Enter the email and/or phone number registered with Zelle to receive payments.
-                At least one is required when Zelle is enabled.
-              </p>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Zelle Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={settings.email}
-                    onChange={(e) => setSettings(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="temple@example.org"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Zelle Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    value={settings.phone}
-                    onChange={(e) => setSettings(prev => ({ ...prev, phone: formatPhoneNumber(e.target.value) }))}
-                    placeholder="(555) 123-4567"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Confirmation Settings */}
-            <div className="px-6 py-5 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Payment Confirmation</h3>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Auto-Confirm Threshold ($)
-                  </label>
-                  <p className="text-sm text-gray-500 mb-2">
-                    Payments at or below this amount will be automatically confirmed when the member marks them as sent.
-                    Larger payments require staff confirmation.
-                  </p>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={settings.autoConfirmThreshold}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      autoConfirmThreshold: parseInt(e.target.value) || 0
-                    }))}
-                    className="w-32 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                  />
-                  <span className="ml-2 text-sm text-gray-500">USD</span>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Payment Request Expiry (Hours)
-                  </label>
-                  <p className="text-sm text-gray-500 mb-2">
-                    How long a Zelle payment request remains valid before expiring.
-                  </p>
-                  <input
-                    type="number"
-                    min="1"
-                    max="168"
-                    value={settings.expiryHours}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      expiryHours: parseInt(e.target.value) || 48
-                    }))}
-                    className="w-32 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                  />
-                  <span className="ml-2 text-sm text-gray-500">hours</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Custom Instructions */}
-            <div className="px-6 py-5 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Payment Instructions</h3>
-              <p className="text-sm text-gray-500 mb-2">
-                Custom instructions shown to members when paying via Zelle.
-              </p>
-              <textarea
-                rows={3}
-                value={settings.instructions}
-                onChange={(e) => setSettings(prev => ({ ...prev, instructions: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-saffron-ring focus:border-transparent"
-                placeholder="Enter instructions for members..."
-              />
-            </div>
-
-            {/* Save Button */}
-            <div className="px-6 py-4 bg-transparent flex justify-end gap-3">
-              <button
-                onClick={() => router.push('/admin/zelle')}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
-              >
-                {saving ? 'Saving...' : 'Save Settings'}
-              </button>
-            </div>
+        <FormSection
+          icon={MailIcon}
+          tone="kumkum"
+          title="Where members send payment"
+          description="At least one is required. Both are shown to the member if provided."
+        >
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="Zelle email">
+              {({ id }) => (
+                <Input
+                  id={id}
+                  type="email"
+                  value={settings.email}
+                  onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+                />
+              )}
+            </Field>
+            <Field label="Zelle phone">
+              {({ id }) => (
+                <Input
+                  id={id}
+                  type="tel"
+                  className="tnum"
+                  value={settings.phone}
+                  onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+                />
+              )}
+            </Field>
           </div>
+        </FormSection>
 
-          {/* Help Section */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-blue-900 mb-3">How Zelle Payments Work</h3>
-            <div className="text-sm text-blue-800 space-y-2">
-              <p>
-                <strong>1. Member initiates payment:</strong> Member chooses &quot;Pay with Zelle&quot; and receives a unique reference code.
-              </p>
-              <p>
-                <strong>2. Member sends Zelle:</strong> Member sends payment from their bank app with the reference code in the memo.
-              </p>
-              <p>
-                <strong>3. Member confirms:</strong> Member marks &quot;I&apos;ve sent the payment&quot; on the portal.
-              </p>
-              <p>
-                <strong>4. Staff verifies:</strong> For payments above the threshold, staff verifies receipt in Zelle and confirms on the portal.
-              </p>
-              <p className="mt-3 pt-3 border-t border-blue-200">
-                <strong>Tip:</strong> Set the auto-confirm threshold to $0 if you want to manually verify all Zelle payments.
-              </p>
-            </div>
+        <FormSection icon={SettingsIcon} tone="sandal" title="How requests behave">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field
+              label="Auto-confirm under"
+              hint="Transfers below this amount are confirmed without the office checking. Set 0 to always check."
+            >
+              {({ id }) => (
+                <Input
+                  id={id}
+                  type="number"
+                  step="1"
+                  className="tnum"
+                  value={settings.autoConfirmThreshold}
+                  onChange={(e) =>
+                    setSettings({ ...settings, autoConfirmThreshold: Number(e.target.value) })
+                  }
+                />
+              )}
+            </Field>
+            <Field
+              label="Reference expires after (hours)"
+              hint="How long a member has to send the transfer before the reference lapses."
+            >
+              {({ id }) => (
+                <Input
+                  id={id}
+                  type="number"
+                  step="1"
+                  className="tnum"
+                  value={settings.expiryHours}
+                  onChange={(e) =>
+                    setSettings({ ...settings, expiryHours: Number(e.target.value) })
+                  }
+                />
+              )}
+            </Field>
+            <Field
+              label="Instructions for members"
+              className="sm:col-span-2"
+              hint="Shown with the reference code. Say clearly that the code must go in the memo."
+            >
+              {({ id }) => (
+                <Textarea
+                  id={id}
+                  rows={3}
+                  value={settings.instructions}
+                  onChange={(e) => setSettings({ ...settings, instructions: e.target.value })}
+                />
+              )}
+            </Field>
           </div>
-        </div>
-      </>
+        </FormSection>
+      </AdminFormView>
     </ProtectedRoute>
   )
 }
