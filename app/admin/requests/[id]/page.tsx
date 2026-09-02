@@ -4,6 +4,18 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { downloadInvoice } from '@/lib/pdf/invoice'
+import { AppLink } from '@/components/nav/Nav'
+import { Alert } from '@/components/ui/Alert'
+import { Button } from '@/components/ui/Button'
+import { Card, CardHeader } from '@/components/ui/Card'
+import { DescriptionList } from '@/components/ui/DescriptionList'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { RecordHeader } from '@/components/ui/RecordHeader'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { StatusBadge } from '@/components/ui/StatusBadge'
+import { ScrollTextIcon, DownloadIcon, SendIcon, CheckIcon, XIcon, FileQuestionIcon } from 'lucide-react'
+import { formatCurrency, formatDate } from '@/utils/format'
+import type { RequestStatus } from '@/types/design-system'
 
 interface Request {
   id: string
@@ -171,199 +183,167 @@ export default function ViewRequestPage() {
 
   if (loading) {
     return (
-      <>
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-          <p className="mt-4 text-gray-600">Loading request...</p>
-        </div>
-      </>
+      <div className="space-y-6" role="status" aria-live="polite">
+        <span className="sr-only">Loading this request...</span>
+        <Skeleton className="h-24 w-full rounded-2xl" />
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
     )
   }
 
-  if (!request || !member) {
+  if (!request) {
     return (
-      <>
-        <div className="text-center py-12">
-          <p className="text-gray-500">Request not found</p>
-          <button
-            onClick={() => router.push('/admin/requests')}
-            className="mt-4 px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
-          >
-            Back to Requests
-          </button>
-        </div>
-      </>
+      <EmptyState
+        icon={FileQuestionIcon}
+        title="Request not found"
+        description="This request may have been removed."
+        action={
+          <AppLink to="/admin/requests">
+            <Button>Back to requests</Button>
+          </AppLink>
+        }
+      />
     )
   }
 
-  const memberName = member.member_class === 'Personal'
-    ? `${member.first_name} ${member.last_name}`
-    : member.business_name
+  const reference = `INV-${request.id.slice(0, 8).toUpperCase()}`
+  const memberName =
+    member?.member_class === 'Business'
+      ? member?.business_name
+      : [member?.first_name, member?.last_name].filter(Boolean).join(' ')
 
   return (
-    <>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <button
-              onClick={() => router.push('/admin/requests')}
-              className="text-sm text-gray-600 hover:text-gray-900 mb-2"
-            >
-              ← Back to Requests
-            </button>
-            <h1 className="text-3xl font-bold text-gray-900">Request Details</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Invoice #{request.id.slice(0, 8).toUpperCase()}
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => router.push(`/admin/requests/${request.id}/edit`)}
-              className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
-            >
-              Edit Request
-            </button>
-            <button
-              onClick={handleDownloadInvoice}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              📄 Download Invoice
-            </button>
-          </div>
-        </div>
-
-        {/* Request Overview */}
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <div className="bg-transparent px-6 py-4 border-b flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Request Information</h2>
-            <span className={`px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(request.status)}`}>
-              {request.status}
+    <div className="space-y-7">
+      <RecordHeader
+        crumbs={[{ label: 'Requests', to: '/admin/requests' }, { label: reference }]}
+        icon={ScrollTextIcon}
+        tone="lotus"
+        eyebrow="Service request"
+        title={request.request_type}
+        meta={
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusBadge status={request.status as RequestStatus} />
+            <span className="tnum text-[14px] text-ink-3">
+              {reference} \\u00b7 raised {formatDate(request.created_at)}
             </span>
           </div>
-
-          <div className="p-6 space-y-6">
-            {/* Request Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Request Type</p>
-                <p className="text-lg font-semibold text-gray-900">{request.request_type}</p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Amount</p>
-                <p className="text-2xl font-bold text-saffron">${request.amount.toFixed(2)}</p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Requested Date</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  {new Date(request.requested_date).toLocaleDateString()}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Created</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  {new Date(request.created_at).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-
-            {/* Service Description */}
-            <div className="border-t pt-6">
-              <p className="text-sm text-gray-500 mb-2">Service Description</p>
-              <p className="text-gray-900">{request.service_description}</p>
-            </div>
-
-            {/* Notes */}
-            {request.notes && (
-              <div className="border-t pt-6">
-                <p className="text-sm text-gray-500 mb-2">Notes</p>
-                <p className="text-gray-900">{request.notes}</p>
-              </div>
+        }
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" icon={DownloadIcon} onClick={handleDownloadInvoice}>
+              Invoice
+            </Button>
+            {request.status === 'Draft' && (
+              <Button icon={SendIcon} onClick={() => handleUpdateStatus('Sent')}>
+                Send to member
+              </Button>
             )}
-          </div>
-        </div>
-
-        {/* Member Information */}
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <div className="bg-transparent px-6 py-4 border-b">
-            <h2 className="text-lg font-semibold text-gray-900">Member Information</h2>
-          </div>
-
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Member Name</p>
-                <p className="text-lg font-semibold text-gray-900">{memberName}</p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Membership ID</p>
-                <p className="text-lg font-mono font-semibold text-saffron">
-                  {request.membership_id}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Email</p>
-                <p className="text-gray-900">{member.primary_email}</p>
-              </div>
-
-              {member.primary_phone && (
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Phone</p>
-                  <p className="text-gray-900">{member.primary_phone}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-4 flex gap-3">
-              <button
-                onClick={() => router.push(`/admin/members/${request.member_id}`)}
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-transparent text-sm"
-              >
-                View Member Profile
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Status Actions */}
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <div className="bg-transparent px-6 py-4 border-b">
-            <h2 className="text-lg font-semibold text-gray-900">Update Status</h2>
-          </div>
-
-          <div className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              {['Draft', 'Sent', 'Paid', 'Completed', 'Cancelled'].map((status) => (
-                <button
-                  key={status}
-                  onClick={() => handleUpdateStatus(status)}
-                  disabled={request.status === status}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    request.status === status
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-transparent'
-                  }`}
-                >
-                  {status}
-                </button>
-              ))}
-            </div>
-
             {request.status === 'Sent' && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <p className="text-sm text-blue-900">
-                  💡 <strong>Tip:</strong> When payment is received, update status to "Paid" or record the payment directly from the payments section.
-                </p>
-              </div>
+              <Button icon={CheckIcon} onClick={() => handleUpdateStatus('Paid')}>
+                Mark paid
+              </Button>
+            )}
+            {request.status === 'Paid' && (
+              <Button icon={CheckIcon} onClick={() => handleUpdateStatus('Completed')}>
+                Mark completed
+              </Button>
             )}
           </div>
+        }
+      />
+
+      {request.status === 'Cancelled' && (
+        <Alert tone="danger" title="This request was cancelled">
+          It is kept for the record. Raise a new request if the service is still wanted.
+        </Alert>
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:items-start">
+        <Card>
+          <CardHeader title="What was requested" />
+          <DescriptionList
+            columns={2}
+            items={[
+              { label: 'Type', value: request.request_type },
+              {
+                label: 'Requested for',
+                value: request.requested_date ? formatDate(request.requested_date) : '\\u2014',
+                numeric: true,
+              },
+              { label: 'Reference', value: reference, numeric: true },
+              { label: 'Status', value: request.status },
+            ]}
+          />
+
+          {request.service_description && (
+            <div className="mt-5 rounded-2xl border border-line bg-surface-sunk p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
+                Description
+              </p>
+              <p className="mt-2 text-[14.5px] leading-relaxed text-ink-2">
+                {request.service_description}
+              </p>
+            </div>
+          )}
+
+          {request.notes && (
+            <div className="mt-4 rounded-2xl border border-line bg-surface-sunk p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
+                Office notes
+              </p>
+              <p className="mt-2 text-[14.5px] leading-relaxed text-ink-2">{request.notes}</p>
+            </div>
+          )}
+
+          <div className="mt-5 flex items-baseline justify-between border-t border-line pt-4">
+            <p className="font-serif text-[21px] text-ink">Amount</p>
+            <p className="tnum font-serif text-[30px] leading-none text-ink">
+              {formatCurrency(request.amount, true)}
+            </p>
+          </div>
+        </Card>
+
+        <div className="space-y-5 lg:sticky lg:top-24">
+          <Card spine="kumkum" className="pl-7">
+            <CardHeader title="Member" />
+            <DescriptionList
+              items={[
+                { label: 'Name', value: memberName || '\\u2014' },
+                { label: 'Membership', value: request.membership_id, numeric: true },
+                { label: 'Email', value: member?.primary_email ?? '\\u2014' },
+                ...(member?.primary_phone
+                  ? [{ label: 'Phone', value: member.primary_phone, numeric: true }]
+                  : []),
+              ]}
+            />
+            {request.member_id && (
+              <AppLink to={`/admin/members/${request.member_id}`} className="mt-4 block">
+                <Button variant="secondary" fullWidth>
+                  Open member record
+                </Button>
+              </AppLink>
+            )}
+          </Card>
+
+          {request.status !== 'Cancelled' && request.status !== 'Completed' && (
+            <Card tone="sunk">
+              <CardHeader title="Cancel this request" />
+              <p className="text-[14px] leading-relaxed text-ink-2">
+                The member will no longer see it as outstanding.
+              </p>
+              <Button
+                variant="secondary"
+                icon={XIcon}
+                fullWidth
+                className="mt-4"
+                onClick={() => handleUpdateStatus('Cancelled')}
+              >
+                Cancel request
+              </Button>
+            </Card>
+          )}
         </div>
       </div>
-    </>
+    </div>
   )
 }
