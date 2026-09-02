@@ -12,9 +12,17 @@ _Last checked 2026-09-01._
 - **Health:** tests **none installed** · build **clean** (85/85 pages) · lint failing (pre-existing) ·
   types **see `npx tsc --noEmit`** — a large but finite pile of real schema drift,
   down from a state where the schema did not resolve at all (DEC-008) · CI ok.
-- **Reality check:** despite the flow diagram below, **nothing has actually deployed since
-  January** — Vercel Hobby cannot build a private org repo (DEC-007). Pushing to `dev`
-  updates GitHub and nothing else.
+- **Deploys work again as of 2026-09-01.** Sujit made the GitHub repo **public**,
+  which unblocked the Vercel builds that had not run since 11 January (DEC-007).
+  `dev.member.hsnef.org` is live and serving the design system — its CSS carries
+  the tokens and zero legacy hex values. **Making the repo private again will stop
+  deploys**, so that setting and DEC-007 are now the same decision.
+- **The `member` Vercel project's preview build of `dev` still fails.** The
+  `dev.member` project succeeds. The build log lives under the **`hsnef` Vercel
+  scope, which the CLI login `jisujit` and the Vercel MCP connection cannot read** —
+  both only reach `techsilon`. Ruled out from this side: the tree builds clean
+  locally, `npm ci` is in sync, and nothing references the untracked CSVs. Get
+  someone with `hsnef` access to read it, or add `jisujit` to that Vercel team.
 - **Blocking a real launch:** DEC-009 (events feature is broken against the DB),
   DEC-007 (no deploys), and the Supabase dev/prod split.
 
@@ -232,6 +240,44 @@ production and what data is in the prod table. **Check production before
 choosing.** Until then, treat events as non-functional.
 
 ## Session Handoff
+
+### DEC-010: member PII was committed, and served without authentication
+**2026-09-01 · Fixed going forward; the history is NOT clean.**
+
+`public/member-import-template.csv` held six real households — children's names,
+home addresses, emails, phone numbers. `/public` is served verbatim by Next, so
+`GET /member-import-template.csv` returned it with **HTTP 200 and no auth on any
+deployment**, whether or not the repo was public. Verified live before changing
+it. `/admin/members/import` links to it as the example download.
+
+Fixed: its 42 columns kept, rows replaced with two obviously synthetic ones.
+`docs/reference/data/current-member-data-import-template*.csv` untracked and
+gitignored; they stay on disk for whoever runs an import.
+
+**Not fixed:** the data remains in git history (added in `77fdbef` and `41c13ef`,
+long before the redesign branch), and the repo is currently **public**. Only a
+history rewrite or making the repo private removes that exposure — and making it
+private stops the Vercel deploys. That trade-off is unresolved and is Sujit's.
+
+The import feature itself was already safe and is unchanged: the CSV is parsed in
+the browser with PapaParse and rows go straight to Supabase, so an uploaded sheet
+never touches the server or the repo.
+
+### DEC-011: the login page created an account for any address typed
+**2026-09-01 · Fixed.** `signInWithOtp` defaults to `shouldCreateUser: true`.
+Memberships are created by the office, never by the portal, so an account made
+this way could never be linked — `/api/auth/link-member` 404s — and had no way to
+fix itself. It is how the stranded `gsujit@hotmail.com` account came to exist.
+
+`/api/auth/check-member-email` now gates it, allowing an address only if a member
+record exists **or** an auth account already does. **Both arms are required:**
+`gsujit@gmail.com` holds no member record, so a member-only rule would have
+locked Sujit out of his own dev environment. Fails open — a broken lookup must
+not lock everyone out. It is a client-side gate; closing it fully needs a
+Supabase auth hook, which is dashboard configuration.
+
+Related: 18 of 21 member routes had no "no membership" state and rendered against
+a null member. Nine reachable ones now share `NoMembershipState`.
 
 ### Session 3 — 2026-09-01 — port complete, docs synced, types fixed
 
