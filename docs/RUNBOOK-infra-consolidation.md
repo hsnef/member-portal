@@ -14,7 +14,7 @@ GitHub main  ──► Vercel PRODUCTION  ──► Supabase  gapvsdrzavjaublwkq
 
 **Progress — tick these as you go, so a later session knows where you stopped:**
 
-- [~] Phase 1 — Vercel down to one project — **mostly done 2026-09-02, see 1.5/1.7 below**
+- [x] Phase 1 — Vercel down to one project — **done 2026-09-02, except the two env vars in 1.7**
 - [ ] Phase 2 — fix `member.hsnef.org` (it is DOWN)
 - [ ] Phase 3 — apply the events migration
 - [ ] Phase 4 — clean the test data
@@ -62,10 +62,21 @@ preview and production.
 | 1.6 | `member.hsnef.org` attached to the kept project |
 | 1.8 | Verified: PR #4 shows **one** Vercel check, and it passes |
 
-### 1.5 — Point production at `main` — STILL TO DO
+### 1.5 — Point production at `main` — DONE 2026-09-02
 
-`vercel.com/hsnef/member` → **Settings → Environments → Production →
-Branch Tracking** → change `dev` to `main` → **Save**.
+Done by Sujit in the dashboard: **Settings → Environments → Production →
+Branch Tracking** → `main` → Save. Verified via the API: `productionBranch = main`.
+
+`dev.member.hsnef.org` was then repointed to the **`dev` branch** via the API and
+confirmed still serving HTTP 200. `member.hsnef.org` follows production (`main`);
+`devportal-iota.vercel.app` likewise.
+
+> **A UI trap worth knowing.** On the domain editor, connecting a domain to
+> *Preview* leaves **Save greyed out** until you pick an actual branch — the
+> "All Branches" text is placeholder in an empty search field, not a selection.
+> Nothing saves and there is no error to tell you why.
+
+Original instructions, for reference:
 
 > Older Vercel docs (and an earlier version of this runbook) say *Settings →
 > Git → Production Branch*. In the current UI it lives under **Environments**,
