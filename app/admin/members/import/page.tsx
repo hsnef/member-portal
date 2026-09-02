@@ -12,6 +12,22 @@ import {
   parseMailingAddress,
   isRowEmpty,
 } from '@/lib/utils/memberImportValidation'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card, CardHeader } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { StatCard } from '@/components/ui/StatCard'
+import { DataTable, type Column } from '@/components/ui/DataTable'
+import { AppLink } from '@/components/nav/Nav'
+import {
+  UploadIcon,
+  DownloadIcon,
+  CheckCircle2Icon,
+  AlertTriangleIcon,
+  UsersIcon,
+  HistoryIcon,
+} from 'lucide-react'
 
 // New 42-column CSV structure
 interface CSVRow {
@@ -557,253 +573,234 @@ export default function ImportMembersPage() {
   const validCount = parsedMembers.filter((m) => m.isValid).length
   const invalidCount = parsedMembers.length - validCount
 
-  return (
-    <>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Import Members from CSV</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Upload a CSV file to bulk import member data
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => router.push('/admin/members/import-history')}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent text-sm"
-            >
-              Import History
-            </button>
-            <button
-              onClick={() => router.push('/admin/members')}
-              className="text-sm text-gray-600 hover:text-gray-900"
-            >
-              ← Back to Members
-            </button>
-          </div>
-        </div>
-
-        {/* Instructions */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-blue-900 mb-2">CSV Format Instructions</h3>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• <strong>Required columns:</strong> Member_First_Name, Member_Last_Name</li>
-            <li>• <strong>Member_Number:</strong> Leave blank to auto-generate, or provide 8-digit format XXYYZZZZ</li>
-            <li>• <strong>Member_Type:</strong> Community, Annual, or Lifetime (defaults to Community)</li>
-            <li>• <strong>Member_Class:</strong> Personal or Business (defaults to Personal)</li>
-            <li>• <strong>Address:</strong> Provide individual fields (Address_1, City, State, Zip) OR use Mailing_Address (will be auto-parsed)</li>
-            <li>• <strong>Family Members:</strong> Include Primary, Secondary, and up to 4 children with their details</li>
-            <li>• <strong>Business_Name:</strong> For Business class, defaults to First_Name + Last_Name if blank</li>
-          </ul>
-        </div>
-
-        {/* File Upload */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Upload CSV File
-          </label>
-          <input
-            type="file"
-            accept=".csv"
-            onChange={handleFileUpload}
-            className="block w-full text-sm text-gray-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-md file:border-0
-              file:text-sm file:font-semibold
-              file:bg-saffron file:text-white
-              hover:file:bg-saffron-hover
-              cursor-pointer"
-          />
-          {file && (
-            <p className="mt-2 text-sm text-gray-600">
-              Selected: {file.name} ({Math.round(file.size / 1024)} KB)
-            </p>
+  const previewColumns: Array<Column<ParsedMember>> = [
+    {
+      key: 'status',
+      header: '',
+      width: '44px',
+      cell: (m) =>
+        m.isValid ? (
+          <CheckCircle2Icon className="h-5 w-5 text-tulsi" aria-label="Valid" />
+        ) : (
+          <AlertTriangleIcon className="h-5 w-5 text-danger" aria-label="Has errors" />
+        ),
+    },
+    {
+      key: 'name',
+      header: 'Member',
+      cell: (m) => (
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-ink">
+            {m.member_class === 'Business'
+              ? m.business_name || '\—'
+              : [m.first_name, m.last_name].filter(Boolean).join(' ') || '\—'}
+          </p>
+          {!m.isValid && (
+            <p className="mt-0.5 truncate text-[13px] text-danger">{m.errors.join('; ')}</p>
           )}
         </div>
+      ),
+    },
+    {
+      key: 'membership_id',
+      header: 'Membership',
+      cell: (m) => (
+        <span className="tnum text-ink-2">{m.membership_id || 'auto'}</span>
+      ),
+    },
+    {
+      key: 'current_level',
+      header: 'Level',
+      secondary: true,
+      cell: (m) => <Badge tone="neutral">{m.current_level}</Badge>,
+    },
+    {
+      key: 'primary_email',
+      header: 'Email',
+      secondary: true,
+      cell: (m) => <span className="truncate text-ink-2">{m.primary_email || '\—'}</span>,
+    },
+  ]
 
-        {/* Preview */}
-        {parsedMembers.length > 0 && !importResults && (
-          <>
-            <div className="bg-white shadow rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Preview ({parsedMembers.length} members)
-                </h2>
-                <div className="flex gap-4">
-                  <span className="text-sm text-green-600 font-medium">
-                    ✓ {validCount} Valid
-                  </span>
-                  {invalidCount > 0 && (
-                    <span className="text-sm text-red-600 font-medium">
-                      ✗ {invalidCount} Invalid
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="overflow-x-auto max-h-96 overflow-y-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-transparent sticky top-0">
-                    <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Member #</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Profile Name</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Class</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Family</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">City/State</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Errors</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {parsedMembers.map((member, idx) => (
-                      <tr key={idx} className={member.isValid ? '' : 'bg-red-50'}>
-                        <td className="px-3 py-2 text-sm">
-                          {member.isValid ? (
-                            <span className="text-green-600">✓</span>
-                          ) : (
-                            <span className="text-red-600">✗</span>
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-900">
-                          {member.membership_id || (
-                            <span className="text-gray-400 text-xs">Auto-gen</span>
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-900">
-                          {member.member_profile_name || (
-                            member.business_name ? member.business_name : 'N/A'
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-sm">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            member.current_level === 'Lifetime' ? 'bg-amber-100 text-amber-800' :
-                            member.current_level === 'Annual' ? 'bg-blue-100 text-blue-800' :
-                            'bg-green-100 text-green-800'
-                          }`}>
-                            {member.current_level}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2 text-sm">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            member.member_class === 'Business' ? 'bg-purple-100 text-purple-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {member.member_class}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-600">
-                          {member.family_members.length} member{member.family_members.length !== 1 ? 's' : ''}
-                          {member.family_members.length > 0 && (
-                            <div className="text-xs text-gray-500">
-                              {member.family_members.filter(fm => fm.relationship === 'Primary').length > 0 && 'P'}
-                              {member.family_members.filter(fm => fm.relationship === 'Secondary').length > 0 && '+S'}
-                              {member.family_members.filter(fm => fm.relationship === 'Child').length > 0 && ` +${member.family_members.filter(fm => fm.relationship === 'Child').length}C`}
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-600">
-                          {member.city && member.state ? `${member.city}, ${member.state}` : member.city || member.state || 'N/A'}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-red-600 max-w-xs">
-                          {member.errors.join(', ')}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => {
-                  setFile(null)
-                  setParsedMembers([])
-                }}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleImport}
-                disabled={importing || validCount === 0}
-                className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
-              >
-                {importing ? 'Importing...' : `Import ${validCount} Valid Members`}
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* Import Results */}
-        {importResults && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Import Results</h2>
-
-            {importResults.batchNumber && (
-              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-900">
-                  <strong>Batch ID:</strong> {importResults.batchNumber}
-                </p>
-                <p className="text-xs text-blue-700 mt-1">
-                  You can revert this import from the Import History page if needed.
-                </p>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-green-600 font-medium">Successful</p>
-                <p className="text-3xl font-bold text-green-900">{importResults.success}</p>
-              </div>
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-sm text-red-600 font-medium">Failed</p>
-                <p className="text-3xl font-bold text-red-900">{importResults.failed}</p>
-              </div>
-            </div>
-
-            {importResults.errors.length > 0 && (
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold text-red-900 mb-2">Errors:</h3>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-h-48 overflow-y-auto">
-                  {importResults.errors.map((error, idx) => (
-                    <p key={idx} className="text-sm text-red-800 mb-1">
-                      {error}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => router.push('/admin/members/import-history')}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
-              >
-                View Import History
-              </button>
-              <button
-                onClick={() => router.push('/admin/members')}
-                className="px-6 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover font-semibold"
-              >
-                View Members
-              </button>
-              <button
-                onClick={() => {
-                  setFile(null)
-                  setParsedMembers([])
-                  setImportResults(null)
-                }}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-transparent"
-              >
-                Import Another File
-              </button>
-            </div>
-          </div>
+  const previewCard = (m: ParsedMember) => (
+    <div className="space-y-2">
+      <div className="flex items-start justify-between gap-3">
+        <p className="min-w-0 truncate font-semibold text-ink">
+          {m.member_class === 'Business'
+            ? m.business_name || '\—'
+            : [m.first_name, m.last_name].filter(Boolean).join(' ') || '\—'}
+        </p>
+        {m.isValid ? (
+          <Badge tone="tulsi">Ready</Badge>
+        ) : (
+          <Badge tone="danger">Has errors</Badge>
         )}
       </div>
-    </>
+      <p className="tnum truncate text-[13.5px] text-ink-2">
+        {m.membership_id || 'auto'} \· {m.current_level}
+      </p>
+      {!m.isValid && <p className="text-[13px] text-danger">{m.errors.join('; ')}</p>}
+    </div>
+  )
+
+  return (
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Members"
+        title="Import members"
+        description="Upload a spreadsheet to create many membership records at once."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <AppLink to="/admin/members/import-history">
+              <Button variant="secondary" icon={HistoryIcon}>
+                Past imports
+              </Button>
+            </AppLink>
+            <a href="/member-import-template.csv" download>
+              <Button variant="secondary" icon={DownloadIcon}>
+                Template
+              </Button>
+            </a>
+          </div>
+        }
+      />
+
+      {/* ---- Result ---- */}
+      {importResults ? (
+        <div className="space-y-6">
+          <Alert
+            tone={importResults.failed === 0 ? 'success' : 'warning'}
+            title={
+              importResults.failed === 0
+                ? `Imported ${importResults.success} members`
+                : `Imported ${importResults.success}, skipped ${importResults.failed}`
+            }
+          >
+            {importResults.batchNumber && (
+              <>
+                Recorded as batch{' '}
+                <span className="tnum font-semibold">{importResults.batchNumber}</span>. If
+                something went wrong you can revert the whole batch from Past imports.
+              </>
+            )}
+          </Alert>
+
+          {importResults.errors.length > 0 && (
+            <Card tone="sunk">
+              <CardHeader
+                title="What was skipped"
+                description="These rows were not imported. Fix them in the spreadsheet and import again."
+              />
+              <ul className="space-y-1.5">
+                {importResults.errors.map((err, i) => (
+                  <li key={i} className="text-[14px] text-ink-2">
+                    {err}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
+          <div className="flex flex-wrap gap-3">
+            <AppLink to="/admin/members">
+              <Button icon={UsersIcon}>View the directory</Button>
+            </AppLink>
+            <AppLink to="/admin/members/import-history">
+              <Button variant="secondary" icon={HistoryIcon}>
+                Past imports
+              </Button>
+            </AppLink>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* ---- Upload ---- */}
+          <Card>
+            <CardHeader
+              title="Choose a file"
+              description="A CSV in the template's format. Nothing is saved until you confirm the preview."
+            />
+            <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-line-strong bg-surface-sunk px-6 py-10 text-center transition-colors hover:border-saffron-ring hover:bg-saffron-soft">
+              <UploadIcon className="h-8 w-8 text-ink-3" aria-hidden="true" />
+              <span className="mt-3 text-[15px] font-semibold text-ink">
+                {file ? file.name : 'Choose a CSV file'}
+              </span>
+              <span className="mt-1 text-[13.5px] text-ink-3">
+                {file ? 'Choose a different file' : 'Or drag one onto this area'}
+              </span>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="sr-only"
+              />
+            </label>
+          </Card>
+
+          {/* ---- Preview ---- */}
+          {parsedMembers.length > 0 && (
+            <>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <StatCard
+                  label="Rows found"
+                  value={String(parsedMembers.length)}
+                  caption="In the file"
+                  icon={UsersIcon}
+                  tone="sandal"
+                />
+                <StatCard
+                  label="Ready to import"
+                  value={String(validCount)}
+                  caption="Pass validation"
+                  icon={CheckCircle2Icon}
+                  tone="tulsi"
+                />
+                <StatCard
+                  label="Will be skipped"
+                  value={String(invalidCount)}
+                  caption={invalidCount > 0 ? 'Fix these and re-import' : 'Nothing to fix'}
+                  icon={AlertTriangleIcon}
+                  tone={invalidCount > 0 ? 'marigold' : 'sandal'}
+                />
+              </div>
+
+              {invalidCount > 0 && (
+                <Alert tone="warning" title={`${invalidCount} rows will not be imported`}>
+                  They are listed below with the reason. Importing now brings in the
+                  {' '}{validCount} valid rows only; the rest stay in your spreadsheet.
+                </Alert>
+              )}
+
+              <DataTable
+                caption="Rows found in the file"
+                columns={previewColumns}
+                rows={parsedMembers}
+                rowKey={(m) =>
+                  [m.membership_id, m.primary_email, m.first_name, m.last_name].join('|')
+                }
+                mobileCard={previewCard}
+              />
+
+              <div className="flex flex-wrap items-center justify-end gap-3 border-t border-line pt-5">
+                {validCount === 0 && (
+                  <p className="mr-auto text-[13.5px] text-ink-3">
+                    No rows pass validation, so there is nothing to import.
+                  </p>
+                )}
+                <Button
+                  size="lg"
+                  icon={UploadIcon}
+                  loading={importing}
+                  disabled={validCount === 0}
+                  onClick={handleImport}
+                >
+                  Import {validCount} member{validCount === 1 ? '' : 's'}
+                </Button>
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </div>
   )
 }
