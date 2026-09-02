@@ -192,19 +192,38 @@ export type Receipt = {
   created_at: string;
 }
 
+export type EventStatus = 'Draft' | 'Published' | 'Cancelled' | 'Completed';
+export type EventCategory =
+  | 'Festival' | 'Puja' | 'Educational' | 'Social' | 'Cultural' | 'Fundraiser' | 'Other';
+
+// Matches migration 20260901000001_events_align_with_application.sql, which
+// brought the table up to the column set every events page already used. See
+// DEC-009 -- before that migration these queries all returned 400.
 export type Event = {
   id: string;
-  name: string;
+  event_name: string;
   description: string | null;
+  short_description: string | null;
+  category: EventCategory;
+  status: EventStatus;
   event_date: string;
   event_time: string | null;
   location: string | null;
   registration_required: boolean;
   registration_opens_at: string | null;
-  registration_closes_at: string | null;
-  max_attendees: number | null;
+  registration_deadline: string | null;
+  max_capacity: number | null;
+  member_price: number | null;
+  non_member_price: number | null;
+  image_url: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  rsvp_enabled: boolean;
+  is_payable: boolean;
+  is_test_event: boolean | null;
+  // Superseded by member_price / non_member_price; retained in the table.
   price_per_person: number | null;
-  member_discount_percent: number;
+  member_discount_percent: number | null;
   created_at: string;
   updated_at: string;
   created_by: string | null;
@@ -221,6 +240,7 @@ export type EventRegistration = {
   payment_id: string | null;
   amount_paid: number | null;
   registered_at: string;
+  attended: boolean | null;
 }
 
 export type LedgerEntry = {
