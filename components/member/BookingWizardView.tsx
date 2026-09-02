@@ -95,6 +95,22 @@ export interface BookingWizardViewProps {
   additionalNotes: string
   onAdditionalNotesChange: (v: string) => void
   onSubmit: () => void
+
+  /* --- optional slots, used by the office console's version of this wizard --- */
+  eyebrow?: string
+  title?: string
+  description?: string
+  /** Rendered above the service picker, e.g. choosing which member this is for. */
+  leadingSection?: React.ReactNode
+  /** Rendered below the contact card, e.g. staff-only options. */
+  trailingSection?: React.ReactNode
+  /** Label for the submit button. */
+  submitLabel?: string
+  /** Blocks submit; explain why. */
+  submitDisabled?: boolean
+  submitDisabledReason?: string
+  /** Footnote under the submit button. */
+  submitNote?: React.ReactNode
 }
 
 export function BookingWizardView(props: BookingWizardViewProps) {
@@ -130,6 +146,15 @@ export function BookingWizardView(props: BookingWizardViewProps) {
     additionalNotes,
     onAdditionalNotesChange,
     onSubmit,
+    eyebrow = 'Book a service',
+    title = 'Request a puja or service',
+    description = 'Add one or more services, then send the request. The temple office confirms and invoices you.',
+    leadingSection,
+    trailingSection,
+    submitLabel = 'Send request',
+    submitDisabled = false,
+    submitDisabledReason,
+    submitNote,
   } = props
 
   const selectedService = services.find((s) => s.id === selectedServiceId)
@@ -137,11 +162,7 @@ export function BookingWizardView(props: BookingWizardViewProps) {
 
   return (
     <div className="space-y-7">
-      <PageHeader
-        eyebrow="Book a service"
-        title="Request a puja or service"
-        description="Add one or more services, then send the request. The temple office confirms and invoices you."
-      />
+      <PageHeader eyebrow={eyebrow} title={title} description={description} />
 
       {error && (
         <Alert tone="danger" title="That didn't send">
@@ -151,6 +172,8 @@ export function BookingWizardView(props: BookingWizardViewProps) {
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:items-start">
         <div className="space-y-6">
+          {leadingSection}
+
           {/* ---- Add a service ---- */}
           <Card>
             <CardHeader
@@ -334,6 +357,7 @@ export function BookingWizardView(props: BookingWizardViewProps) {
               </Field>
             </div>
           </Card>
+          {trailingSection}
         </div>
 
         {/* ---- Request summary ---- */}
@@ -396,16 +420,24 @@ export function BookingWizardView(props: BookingWizardViewProps) {
               fullWidth
               icon={CalendarPlusIcon}
               loading={submitting}
-              disabled={cart.length === 0 || !requesterName || !requesterPhone || !requesterEmail}
+              disabled={
+                submitDisabled ||
+                cart.length === 0 ||
+                !requesterName ||
+                !requesterPhone ||
+                !requesterEmail
+              }
               className="mt-5"
               onClick={onSubmit}
             >
-              Send request
+              {submitLabel}
             </Button>
 
             <p className="mt-3 text-[13px] leading-snug text-ink-3">
-              Nothing is charged now. The office reviews your request and sends an invoice once it
-              is approved.
+              {submitDisabled && submitDisabledReason
+                ? submitDisabledReason
+                : (submitNote ??
+                  'Nothing is charged now. The office reviews your request and sends an invoice once it is approved.')}
             </p>
           </Card>
         </div>
