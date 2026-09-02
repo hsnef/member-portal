@@ -215,13 +215,18 @@ function ScanQRContent() {
     if (!member) return
 
     try {
+      // The table is `ledger_entries`; `activity_log` does not exist, so this
+      // insert always failed. `activity_type` is a Postgres enum whose values
+      // are Visit | Puja | Event | Donation | Service | Membership -- "Temple
+      // Visit" was not one of them -- and the column is `description`, not
+      // `notes`, and it is NOT NULL.
       const { error } = await supabase
-        .from('activity_log')
+        .from('ledger_entries')
         .insert({
           member_id: member.id,
-          activity_type: 'Temple Visit',
+          activity_type: 'Visit',
           activity_date: new Date().toISOString(),
-          notes: 'QR code check-in'
+          description: 'Checked in at the temple (QR scan)',
         })
 
       if (error) throw error

@@ -50,7 +50,7 @@ export type UserRole = 'Member' | 'Office Staff' | 'Office Manager' | 'Admin';
 
 export type ActivityType = 'Visit' | 'Puja' | 'Event' | 'Donation' | 'Service' | 'Membership';
 
-export interface Member {
+export type Member = {
   id: string;
   auth_user_id: string | null;
   membership_id: string;
@@ -99,7 +99,7 @@ export interface Member {
   updated_by: string | null;
 }
 
-export interface FamilyMember {
+export type FamilyMember = {
   id: string;
   member_id: string;
   first_name: string;
@@ -112,7 +112,7 @@ export interface FamilyMember {
   updated_at: string;
 }
 
-export interface BusinessContact {
+export type BusinessContact = {
   id: string;
   business_member_id: string;
   contact_member_id: string;
@@ -120,7 +120,7 @@ export interface BusinessContact {
   created_at: string;
 }
 
-export interface Membership {
+export type Membership = {
   id: string;
   member_id: string;
   level: MembershipLevel;
@@ -134,7 +134,7 @@ export interface Membership {
   updated_at: string;
 }
 
-export interface UserRoleRecord {
+export type UserRoleRecord = {
   id: string;
   user_id: string;
   role: UserRole;
@@ -142,7 +142,7 @@ export interface UserRoleRecord {
   granted_by: string | null;
 }
 
-export interface Request {
+export type Request = {
   id: string;
   request_number: string;
   member_id: string | null;
@@ -160,7 +160,7 @@ export interface Request {
   created_by: string | null;
 }
 
-export interface Payment {
+export type Payment = {
   id: string;
   member_id: string;
   request_id: string | null;
@@ -178,7 +178,7 @@ export interface Payment {
   created_by: string | null;
 }
 
-export interface Receipt {
+export type Receipt = {
   id: string;
   receipt_number: string;
   payment_id: string;
@@ -192,7 +192,7 @@ export interface Receipt {
   created_at: string;
 }
 
-export interface Event {
+export type Event = {
   id: string;
   name: string;
   description: string | null;
@@ -210,7 +210,7 @@ export interface Event {
   created_by: string | null;
 }
 
-export interface EventRegistration {
+export type EventRegistration = {
   id: string;
   event_id: string;
   member_id: string;
@@ -223,7 +223,7 @@ export interface EventRegistration {
   registered_at: string;
 }
 
-export interface LedgerEntry {
+export type LedgerEntry = {
   id: string;
   member_id: string;
   activity_type: ActivityType;
@@ -236,7 +236,7 @@ export interface LedgerEntry {
   created_at: string;
 }
 
-export interface LoginAuditLog {
+export type LoginAuditLog = {
   id: string;
   auth_user_id: string | null;
   member_id: string | null;
@@ -250,7 +250,7 @@ export interface LoginAuditLog {
   login_at: string;
 }
 
-export interface RegistrationInvitation {
+export type RegistrationInvitation = {
   id: string;
   member_id: string;
   email: string;
@@ -261,7 +261,7 @@ export interface RegistrationInvitation {
   accepted_at: string | null;
 }
 
-export interface Election {
+export type Election = {
   id: string;
   title: string;
   description: string | null;
@@ -274,7 +274,7 @@ export interface Election {
   created_by: string | null;
 }
 
-export interface ElectionOption {
+export type ElectionOption = {
   id: string;
   election_id: string;
   option_text: string;
@@ -282,7 +282,7 @@ export interface ElectionOption {
   created_at: string;
 }
 
-export interface Vote {
+export type Vote = {
   id: string;
   election_id: string;
   member_id: string;
@@ -290,7 +290,7 @@ export interface Vote {
   voted_at: string;
 }
 
-export interface AuditLog {
+export type AuditLog = {
   id: string;
   table_name: string;
   record_id: string;
@@ -305,7 +305,7 @@ export interface AuditLog {
 export type MemberAuditLogActionType = 'CREATED' | 'MEMBERSHIP_ID_CHANGED' | 'FIELD_UPDATED' | 'BULK_UPDATE';
 export type CreationSource = 'AUTO_IMPORT' | 'SELF_REGISTRATION' | 'OFFICE_STAFF' | 'OFFICE_MANAGER' | 'ADMIN';
 
-export interface MemberAuditLog {
+export type MemberAuditLog = {
   id: string;
   member_id: string;
   action_type: MemberAuditLogActionType;
@@ -322,7 +322,7 @@ export interface MemberAuditLog {
   changed_at: string;
 }
 
-export interface PendingMemberRegistration {
+export type PendingMemberRegistration = {
   id: string;
   member_class: MemberClass;
   requested_level: MembershipLevel;
@@ -361,7 +361,7 @@ export interface PendingMemberRegistration {
   updated_at: string;
 }
 
-export interface ZellePaymentRequest {
+export type ZellePaymentRequest = {
   id: string;
   reference_code: string;
   member_id: string | null;
@@ -395,7 +395,7 @@ export interface ZelleSettings {
 }
 
 // Database schema type for Supabase client
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       members: {
@@ -406,6 +406,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Member>;
+        Relationships: [];
       };
       family_members: {
         Row: FamilyMember;
@@ -415,6 +416,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<FamilyMember>;
+        Relationships: [];
       };
       business_contacts: {
         Row: BusinessContact;
@@ -423,6 +425,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<BusinessContact>;
+        Relationships: [];
       };
       memberships: {
         Row: Membership;
@@ -432,6 +435,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Membership>;
+        Relationships: [];
       };
       user_roles: {
         Row: UserRoleRecord;
@@ -440,6 +444,7 @@ export interface Database {
           granted_at?: string;
         };
         Update: Partial<UserRoleRecord>;
+        Relationships: [];
       };
       requests: {
         Row: Request;
@@ -450,6 +455,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Request>;
+        Relationships: [];
       };
       payments: {
         Row: Payment;
@@ -458,6 +464,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Payment>;
+        Relationships: [];
       };
       receipts: {
         Row: Receipt;
@@ -467,6 +474,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Receipt>;
+        Relationships: [];
       };
       events: {
         Row: Event;
@@ -476,6 +484,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Event>;
+        Relationships: [];
       };
       event_registrations: {
         Row: EventRegistration;
@@ -484,6 +493,7 @@ export interface Database {
           registered_at?: string;
         };
         Update: Partial<EventRegistration>;
+        Relationships: [];
       };
       ledger_entries: {
         Row: LedgerEntry;
@@ -492,6 +502,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<LedgerEntry>;
+        Relationships: [];
       };
       login_audit_logs: {
         Row: LoginAuditLog;
@@ -500,6 +511,7 @@ export interface Database {
           login_at?: string;
         };
         Update: Partial<LoginAuditLog>;
+        Relationships: [];
       };
       registration_invitations: {
         Row: RegistrationInvitation;
@@ -508,6 +520,7 @@ export interface Database {
           invited_at?: string;
         };
         Update: Partial<RegistrationInvitation>;
+        Relationships: [];
       };
       elections: {
         Row: Election;
@@ -516,6 +529,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Election>;
+        Relationships: [];
       };
       election_options: {
         Row: ElectionOption;
@@ -524,6 +538,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<ElectionOption>;
+        Relationships: [];
       };
       votes: {
         Row: Vote;
@@ -532,6 +547,7 @@ export interface Database {
           voted_at?: string;
         };
         Update: Partial<Vote>;
+        Relationships: [];
       };
       audit_logs: {
         Row: AuditLog;
@@ -540,6 +556,7 @@ export interface Database {
           changed_at?: string;
         };
         Update: Partial<AuditLog>;
+        Relationships: [];
       };
       member_audit_log: {
         Row: MemberAuditLog;
@@ -548,6 +565,7 @@ export interface Database {
           changed_at?: string;
         };
         Update: Partial<MemberAuditLog>;
+        Relationships: [];
       };
       pending_member_registrations: {
         Row: PendingMemberRegistration;
@@ -558,6 +576,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<PendingMemberRegistration>;
+        Relationships: [];
       };
       zelle_payment_requests: {
         Row: ZellePaymentRequest;
@@ -567,8 +586,225 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<ZellePaymentRequest>;
+        Relationships: [];
+      };
+      // ---------------------------------------------------------------
+      // Generated from the live schema (PostgREST OpenAPI) on 2026-09-01.
+      // These 10 tables were queried in code but absent from this type, so
+      // every .from() on them resolved to `never` -- roughly 400 of the
+      // ~469 type errors this file was producing.
+      // ---------------------------------------------------------------
+      import_batches: {
+        Row: {
+          id: string;
+          batch_number: string;
+          file_name: string;
+          imported_by: string | null;
+          imported_by_name: string | null;
+          total_records: number;
+          successful_records: number;
+          failed_records: number;
+          status: string;
+          notes: string | null;
+          created_at: string | null;
+          reverted_at: string | null;
+          reverted_by: string | null;
+          reverted_by_name: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['import_batches']['Row']>;
+        Update: Partial<Database['public']['Tables']['import_batches']['Row']>;
+        Relationships: [];
+      };
+      portal_settings: {
+        Row: {
+          id: string;
+          setting_key: string;
+          setting_value: Record<string, unknown>;
+          setting_type: string;
+          display_name: string;
+          description: string | null;
+          category: string;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['portal_settings']['Row']>;
+        Update: Partial<Database['public']['Tables']['portal_settings']['Row']>;
+        Relationships: [];
+      };
+      purohits: {
+        Row: {
+          id: string;
+          name: string;
+          bio: string | null;
+          picture_url: string | null;
+          profile_url: string | null;
+          phone: string | null;
+          email: string | null;
+          specialties: string | null;
+          is_active: boolean | null;
+          display_order: number | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['purohits']['Row']>;
+        Update: Partial<Database['public']['Tables']['purohits']['Row']>;
+        Relationships: [];
+      };
+      service_booking_items: {
+        Row: {
+          id: string;
+          booking_id: string;
+          service_id: string;
+          service_name: string;
+          service_date: string;
+          service_time: string | null;
+          location_type: "Temple" | "External";
+          service_address: string | null;
+          purohit_id: string | null;
+          purohit_name: string | null;
+          item_amount: number;
+          item_notes: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['service_booking_items']['Row']>;
+        Update: Partial<Database['public']['Tables']['service_booking_items']['Row']>;
+        Relationships: [];
+      };
+      service_bookings: {
+        Row: {
+          id: string;
+          booking_number: string;
+          member_id: string | null;
+          membership_id: string | null;
+          requester_name: string;
+          requester_phone: string;
+          requester_email: string;
+          total_amount: number;
+          status: "Pending Approval" | "Approved" | "Rejected" | "Paid" | "Completed" | "Cancelled" | null;
+          submitted_at: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          reviewed_by_name: string | null;
+          approval_notes: string | null;
+          rejection_reason: string | null;
+          payment_id: string | null;
+          paid_at: string | null;
+          completed_at: string | null;
+          notes: string | null;
+          internal_notes: string | null;
+          is_walk_in: boolean | null;
+          created_by: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['service_bookings']['Row']>;
+        Update: Partial<Database['public']['Tables']['service_bookings']['Row']>;
+        Relationships: [];
+      };
+      services: {
+        Row: {
+          id: string;
+          name: string;
+          display_name: string | null;
+          description: string | null;
+          category: "Puja" | "Other" | null;
+          price_member_temple: number | null;
+          price_community_temple: number | null;
+          price_member_external: number | null;
+          price_community_external: number | null;
+          duration_minutes: number | null;
+          preparation_notes: string | null;
+          is_active: boolean | null;
+          is_temple_only: boolean | null;
+          requires_appointment: boolean | null;
+          display_order: number | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['services']['Row']>;
+        Update: Partial<Database['public']['Tables']['services']['Row']>;
+        Relationships: [];
+      };
+      terms_acceptance_bypasses: {
+        Row: {
+          id: string;
+          member_id: string | null;
+          auth_user_id: string | null;
+          terms_version: string;
+          terms_content_id: string | null;
+          bypassed_at: string;
+          error_message: string | null;
+          retry_count: number;
+          ip_address: string | null;
+          user_agent: string | null;
+          resolved: boolean | null;
+          resolved_at: string | null;
+          resolved_by: string | null;
+          resolution_notes: string | null;
+          should_reprompt: boolean | null;
+          reprompted_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['terms_acceptance_bypasses']['Row']>;
+        Update: Partial<Database['public']['Tables']['terms_acceptance_bypasses']['Row']>;
+        Relationships: [];
+      };
+      terms_acceptances: {
+        Row: {
+          id: string;
+          member_id: string | null;
+          auth_user_id: string | null;
+          terms_version: string;
+          terms_content_id: string | null;
+          accepted_at: string;
+          ip_address: string | null;
+          user_agent: string | null;
+          acceptance_method: string | null;
+        };
+        Insert: Partial<Database['public']['Tables']['terms_acceptances']['Row']>;
+        Update: Partial<Database['public']['Tables']['terms_acceptances']['Row']>;
+        Relationships: [];
+      };
+      terms_content: {
+        Row: {
+          id: string;
+          version: string;
+          title: string;
+          content: string;
+          content_format: string;
+          is_active: boolean;
+          effective_date: string;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['terms_content']['Row']>;
+        Update: Partial<Database['public']['Tables']['terms_content']['Row']>;
+        Relationships: [];
+      };
+      theme_definitions: {
+        Row: {
+          id: string;
+          name: string;
+          display_name: string;
+          description: string | null;
+          theme_type: string;
+          css_variables: Record<string, unknown>;
+          fonts: Record<string, unknown> | null;
+          metadata: Record<string, unknown> | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          is_active: boolean | null;
+        };
+        Insert: Partial<Database['public']['Tables']['theme_definitions']['Row']>;
+        Update: Partial<Database['public']['Tables']['theme_definitions']['Row']>;
+        Relationships: [];
       };
     };
+
     Views: {};
     Functions: {
       generate_membership_id: {
