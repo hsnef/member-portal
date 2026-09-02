@@ -14,7 +14,7 @@ GitHub main  ──► Vercel PRODUCTION  ──► Supabase  gapvsdrzavjaublwkq
 
 **Progress — tick these as you go, so a later session knows where you stopped:**
 
-- [ ] Phase 1 — Vercel down to one project
+- [~] Phase 1 — Vercel down to one project — **mostly done 2026-09-02, see 1.5/1.7 below**
 - [ ] Phase 2 — fix `member.hsnef.org` (it is DOWN)
 - [ ] Phase 3 — apply the events migration
 - [ ] Phase 4 — clean the test data
@@ -41,6 +41,31 @@ GitHub main  ──► Vercel PRODUCTION  ──► Supabase  gapvsdrzavjaublwkq
 ---
 
 ## Phase 1 — Vercel down to one project
+
+> **Status 2026-09-02: done except two steps that need the dashboard.**
+>
+> Done via the Vercel API: env vars compared (**`member` had ZERO variables** —
+> that, not scoping, is why every one of its builds failed, and it means nothing
+> was lost); `member.hsnef.org` released; the old project **renamed to
+> `member-legacy` and its git connection removed** rather than deleted, so it
+> can no longer build or post checks but is still there if you want it — delete
+> it whenever; `dev.member` renamed to **`member`**; `member.hsnef.org`
+> re-attached. **PR #4 now shows a single green Vercel check.**
+>
+> **STILL TO DO — 1.5 and 1.7, both dashboard-only:**
+>
+> 1. **Production branch is still `dev`.** The API silently ignores this field on
+>    three different payloads; it has to be the dashboard. `vercel.com/hsnef/member`
+>    → **Settings → Git → Production Branch** → `main`. **Until you do this,
+>    merging PR #4 will NOT deploy to production**, and `member.hsnef.org` serves
+>    the `dev` branch.
+> 2. **Immediately after that**, pin `dev.member.hsnef.org` to the `dev` branch
+>    under **Settings → Domains** — otherwise it starts serving `main`.
+> 3. **Add `CRON_SECRET` and `ZELLE_TOKEN_SECRET`** (values are in your
+>    `.env.local`). Claude was blocked from copying secrets out of `.env.local`
+>    to an external service, which is the right call — do it by hand.
+
+
 
 **Why:** two projects building the same branch is the cause of the failing check
 on the PR. The `member` project builds `dev` as a Preview and almost certainly
