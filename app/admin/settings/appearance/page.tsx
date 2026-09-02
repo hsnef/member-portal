@@ -22,6 +22,13 @@ import {
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useRouter } from 'next/navigation'
 import type { Theme } from '@/lib/themes/types'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card, CardHeader } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
+import { Button } from '@/components/ui/Button'
+import { Modal } from '@/components/ui/Modal'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { PaletteIcon, PlusIcon, UploadIcon } from 'lucide-react'
 
 export default function AppearanceSettingsPage() {
   const router = useRouter()
@@ -161,152 +168,95 @@ export default function AppearanceSettingsPage() {
 
   if (authLoading || loading) {
     return (
-      <>
-        <div className="flex items-center justify-center">
-          <p>Loading...</p>
-        </div>
-      </>
+      <div className="space-y-6" role="status" aria-live="polite">
+        <span className="sr-only">Loading themes...</span>
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
     )
   }
 
   return (
-    <>
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Appearance Settings</h1>
-          <p className="text-gray-600 mt-2">Manage themes for the entire portal</p>
-        </div>
-
-        {/* Message */}
-        {message && (
-          <div
-            className={`mb-6 p-4 rounded-lg ${
-              message.type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
-            }`}
-          >
-            <p className={message.type === 'success' ? 'text-green-800' : 'text-red-800'}>
-              {message.text}
-            </p>
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Settings"
+        title="Appearance"
+        description="The portal's theme: colours, fonts, spacing and corner radius."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" icon={UploadIcon} onClick={() => setShowUploadModal(true)}>
+              Upload a theme
+            </Button>
+            <Button icon={PlusIcon} onClick={handleCreateNew}>
+              New theme
+            </Button>
           </div>
-        )}
+        }
+      />
 
-        {/* Active Theme Section */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Active Theme</h2>
-          {themesLoading ? (
-            <p className="text-gray-500">Loading themes...</p>
-          ) : (
-            <div className="flex items-center gap-4">
-              <select
-                value={activeThemeName}
-                onChange={(e) => {
-                  const selectedTheme = themes.find(t => t.name === e.target.value)
-                  if (selectedTheme) {
-                    handleThemeSelect(selectedTheme)
-                  }
-                }}
-                disabled={saving}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-              >
-                {themes.map((theme) => (
-                  <option key={theme.name} value={theme.name}>
-                    {theme.displayName}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={async () => {
-                  const selectedTheme = themes.find(t => t.name === activeThemeName)
-                  if (selectedTheme) {
-                    await handleThemeSelect(selectedTheme)
-                  }
-                }}
-                disabled={saving}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-              >
-                {saving ? 'Applying...' : 'Apply Theme'}
-              </button>
-            </div>
-          )}
-        </div>
+      {message && (
+        <Alert
+          tone={message.type === 'success' ? 'success' : 'danger'}
+          title={message.type === 'success' ? 'Saved' : "That didn't work"}
+        >
+          {message.text}
+        </Alert>
+      )}
 
-        {/* Theme Management Section */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Theme Management</h2>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowUploadModal(true)}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-transparent transition-colors"
-              >
-                Upload JSON (Advanced)
-              </button>
-              <button
-                onClick={handleCreateNew}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Create New Theme
-              </button>
-            </div>
-          </div>
+      {/* The design system reads its colours through the active theme -- see
+          DEC-001 in docs/PROJECT-HUB.md. Editing the built-in HSNEF theme
+          changes the portal's own palette, so say so plainly. */}
+      <Alert tone="info" title="Themes drive the portal's design system">
+        The active theme supplies the colours and fonts the whole portal uses. To try something
+        new, duplicate a theme and edit the copy rather than changing the one that is live.
+      </Alert>
 
-          {themesLoading ? (
-            <p className="text-gray-500">Loading themes...</p>
-          ) : (
-            <ThemeList
-              themes={themes}
-              activeThemeName={activeThemeName}
-              onSelect={handleThemeSelect}
-              onEdit={handleEdit}
-              onDelete={handleDeleteTheme}
-              onDuplicate={handleDuplicate}
-            />
-          )}
-        </div>
+      <Card>
+        <CardHeader
+          title="Themes"
+          description="Select one to make it active for every member and staff member."
+        />
+        <ThemeList
+          themes={themes}
+          activeThemeName={activeThemeName}
+          onSelect={handleThemeSelect}
+          onEdit={handleEdit}
+          onDelete={handleDeleteTheme}
+          onDuplicate={handleDuplicate}
+        />
+      </Card>
 
-        {/* Theme Builder Modal */}
-        {showBuilder && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-lg max-w-6xl w-full my-8">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-semibold">
-                    {editingTheme ? 'Edit Theme' : duplicatingTheme ? 'Duplicate Theme' : 'Create New Theme'}
-                  </h2>
-                  <button
-                    onClick={() => {
-                      setShowBuilder(false)
-                      setEditingTheme(null)
-                      setDuplicatingTheme(null)
-                    }}
-                    className="text-gray-500 hover:text-gray-700 text-2xl"
-                  >
-                    ×
-                  </button>
-                </div>
-                <ThemeBuilder
-                  initialTheme={editingTheme || undefined}
-                  onSave={handleSaveTheme}
-                  onCancel={() => {
-                    setShowBuilder(false)
-                    setEditingTheme(null)
-                    setDuplicatingTheme(null)
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+      {/* The builder and upload modal internals are left exactly as they were;
+          only their surrounding chrome is restyled. */}
+      <Modal
+        open={showBuilder}
+        onClose={() => {
+          setShowBuilder(false)
+          setEditingTheme(null)
+          setDuplicatingTheme(null)
+        }}
+        variant="panel"
+        width="lg"
+        title={editingTheme ? 'Edit theme' : 'New theme'}
+      >
+        <ThemeBuilder
+          initialTheme={editingTheme || undefined}
+          onSave={handleSaveTheme}
+          onCancel={() => {
+            setShowBuilder(false)
+            setEditingTheme(null)
+            setDuplicatingTheme(null)
+          }}
+        />
+      </Modal>
 
-        {/* Upload Modal */}
-        {showUploadModal && (
-          <ThemeUploadModal
-            isOpen={showUploadModal}
-            onClose={() => setShowUploadModal(false)}
-            onSave={handleSaveTheme}
-          />
-        )}
-      </div>
-    </>
+      {showUploadModal && (
+        <ThemeUploadModal
+          isOpen={showUploadModal}
+          onClose={() => setShowUploadModal(false)}
+          onSave={handleSaveTheme}
+        />
+      )}
+    </div>
   )
 }

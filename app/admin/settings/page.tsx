@@ -1,250 +1,191 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth/AuthContext'
+import { AppLink } from '@/components/nav/Nav'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card } from '@/components/ui/Card'
+import { IconTile } from '@/components/ui/IconTile'
+import { PermissionNote } from '@/components/auth/RoleGate'
+import {
+  ArrowRightIcon,
+  CalendarDaysIcon,
+  ClipboardListIcon,
+  FileClockIcon,
+  HistoryIcon,
+  PaletteIcon,
+  SettingsIcon,
+  ShieldCheckIcon,
+  UploadIcon,
+  UserCogIcon,
+  FlaskConicalIcon,
+  WalletIcon,
+} from 'lucide-react'
+import type { UserRole } from '@/types/database'
+import type { Tone } from '@/utils/tones'
 
-export default function SettingsPage() {
-  const router = useRouter()
+interface SettingsCard {
+  title: string
+  description: string
+  href: string
+  icon: typeof SettingsIcon
+  tone: Tone
+  roles: UserRole[]
+}
 
-  const settingsCategories = [
-    {
-      title: 'Staff Role Management',
-      description: 'Assign and manage Admin, Office Manager, and Office Staff roles',
-      icon: (
-        <svg className="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      ),
-      href: '/admin/settings/staff-roles',
-      roles: ['Admin'],
-    },
-    {
-      title: 'Portal Settings',
-      description: 'Configure authentication, registration, and portal-wide settings',
-      icon: (
-        <svg className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-        </svg>
-      ),
-      href: '/admin/portal-settings',
-      roles: ['Admin', 'Office Manager'],
-    },
-    {
-      title: 'Appearance Settings',
-      description: 'Select and manage themes for the entire portal (Super Admin only)',
-      icon: (
-        <svg className="h-8 w-8 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-        </svg>
-      ),
-      href: '/admin/settings/appearance',
-      roles: ['Admin'],
-    },
-    {
-      title: 'Zelle Payments',
-      description: 'Configure Zelle payment settings, receiving account, and auto-confirm thresholds',
-      icon: (
-        <svg className="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      ),
-      href: '/admin/zelle/settings',
-      roles: ['Admin', 'Office Manager'],
-    },
-    {
-      title: 'Test Accounts',
-      description: 'Manage test accounts with data isolation and toggle visibility. Test users see only test data, staff can toggle test data visibility',
-      icon: (
-        <svg className="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-      ),
-      href: '/admin/test-accounts',
-      roles: ['Admin', 'Office Manager'],
-    },
-    {
-      title: 'Import History',
-      description: 'View and manage CSV import batches, revert imports',
-      icon: (
-        <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-        </svg>
-      ),
-      href: '/admin/members/import-history',
-      roles: ['Admin', 'Office Manager', 'Office Staff'],
-    },
-    {
-      title: 'Member Data Import',
-      description: 'Import member data from CSV files',
-      icon: (
-        <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ),
-      href: '/admin/members/import',
-      roles: ['Admin', 'Office Manager', 'Office Staff'],
-    },
-    {
-      title: 'Services Management',
-      description: 'Configure service catalog and pricing',
-      icon: (
-        <svg className="h-8 w-8 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-      ),
-      href: '/admin/services',
-      roles: ['Admin', 'Office Manager', 'Office Staff'],
-    },
-    {
-      title: 'Priests Management',
-      description: 'Manage priest profiles and availability',
-      icon: (
-        <svg className="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      ),
-      href: '/admin/settings/priests',
-      roles: ['Admin', 'Office Manager', 'Office Staff'],
-    },
-    {
-      title: 'Event Management',
-      description: 'Configure events and registration settings',
-      icon: (
-        <svg className="h-8 w-8 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      ),
-      href: '/admin/events',
-      roles: ['Admin', 'Office Manager', 'Office Staff'],
-    },
-    {
-      title: 'Member Audit Logs',
-      description: 'View complete history of member record changes',
-      icon: (
-        <svg className="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-      href: '/admin/audit-logs',
-      roles: ['Admin', 'Office Manager', 'Office Staff'],
-    },
-  ]
+/**
+ * The `roles` on each card mirror the requiredRoles on the destination route.
+ * A card the current user cannot open is still SHOWN, with a PermissionNote
+ * naming the role needed -- the design system's rule against dead controls.
+ * Previously these were rendered as ordinary links and bounced the user to
+ * /unauthorized with no explanation.
+ */
+const SETTINGS_CARDS: SettingsCard[] = [
+  {
+    title: 'Staff roles',
+    description: 'Who can use the office console, and what each of them can do.',
+    href: '/admin/settings/staff-roles',
+    icon: ShieldCheckIcon,
+    tone: 'kumkum',
+    roles: ['Admin'],
+  },
+  {
+    title: 'Portal settings',
+    description: 'Registration, authentication and membership pricing.',
+    href: '/admin/portal-settings',
+    icon: SettingsIcon,
+    tone: 'sandal',
+    roles: ['Admin', 'Office Manager'],
+  },
+  {
+    title: 'Appearance',
+    description: 'The portal theme: colours, fonts and spacing.',
+    href: '/admin/settings/appearance',
+    icon: PaletteIcon,
+    tone: 'lotus',
+    roles: ['Admin'],
+  },
+  {
+    title: 'Zelle payments',
+    description: 'Where members send transfers, and how requests behave.',
+    href: '/admin/zelle/settings',
+    icon: WalletIcon,
+    tone: 'tulsi',
+    roles: ['Admin', 'Office Manager'],
+  },
+  {
+    title: 'Test accounts',
+    description: 'Seeded logins for QA, kept separate from real member data.',
+    href: '/admin/test-accounts',
+    icon: FlaskConicalIcon,
+    tone: 'neutral',
+    roles: ['Admin', 'Office Manager'],
+  },
+  {
+    title: 'Import members',
+    description: 'Create many membership records from a spreadsheet.',
+    href: '/admin/members/import',
+    icon: UploadIcon,
+    tone: 'saffron',
+    roles: ['Admin', 'Office Manager', 'Office Staff'],
+  },
+  {
+    title: 'Import history',
+    description: 'Past imports, and reverting one that went wrong.',
+    href: '/admin/members/import-history',
+    icon: HistoryIcon,
+    tone: 'sandal',
+    roles: ['Admin', 'Office Manager', 'Office Staff'],
+  },
+  {
+    title: 'Service catalog',
+    description: 'The pujas and services members can book, and their pricing.',
+    href: '/admin/services',
+    icon: ClipboardListIcon,
+    tone: 'copper',
+    roles: ['Admin', 'Office Manager', 'Office Staff'],
+  },
+  {
+    title: 'Priests',
+    description: 'Purohits available to perform services.',
+    href: '/admin/settings/priests',
+    icon: UserCogIcon,
+    tone: 'kumkum',
+    roles: ['Admin', 'Office Manager', 'Office Staff'],
+  },
+  {
+    title: 'Events',
+    description: 'Festivals, classes and seva.',
+    href: '/admin/events',
+    icon: CalendarDaysIcon,
+    tone: 'marigold',
+    roles: ['Admin', 'Office Manager', 'Office Staff'],
+  },
+  {
+    title: 'Audit trail',
+    description: 'Every change made to a member record, and who made it.',
+    href: '/admin/audit-logs',
+    icon: FileClockIcon,
+    tone: 'sandal',
+    roles: ['Admin', 'Office Manager', 'Office Staff'],
+  },
+]
+
+export default function AdminSettingsPage() {
+  const { hasAnyRole } = useAuth()
 
   return (
-    <>
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            System configuration and management tools
-          </p>
-        </div>
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Office console"
+        title="Settings"
+        description="Configuration for the portal, the catalog and the office itself."
+      />
 
-        {/* System Information */}
-        <div className="bg-kumkum rounded-lg shadow-lg p-6 text-white">
-          <h2 className="text-2xl font-bold mb-2">HSNEF Member Portal</h2>
-          <p className="text-white/90">Hindu Society of North East Florida</p>
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div>
-              <p className="text-white/70">Version</p>
-              <p className="font-semibold">1.0.0</p>
-            </div>
-            <div>
-              <p className="text-white/70">Environment</p>
-              <p className="font-semibold">Production</p>
-            </div>
-            <div>
-              <p className="text-white/70">Database</p>
-              <p className="font-semibold">Supabase</p>
-            </div>
-          </div>
-        </div>
+      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {SETTINGS_CARDS.map((card) => {
+          const allowed = hasAnyRole(card.roles)
 
-        {/* Settings Categories */}
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Configuration</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {settingsCategories.map((category) => (
-              <button
-                key={category.href}
-                onClick={() => router.push(category.href)}
-                className="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow text-left"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-shrink-0">{category.icon}</div>
+          if (!allowed) {
+            return (
+              <Card as="li" key={card.href} tone="sunk" className="flex h-full flex-col">
+                <IconTile icon={card.icon} tone="neutral" size="lg" shape="arch" />
+                <h2 className="mt-4 font-serif text-[21px] leading-tight text-ink-2">
+                  {card.title}
+                </h2>
+                <p className="mt-1.5 flex-1 text-[14.5px] leading-snug text-ink-3">
+                  {card.description}
+                </p>
+                <div className="mt-4">
+                  <PermissionNote roles={card.roles} />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {category.title}
-                </h3>
-                <p className="text-sm text-gray-600">{category.description}</p>
-                <div className="mt-4 text-sm text-saffron font-medium">
-                  Configure →
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+              </Card>
+            )
+          }
 
-        {/* Coming Soon */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Coming Soon</h2>
-          <div className="space-y-3 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>Voting Module - Elections and polls for members (Phase 2)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              <span>Email Templates - Customize automated email notifications</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              <span>Reports & Analytics - Advanced reporting and insights</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button
-              onClick={() => router.push('/admin/members')}
-              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-md text-left transition-colors"
-            >
-              <div className="font-semibold text-gray-900">View All Members</div>
-              <div className="text-sm text-gray-600">Manage member database</div>
-            </button>
-            <button
-              onClick={() => router.push('/admin/payments')}
-              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-md text-left transition-colors"
-            >
-              <div className="font-semibold text-gray-900">Record Payment</div>
-              <div className="text-sm text-gray-600">Add new payment record</div>
-            </button>
-            <button
-              onClick={() => router.push('/admin/bookings')}
-              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-md text-left transition-colors"
-            >
-              <div className="font-semibold text-gray-900">View Bookings</div>
-              <div className="text-sm text-gray-600">Manage service bookings</div>
-            </button>
-            <button
-              onClick={() => router.push('/admin/events')}
-              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-md text-left transition-colors"
-            >
-              <div className="font-semibold text-gray-900">Manage Events</div>
-              <div className="text-sm text-gray-600">Create and configure events</div>
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
+          return (
+            <li key={card.href}>
+              <AppLink to={card.href} className="group block h-full">
+                <Card interactive spine={card.tone} className="flex h-full flex-col pl-7">
+                  <IconTile icon={card.icon} tone={card.tone} size="lg" shape="arch" />
+                  <h2 className="mt-4 font-serif text-[21px] leading-tight text-ink">
+                    {card.title}
+                  </h2>
+                  <p className="mt-1.5 flex-1 text-[14.5px] leading-snug text-ink-2">
+                    {card.description}
+                  </p>
+                  <span className="mt-5 inline-flex items-center gap-1.5 text-[14.5px] font-semibold text-saffron">
+                    Open
+                    <ArrowRightIcon
+                      className="h-4 w-4 transition-transform duration-300 ease-smooth group-hover:translate-x-1"
+                      aria-hidden="true"
+                    />
+                  </span>
+                </Card>
+              </AppLink>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
   )
 }
