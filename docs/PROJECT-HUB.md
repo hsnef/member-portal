@@ -165,7 +165,89 @@ Stripe payments is arguably commercial, so Hobby is likely the wrong plan regard
 `dev.member.hsnef.org` and `member.hsnef.org` sites are serving whatever was last successfully
 deployed, and will keep serving that until this is fixed.
 
+### DEC-008: The Supabase schema failed to resolve for three stacked reasons
+**2026-09-01 · Fixed.** Not "types out of sync". (a) Ten tables were queried in
+code but never declared in `Database['public']['Tables']`. (b) `Row: <interface>`
+can never satisfy postgrest-js's `Record<string, unknown>` — TypeScript gives
+implicit index signatures to type ALIASES, not INTERFACES — so every table failed
+`GenericTable` and the whole schema collapsed. (c) `@supabase/ssr` 0.5.2 predates
+`supabase-js` 2.89 and drops the `Database` generic; proven by comparison, since
+supabase-js's own `createClient` resolved correctly while ssr's did not.
+
+469 → 159 errors; `never` 418 → 1. **Open:** upgrade `@supabase/ssr` and remove
+the return-type annotations in `lib/supabase/{client,server}.ts`. That package
+handles PKCE cookies, so it needs its own testing pass.
+
+### DEC-009: THE EVENTS FEATURE CANNOT WORK AGAINST THIS DATABASE
+**2026-09-01 · OPEN, not fixed. Needs a product decision.**
+
+Verified with live queries, not inferred:
+
+```
+GET /events?status=eq.Published  -> 400  column events.status does not exist
+GET /events?select=event_name    -> 400  column events.event_name does not exist
+GET /events?select=id,name       -> 200  []
+```
+
+The `events` table — in the live database AND in every migration in this repo —
+has `name`, `description`, `event_date`, `event_time`, `location`,
+`registration_required`, `registration_opens_at`, `registration_closes_at`,
+`max_attendees`, `price_per_person`, `member_discount_percent`, plus
+`short_description`, `rsvp_enabled`, `is_payable` added later.
+
+Every events page instead uses `event_name`, `category`, `max_capacity`,
+`member_price`, `non_member_price`, `registration_deadline`, `status`,
+`image_url`, `contact_email`, `contact_phone`. **None of those columns exist
+anywhere.** So `/member/events`, `/admin/events`, event creation, editing and
+registration all fail with a 400.
+
+This is pre-existing and predates the design-system port. It was invisible
+because the `never` types hid it from the compiler and the pages catch their
+errors and render an empty state — a broken feature looks like "no events yet".
+
+**The decision, which is not Claude's to make:** either write the missing
+migration to bring the table up to what the code expects, or change the code
+back to the columns that exist. It depends on whether events ever worked in
+production and what data is in the prod table. **Check production before
+choosing.** Until then, treat events as non-functional.
+
 ## Session Handoff
+
+### Session 3 — 2026-09-01 — port complete, docs synced, types fixed
+
+**The design-system port is DONE.** Stages 1-8: tokens, primitives, colour
+sweep, shell, login, 21 member routes, 40 admin routes, and the non-React
+surfaces (emails, PDFs, Stripe). Every page in the app is on the system.
+
+**Type errors 469 -> 159**, `never` 418 -> 1. See DEC-008.
+
+**Nine bugs found and fixed**, all previously invisible because
+`next.config.ts` sets `ignoreBuildErrors` and every one was reported by the
+type checker nobody was reading:
+
+| # | Bug | Effect on live data |
+|---|---|---|
+| 1 | `userData` misread, /member/bookings | list always empty |
+| 2 | same, /member/bookings/new | bookings saved with `member_id: null` |
+| 3 | same, /admin/bookings/[id] | `reviewed_by: null` — no record of who approved |
+| 4 | same, /admin/bookings/new | as above, for walk-ins |
+| 5 | `address_line1` typo | receipts issued with no member address |
+| 6 | `const memberId = memberId` | two admin pages threw and had NEVER rendered |
+| 7 | Zelle settings | could save "enabled" with nowhere to send money |
+| 8 | QR check-in | wrote to a non-existent table, wrong enum, wrong column |
+| 9 | TermsAcceptanceModal + TestDataToggle | lost when AdminLayout was deleted — **I caused this one**, and the docs review caught it |
+
+**Found but NOT fixed — needs your decision:**
+- **DEC-009: the events feature cannot work.** Read it before touching events.
+- **White on `#c75b12` is 4.26:1, below WCAG AA's 4.5** for normal text. The
+  design kit claimed it passes; it does not. Darkening `--saffron` to about
+  `#b8530e` gives 4.90 and is nearly imperceptible. One line in
+  `app/globals.css`; it propagates to emails and PDFs too. Brand colour, so
+  it is Sujit's call.
+- `hsnef.org` publishes THREE `v=spf1` records; RFC 7208 allows one.
+
+**Still true:** nothing has deployed since January (DEC-007). Pushing to `dev`
+updates GitHub only.
 
 ### Session 2 — 2026-08-31 — govkit guardrails + deployment audit
 
