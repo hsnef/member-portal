@@ -123,3 +123,9 @@ LPT9
 design-kit/
 
 test-results/
+
+# Real member data. These import sheets hold live households -- names of
+# children, home addresses, emails and phone numbers -- and must never be
+# committed. They stay on disk for whoever is doing an import; they do not
+# belong in a repository that can be made public.
+docs/reference/data/current-member-data-import-template*.csv
