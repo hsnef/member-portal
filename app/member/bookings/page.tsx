@@ -9,6 +9,7 @@ import {
   type MemberBooking,
   type BookingFilter,
 } from '@/components/member/BookingsView'
+import { NoMembershipState } from '@/components/member/NoMembershipState'
 
 export default function MemberBookingsPage() {
   const router = useRouter()
@@ -57,6 +58,10 @@ export default function MemberBookingsPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (!member) {
+    return <NoMembershipState detail="nothing booked" />
   }
 
   return (

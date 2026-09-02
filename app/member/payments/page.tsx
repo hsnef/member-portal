@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { downloadReceipt, generateReceipt } from '@/lib/pdf/receipt'
 import jsPDF from 'jspdf'
 import type { PaymentMethod, PaymentPurpose } from '@/types/database'
+import { NoMembershipState } from '@/components/member/NoMembershipState'
 
 export default function MemberPaymentsPage() {
   const router = useRouter()
@@ -206,9 +207,13 @@ export default function MemberPaymentsPage() {
     new Set(payments.map((p) => new Date(p.payment_date).getFullYear()))
   ).sort((a, b) => b - a)
 
+  if (!member) {
+    return <NoMembershipState detail="nothing to show" />
+  }
+
   return (
     <PaymentsView
-      memberId={member?.id ?? ''}
+      memberId={member.id}
       payments={filteredPayments}
       loading={loading}
       year={filterYear}

@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import { downloadInvoice } from '@/lib/pdf/invoice'
 import { RequestsView, type MemberRequest } from '@/components/member/RequestsView'
+import { NoMembershipState } from '@/components/member/NoMembershipState'
 
 export default function MemberRequestsPage() {
   const router = useRouter()
@@ -68,6 +69,10 @@ export default function MemberRequestsPage() {
       createdDate: request.created_at,
       dueDate: request.due_date,
     })
+  }
+
+  if (!member) {
+    return <NoMembershipState detail="nothing to request against" />
   }
 
   return (

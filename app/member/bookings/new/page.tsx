@@ -12,6 +12,7 @@ import {
 } from '@/components/member/BookingWizardView'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { formatPhoneNumber } from '@/lib/utils/formatters'
+import { NoMembershipState } from '@/components/member/NoMembershipState'
 
 export default function NewBookingPage() {
   const router = useRouter()
@@ -250,6 +251,10 @@ export default function NewBookingPage() {
         <Skeleton className="h-96 w-full rounded-2xl" />
       </div>
     )
+  }
+
+  if (!member) {
+    return <NoMembershipState detail="nothing to book against" />
   }
 
   return (

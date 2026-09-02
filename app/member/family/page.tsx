@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth/AuthContext'
 import { FamilyView } from '@/components/member/FamilyView'
 import { createClient } from '@/lib/supabase/client'
 import type { FamilyMember, Nakshatra } from '@/types/database'
+import { NoMembershipState } from '@/components/member/NoMembershipState'
 
 const NAKSHATRAS: Nakshatra[] = [
   'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashirsha', 'Ardra',
@@ -201,6 +202,10 @@ export default function MemberFamilyPage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  if (!member) {
+    return <NoMembershipState detail="no family to manage" />
   }
 
   return (

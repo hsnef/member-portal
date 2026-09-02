@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { CreditCardIcon } from 'lucide-react'
 import { formatCurrency } from '@/utils/format'
 import { stripeAppearance } from '@/components/member/CheckoutView'
+import { NoMembershipState } from '@/components/member/NoMembershipState'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
@@ -380,6 +381,10 @@ function DonateContent() {
     clientSecret,
     appearance: stripeAppearance,
   } : undefined
+
+  if (!member) {
+    return <NoMembershipState detail="no membership to donate against" />
+  }
 
   return (
     <DonateView

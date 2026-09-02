@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import { getTestAuthUserIds, isTestIsolationMode } from '@/lib/utils/testDataFiltering'
 import { EventsView, type MemberEvent } from '@/components/member/EventsView'
+import { NoMembershipState } from '@/components/member/NoMembershipState'
 
 export default function MemberEventsPage() {
   const router = useRouter()
@@ -198,6 +199,10 @@ export default function MemberEventsPage() {
   }
 
   const categories = ['All', ...Array.from(new Set(events.map((e) => e.category))).sort()]
+
+  if (!member) {
+    return <NoMembershipState detail="no way to register" />
+  }
 
   return (
     <EventsView

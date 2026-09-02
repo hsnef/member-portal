@@ -7,6 +7,7 @@ import { ActivityView } from '@/components/member/ActivityView'
 import { createClient } from '@/lib/supabase/client'
 import type { ActivityType } from '@/types/database'
 import type { ActivityItem } from '@/components/member/ActivityView'
+import { NoMembershipState } from '@/components/member/NoMembershipState'
 
 export default function MemberActivityPage() {
   const router = useRouter()
@@ -91,6 +92,10 @@ export default function MemberActivityPage() {
     'All',
     ...(Array.from(new Set(activities.map((a) => a.activity_type))) as ActivityType[]).sort(),
   ]
+
+  if (!member) {
+    return <NoMembershipState detail="no activity to show" />
+  }
 
   return (
     <ActivityView

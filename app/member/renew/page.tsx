@@ -14,6 +14,7 @@ import { formatCurrency } from '@/utils/format'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { getMembershipPricing, type MembershipPricing } from '@/lib/utils/portalSettings'
 import { stripeAppearance } from '@/components/member/CheckoutView'
+import { NoMembershipState } from '@/components/member/NoMembershipState'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
@@ -205,6 +206,10 @@ function RenewMembershipContent() {
   const options = {
     clientSecret,
     appearance: stripeAppearance,
+  }
+
+  if (!member) {
+    return <NoMembershipState detail="nothing to renew" />
   }
 
   return (
