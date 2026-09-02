@@ -2,37 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
-
-interface Event {
-  id: string
-  event_name: string
-  event_date: string
-  event_time: string
-  location: string
-  description: string
-  category: string
-  max_capacity: number
-  member_price: number
-  non_member_price: number
-  registration_deadline: string
-  image_url?: string
-  contact_email?: string
-  contact_phone?: string
-  registration_count?: number
-  is_registered?: boolean
-}
+import { getTestAuthUserIds, isTestIsolationMode } from '@/lib/utils/testDataFiltering'
+import { EventsView, type MemberEvent } from '@/components/member/EventsView'
+import { NoMembershipState } from '@/components/member/NoMembershipState'
 
 export default function MemberEventsPage() {
   const router = useRouter()
   const { member } = useAuth()
   const supabase = createClient()
 
-  const [events, setEvents] = useState<Event[]>([])
+  const [events, setEvents] = useState<MemberEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [filterCategory, setFilterCategory] = useState('All')
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null)
+  const [cancelling, setCancelling] = useState(false)
 
   useEffect(() => {
     if (!member) return
@@ -43,13 +28,38 @@ export default function MemberEventsPage() {
     if (!member) return
 
     try {
+      // CRITICAL: Check if current user is a test account
+      const isTestUser = await isTestIsolationMode()
+      const testAuthUserIds = await getTestAuthUserIds()
+
       // Fetch published upcoming events
-      const { data: eventsData, error: eventsError } = await supabase
+      let query = supabase
         .from('events')
         .select('*')
         .eq('status', 'Published')
         .gte('event_date', new Date().toISOString().split('T')[0])
         .order('event_date', { ascending: true })
+
+      // ISOLATION LOGIC:
+      // - Test users: Show ONLY test-created events (sandbox)
+      // - Regular members: Show ONLY production events (hide test events)
+      if (isTestUser) {
+        // Test user: Show ONLY test events
+        if (testAuthUserIds.length > 0) {
+          query = query.in('created_by', testAuthUserIds)
+        } else {
+          // No test events exist, show nothing
+          setEvents([])
+          return
+        }
+      } else {
+        // Regular member: Filter out test-created events
+        if (testAuthUserIds.length > 0) {
+          query = query.not('created_by', 'in', `(${testAuthUserIds.join(',')})`)
+        }
+      }
+
+      const { data: eventsData, error: eventsError } = await query
 
       if (eventsError) throw eventsError
 
@@ -86,52 +96,78 @@ export default function MemberEventsPage() {
     }
   }
 
+  // Calculate price based on membership level
+  const getEventPrice = (event: MemberEvent): number => {
+    if (!member) return event.non_member_price
+    const isMember = member.current_level === 'Annual' || member.current_level === 'Lifetime'
+    return isMember ? event.member_price : event.non_member_price
+  }
+
   const handleRegister = async (eventId: string) => {
     if (!member) return
 
+    // Find the event to check if it's paid
+    const event = events.find(e => e.id === eventId)
+    if (!event) return
+
+    // Check if RSVP is enabled
+    if (!event.rsvp_enabled) {
+      alert('Registration is not available for this event.')
+      return
+    }
+
+    // If event is payable, redirect to payment page
+    if (event.is_payable) {
+      router.push(`/member/events/${eventId}/payment`)
+      return
+    }
+
+    // Free event - register directly
     try {
-      const { error } = await supabase
-        .from('event_registrations')
-        .insert({
-          event_id: eventId,
-          member_id: member.id,
-          membership_id: member.membership_id,
-          registration_date: new Date().toISOString(),
-          registration_status: 'Confirmed',
-        })
+      const response = await fetch('/api/events/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId }),
+      })
 
-      if (error) throw error
+      const result = await response.json()
 
-      alert('Successfully registered for event!')
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to register')
+      }
+
+      alert('Successfully registered! A confirmation email has been sent.')
       fetchEvents() // Refresh to update registration status
     } catch (error: any) {
       console.error('Error registering for event:', error)
-      if (error.code === '23505') {
-        alert('You are already registered for this event')
-      } else {
-        alert('Failed to register for event')
-      }
+      alert(error.message || 'Failed to register for event')
     }
   }
 
   const handleUnregister = async (eventId: string) => {
     if (!member) return
-    if (!confirm('Are you sure you want to cancel your registration?')) return
 
+    setCancelling(true)
     try {
-      const { error } = await supabase
-        .from('event_registrations')
-        .delete()
-        .eq('event_id', eventId)
-        .eq('member_id', member.id)
+      const response = await fetch('/api/events/unregister', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId }),
+      })
 
-      if (error) throw error
+      const result = await response.json()
 
-      alert('Registration cancelled successfully')
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to cancel registration')
+      }
+
+      setCancelConfirmId(null)
       fetchEvents()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error cancelling registration:', error)
-      alert('Failed to cancel registration')
+      alert(error.message || 'Failed to cancel registration')
+    } finally {
+      setCancelling(false)
     }
   }
 
@@ -139,11 +175,11 @@ export default function MemberEventsPage() {
     return filterCategory === 'All' || event.category === filterCategory
   })
 
-  const isEventFull = (event: Event) => {
+  const isEventFull = (event: MemberEvent) => {
     return event.max_capacity > 0 && (event.registration_count || 0) >= event.max_capacity
   }
 
-  const isRegistrationClosed = (event: Event) => {
+  const isRegistrationClosed = (event: MemberEvent) => {
     if (event.registration_deadline) {
       return new Date(event.registration_deadline) < new Date()
     }
@@ -162,178 +198,27 @@ export default function MemberEventsPage() {
     }
   }
 
+  const categories = ['All', ...Array.from(new Set(events.map((e) => e.category))).sort()]
+
+  if (!member) {
+    return <NoMembershipState detail="no way to register" />
+  }
+
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <button
-              onClick={() => router.push('/member')}
-              className="text-sm text-gray-600 hover:text-gray-900 mb-4"
-            >
-              ← Back to Dashboard
-            </button>
-            <h1 className="text-3xl font-bold text-gray-900">Upcoming Events</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Register for temple events and activities
-            </p>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Filter */}
-          <div className="bg-white p-4 rounded-lg shadow mb-6">
-            <div className="flex items-center gap-4">
-              <label className="text-sm font-medium text-gray-700">Filter by Category:</label>
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-              >
-                <option value="All">All Categories</option>
-                <option value="Festival">Festival</option>
-                <option value="Puja">Puja</option>
-                <option value="Educational">Educational</option>
-                <option value="Social">Social</option>
-                <option value="Cultural">Cultural</option>
-                <option value="Fundraiser">Fundraiser</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Events Grid */}
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
-              <p className="mt-4 text-gray-600">Loading events...</p>
-            </div>
-          ) : filteredEvents.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg shadow">
-              <p className="text-gray-500">No upcoming events at this time</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredEvents.map((event) => (
-                <div key={event.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                  {/* Event Image */}
-                  {event.image_url ? (
-                    <img
-                      src={event.image_url}
-                      alt={event.event_name}
-                      className="w-full h-48 object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-48 bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                      <span className="text-8xl">{getCategoryIcon(event.category)}</span>
-                    </div>
-                  )}
-
-                  {/* Event Details */}
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-[#FF9933] uppercase tracking-wide">
-                        {event.category}
-                      </span>
-                      {event.is_registered && (
-                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                          ✓ Registered
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      {event.event_name}
-                    </h3>
-
-                    <div className="space-y-2 text-sm text-gray-600 mb-4">
-                      <div className="flex items-center">
-                        <span className="mr-2">📅</span>
-                        {new Date(event.event_date).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
-                      </div>
-                      <div className="flex items-center">
-                        <span className="mr-2">⏰</span>
-                        {event.event_time}
-                      </div>
-                      <div className="flex items-center">
-                        <span className="mr-2">📍</span>
-                        {event.location}
-                      </div>
-                    </div>
-
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                      {event.description}
-                    </p>
-
-                    {/* Price and Capacity */}
-                    <div className="flex items-center justify-between mb-4 pb-4 border-b">
-                      <div>
-                        <p className="text-xs text-gray-500">Price (Member)</p>
-                        <p className="text-lg font-bold text-[#FF9933]">
-                          {event.member_price === 0 ? 'Free' : `$${event.member_price.toFixed(2)}`}
-                        </p>
-                      </div>
-                      {event.max_capacity > 0 && (
-                        <div className="text-right">
-                          <p className="text-xs text-gray-500">Capacity</p>
-                          <p className="text-sm font-semibold text-gray-700">
-                            {event.registration_count} / {event.max_capacity}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Action Button */}
-                    {event.is_registered ? (
-                      <div className="space-y-2">
-                        <button
-                          onClick={() => router.push(`/member/events/${event.id}`)}
-                          className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
-                        >
-                          View Details
-                        </button>
-                        <button
-                          onClick={() => handleUnregister(event.id)}
-                          className="w-full px-4 py-2 border border-red-300 text-red-600 rounded-md hover:bg-red-50 text-sm"
-                        >
-                          Cancel Registration
-                        </button>
-                      </div>
-                    ) : isRegistrationClosed(event) ? (
-                      <button
-                        disabled
-                        className="w-full px-4 py-2 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed"
-                      >
-                        Registration Closed
-                      </button>
-                    ) : isEventFull(event) ? (
-                      <button
-                        disabled
-                        className="w-full px-4 py-2 bg-red-100 text-red-600 rounded-md cursor-not-allowed font-medium"
-                      >
-                        Event Full
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleRegister(event.id)}
-                        className="w-full px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-semibold"
-                      >
-                        Register Now
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </ProtectedRoute>
+    <EventsView
+      events={events}
+      loading={loading}
+      categories={categories}
+      category={filterCategory}
+      onCategoryChange={setFilterCategory}
+      getEventPrice={getEventPrice}
+      isEventFull={isEventFull}
+      isRegistrationClosed={isRegistrationClosed}
+      onRegister={handleRegister}
+      onUnregister={handleUnregister}
+      cancelConfirmId={cancelConfirmId}
+      onRequestCancel={setCancelConfirmId}
+      cancelling={cancelling}
+    />
   )
 }

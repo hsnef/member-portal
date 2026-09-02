@@ -72,12 +72,31 @@ export function parseAddress(fullAddress: string): {
 }
 
 /**
- * Parse phone number to remove formatting
+ * Parse and normalize phone number with international support
+ * - Detects existing country codes (keeps them)
+ * - Adds +1 (US) if no country code present
+ * - Returns normalized format: +1234567890
  */
 export function parsePhone(phone: string): string {
   if (!phone) return ''
-  // Remove all non-digit characters
-  return phone.replace(/\D/g, '')
+
+  // Remove all non-digit characters except leading +
+  const cleaned = phone.trim().replace(/[^\d+]/g, '')
+
+  if (!cleaned) return ''
+
+  // If already has country code (starts with +)
+  if (cleaned.startsWith('+')) {
+    return cleaned
+  }
+
+  // If starts with 1 and has 11 digits total (US number with country code without +)
+  if (cleaned.startsWith('1') && cleaned.length === 11) {
+    return `+${cleaned}`
+  }
+
+  // Otherwise, add +1 (US country code) as default
+  return `+1${cleaned}`
 }
 
 /**

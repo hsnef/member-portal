@@ -4,9 +4,9 @@ Production-ready membership management portal for the Hindu Society of North Eas
 
 ## Overview
 
-This portal manages membership lifecycle (Community, Annual, Lifetime), handles payments via Stripe, issues digital membership passes with QR codes, tracks service usage, and provides administrative tools for staff and office managers.
+This portal manages membership lifecycle (Community, Annual, Lifetime), handles payments via Stripe, issues membership passes with QR codes, tracks service usage, and provides administrative tools for staff and office managers.
 
-**Subdomain:** members.hsnef.org
+**Subdomain:** member.hsnef.org
 **Main Website:** [hsnef.org](https://hsnef.org)
 
 ## Tech Stack
@@ -65,13 +65,15 @@ This portal manages membership lifecycle (Community, Annual, Lifetime), handles 
 
 - ✅ **Security & Audit**
   - Row-Level Security (RLS) policies
-  - Login audit logs
-  - Data change audit trails
+  - Login audit logs with IP address, user agent, and geolocation
+  - Member data change audit trails
+  - Activity tracking and ledger
+  - CSV export for all audit logs
 
-- ✅ **Voting Module (Phase 2 Schema)**
-  - Elections/polls
-  - One vote per member per election
-  - Anonymous ballot tracking
+- ⏳ **Voting Module (Phase 2)**
+  - Schema implemented (elections, election_options, votes)
+  - UI not yet implemented
+  - Ready for Phase 2 development
 
 ## Project Structure
 
@@ -174,7 +176,7 @@ npm install
 
 1. Create account at [resend.com](https://resend.com)
 
-2. Verify domain: `members.hsnef.org`
+2. Verify domain: `member.hsnef.org`
 
 3. Add DNS records as instructed
 
@@ -268,16 +270,29 @@ Custom implementation:
 
 ## Row-Level Security (RLS)
 
-All tables have RLS enabled with role-based policies:
+All tables have RLS enabled with role-based policies.
 
-| Role | Permissions |
+**Two layers, and they are not the same.** RLS controls what the DATABASE will
+return. Route gates (`ProtectedRoute`, and the `app/{member,admin}/layout.tsx`
+section gates) control which PAGES a role can open. A role can be allowed the
+data but not the page, or the reverse. When they disagree, RLS is the security
+boundary and the route gate is a convenience.
+
+| Role | RLS — data access |
 |------|-------------|
 | **Member** | View/edit own data, family, payments, events |
-| **Office Staff** | View all members, create payments/requests, book services |
-| **Office Manager** | All Staff permissions + financial corrections (90 days), view audit logs |
-| **Admin** | Full access + role management + unrestricted data changes |
+| **Office Staff** | View all members, create payments/requests, book services, **read the member audit log** |
+| **Office Manager** | All Staff permissions, plus financial corrections |
+| **Admin** | Full access, role management, unrestricted data changes |
 
-See `supabase/migrations/20260104000002_rls_policies.sql` for complete policy definitions.
+_Corrected 2026-09-01: this table previously listed audit-log access as Office
+Manager and above. `member_audit_log_select_staff` in
+`supabase/migrations/20260108000004_member_audit_log.sql` grants it to Office
+Staff as well, and `/admin/audit-logs` is open to any staff role to match._
+
+For the **route** gates, see `CLAUDE.md`. See
+`supabase/migrations/20260104000002_rls_policies.sql` for complete policy
+definitions.
 
 ## Founding Members
 
@@ -286,6 +301,51 @@ Lifetime members can be designated as "Founding Members" via the `is_founding_me
 - Only applies to Lifetime members (database constraint enforced)
 - Can be set during member creation or updated later
 - Visible on member profile and digital pass
+
+## Audit Logging System
+
+The portal includes comprehensive audit logging for security and compliance.
+
+### Login Activity Tracking
+
+Records all login attempts with:
+- Timestamp (UTC)
+- Login method (Google OAuth, Magic Link, Email/Password)
+- IP address and user agent
+- Geolocation (country/city via ip-api.com)
+- Success/failure status
+- Failure reasons
+
+**Access:** Office Manager and Admin only
+**Retention:** 1 year (automated cleanup via cron)
+**Features:**
+- Global view of all login activity
+- Member-specific login history
+- Advanced filtering (date range, method, success/failure)
+- CSV export
+
+### Member Data Change Audit
+
+Tracks all changes to member records:
+- Member creation (with source: Self Registration, Office Staff, Auto Import, etc.)
+- Membership ID changes (old → new)
+- Field updates (profile, contact, membership level, etc.)
+- Changed by (staff name and role)
+- Change reason (optional)
+- Full before/after values
+
+**Access:** Office Staff, Office Manager, and Admin
+**Retention:** Permanent
+**Features:**
+- Member-specific audit log timeline
+- Global audit log with member search
+- Expandable details showing old → new values
+- CSV export for compliance
+
+**Implementation:**
+- Automatic tracking via database triggers
+- Append-only logs (no deletion or editing)
+- Row-Level Security enforced
 
 ## Nakshatra Support
 
@@ -336,7 +396,7 @@ Set all environment variables in Vercel dashboard:
 
 ### Custom Domain
 
-1. Add domain in Vercel: `members.hsnef.org`
+1. Add domain in Vercel: `member.hsnef.org`
 2. Update DNS records as instructed
 3. Configure Cloudflare (if using) to proxy through
 
@@ -418,9 +478,11 @@ app/api/
 ## Support & Documentation
 
 - **Main Website:** [hsnef.org](https://hsnef.org)
-- **Requirements Doc:** `HSNEF-Membership-Portal-Final-Prompt-v3.md`
-- **Member Fields:** `MemberDetailsTobeCaptured-csv.csv`
-- **Import Template:** `CurrentMemberData_import-template-csv.csv`
+- **Requirements Doc:** `docs/reference/hsnef-membership-portal-final-prompt-v3.md`
+- **Full Documentation Index:** See `docs/README.md` for complete documentation organized by category
+- **Member Fields:** `docs/reference/data/member-details-to-be-captured.csv`
+- **Import Template:** `docs/reference/data/current-member-data-import-template.csv`
+- **CSV Templates (in public/):** `public/member-import-template.csv` and `public/member-import-template-blank.csv` (served directly via web)
 
 ## License
 
@@ -428,48 +490,94 @@ Proprietary - Hindu Society of North East Florida
 
 ---
 
-## Next Steps After Foundation
+## Implementation Status
 
-1. **Implement Authentication Pages**
-   - Login page (email, Google, membership number)
-   - Signup flow
-   - Password reset
+### Completed Features ✅
 
-2. **Member Dashboard**
-   - Profile management
-   - Digital membership pass with QR code
-   - Family management
-   - Payment history
+1. **Authentication System**
+   - Email/password login
+   - Google OAuth integration
+   - Magic link authentication
+   - Session management
+   - Terms acceptance workflow
 
-3. **Staff Tools**
-   - Member search
-   - QR scanner
-   - Manual payment entry
-   - Request creation
+2. **Member Management**
+   - Personal and Business memberships
+   - 8-digit MembershipID system with auto-generation
+   - Family member management
+   - Member profile management
+   - CSV import with validation
+   - Member search and filtering
 
-4. **Payment Integration**
-   - Stripe checkout flows
-   - Webhook handlers
-   - Receipt generation
+3. **Staff & Admin Tools**
+   - QR code scanner for check-ins
+   - Member search and management
+   - Manual payment entry (Cash, Check, Zelle)
+   - Request/Invoice creation
+   - Role-based access control (4 roles)
+   - Portal settings configuration
 
-5. **Email Templates**
-   - Registration invitations
-   - Renewal reminders
-   - Payment confirmations
-   - Event notifications
+4. **Payment System**
+   - Stripe integration for online payments
+   - Multiple payment methods
+   - Payment Requests (invoices)
+   - Receipt generation and reprints
+   - Payment history tracking
+   - CSV export for accounting
 
-6. **Admin Panel**
-   - Role management
-   - Data import tool
-   - Audit log viewer
-   - Reports and exports
-
-7. **Digital Pass**
+5. **Digital Membership Pass**
    - QR code generation
-   - Pass rendering
-   - Verification system
+   - Mobile-responsive pass design
+   - Real-time validation
+   - Founding member badges
 
-8. **Testing**
-   - Unit tests
-   - Integration tests
-   - E2E tests
+6. **Events & Services**
+   - Event management
+   - Event registration
+   - Service bookings (Purohits)
+   - Activity ledger tracking
+
+7. **Audit & Security**
+   - Login activity tracking with geolocation
+   - Member data change audit logs
+   - RLS policies on all tables
+   - CSV export for audit logs
+   - IP address and user agent tracking
+
+8. **Admin Features**
+   - Pending registrations workflow
+   - Test account management
+   - Import history tracking
+   - Versioning system
+
+### Phase 2 Features (Planned)
+
+1. **Voting Module**
+   - Elections and polls UI
+   - Ballot tracking
+   - Results dashboard
+   - (Schema already implemented)
+
+2. **Enhanced Features**
+   - Email template customization
+   - Advanced reports and analytics
+   - Fine-grained role permissions
+   - Automated renewal reminders
+
+### Testing Recommendations
+
+1. **Unit Tests**
+   - Helper functions
+   - Utility modules
+   - Data validation
+
+2. **Integration Tests**
+   - API endpoints
+   - Database operations
+   - Stripe webhooks
+
+3. **E2E Tests**
+   - User registration flow
+   - Payment processing
+   - QR code scanning
+   - Member management workflows

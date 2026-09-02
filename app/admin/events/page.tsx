@@ -3,9 +3,16 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
+import { AdminListView } from '@/components/admin/AdminListView'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { AppLink } from '@/components/nav/Nav'
+import { CalendarDaysIcon, CalendarPlusIcon } from 'lucide-react'
+import { formatCurrency, formatDate } from '@/utils/format'
+import type { Column } from '@/components/ui/DataTable'
+import { useTestData } from '@/lib/context/TestDataContext'
+import { getTestAuthUserIds } from '@/lib/utils/testDataFiltering'
 
 interface Event {
   id: string
@@ -15,17 +22,22 @@ interface Event {
   location: string
   description: string
   category: string
+  rsvp_enabled: boolean
+  is_payable: boolean
   max_capacity: number
   member_price: number
   non_member_price: number
   registration_deadline: string
   status: 'Draft' | 'Published' | 'Cancelled' | 'Completed'
   registration_count?: number
+  created_by?: string | null
+  is_test_event?: boolean
 }
 
 export default function EventsPage() {
   const router = useRouter()
   const supabase = createClient()
+  const { showTestData } = useTestData()
 
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
@@ -34,34 +46,48 @@ export default function EventsPage() {
 
   useEffect(() => {
     fetchEvents()
-  }, [])
+  }, [showTestData])
 
   const fetchEvents = async () => {
     try {
-      // Fetch events with registration counts
-      const { data: eventsData, error: eventsError } = await supabase
+      // Get test user IDs for filtering
+      const testAuthUserIds = await getTestAuthUserIds()
+
+      // Fetch events - filter based on toggle state
+      let query = supabase
         .from('events')
         .select('*')
         .order('event_date', { ascending: true })
 
+      // Filter out test events unless showTestData toggle is ON
+      if (!showTestData && testAuthUserIds.length > 0) {
+        query = query.not('created_by', 'in', `(${testAuthUserIds.join(',')})`)
+      }
+
+      const { data: eventsData, error: eventsError } = await query
+
       if (eventsError) throw eventsError
 
-      // Get registration counts for each event
-      const eventsWithCounts = await Promise.all(
+      // Get registration counts and mark test events
+      const eventsWithDetails = await Promise.all(
         (eventsData || []).map(async (event) => {
           const { count } = await supabase
             .from('event_registrations')
             .select('*', { count: 'exact', head: true })
             .eq('event_id', event.id)
 
+          // Check if this is a test-created event
+          const isTestEvent = event.created_by && testAuthUserIds.includes(event.created_by)
+
           return {
             ...event,
             registration_count: count || 0,
+            is_test_event: isTestEvent,
           }
         })
       )
 
-      setEvents(eventsWithCounts)
+      setEvents(eventsWithDetails)
     } catch (error) {
       console.error('Error fetching events:', error)
     } finally {
@@ -79,214 +105,130 @@ export default function EventsPage() {
     return matchesStatus && matchesSearch
   })
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Published': return 'bg-green-100 text-green-800'
-      case 'Draft': return 'bg-gray-100 text-gray-800'
-      case 'Cancelled': return 'bg-red-100 text-red-800'
-      case 'Completed': return 'bg-blue-100 text-blue-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
+  const statusTone: Record<string, 'tulsi' | 'neutral' | 'danger' | 'sandal'> = {
+    Published: 'tulsi',
+    Draft: 'neutral',
+    Cancelled: 'danger',
+    Completed: 'sandal',
   }
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'Festival': return '🎉'
-      case 'Puja': return '🙏'
-      case 'Educational': return '📚'
-      case 'Social': return '👥'
-      case 'Cultural': return '🎭'
-      case 'Fundraiser': return '💰'
-      default: return '📅'
-    }
-  }
+  const columns: Array<Column<Event>> = [
+    {
+      key: 'event_name',
+      header: 'Event',
+      cell: (e) => (
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-ink">{e.event_name}</p>
+          <p className="mt-0.5 truncate text-[13px] text-ink-3">{e.category}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'event_date',
+      header: 'When',
+      sortable: true,
+      cell: (e) => (
+        <div className="min-w-0">
+          <p className="tnum text-ink-2">{formatDate(e.event_date)}</p>
+          {e.event_time && <p className="tnum mt-0.5 text-[13px] text-ink-3">{e.event_time}</p>}
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      cell: (e) => <Badge tone={statusTone[e.status] ?? 'neutral'}>{e.status}</Badge>,
+    },
+    {
+      key: 'registrations',
+      header: 'Registered',
+      align: 'right',
+      secondary: true,
+      cell: (e) => (
+        <span className="tnum text-ink-2">
+          {e.registration_count ?? 0}
+          {e.max_capacity > 0 ? ` / ${e.max_capacity}` : ''}
+        </span>
+      ),
+    },
+    {
+      key: 'price',
+      header: 'Member price',
+      align: 'right',
+      secondary: true,
+      cell: (e) => (
+        <span className="tnum text-ink-2">
+          {e.is_payable && e.member_price > 0 ? formatCurrency(e.member_price) : 'Free'}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: '',
+      align: 'right',
+      cell: (e) => (
+        <div className="flex justify-end gap-2">
+          <AppLink to={`/admin/events/${e.id}/registrations`}>
+            <Button size="sm" variant="ghost">
+              Registrations
+            </Button>
+          </AppLink>
+          <AppLink to={`/admin/events/${e.id}/edit`}>
+            <Button size="sm" variant="secondary">
+              Edit
+            </Button>
+          </AppLink>
+        </div>
+      ),
+    },
+  ]
 
-  const isEventFull = (event: Event) => {
-    return event.max_capacity > 0 && (event.registration_count || 0) >= event.max_capacity
-  }
-
-  const isEventPast = (event: Event) => {
-    return new Date(event.event_date) < new Date()
-  }
+  const mobileCard = (e: Event) => (
+    <div className="space-y-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-ink">{e.event_name}</p>
+          <p className="tnum mt-0.5 text-[13px] text-ink-3">{formatDate(e.event_date)}</p>
+        </div>
+        <Badge tone={statusTone[e.status] ?? 'neutral'}>{e.status}</Badge>
+      </div>
+      <p className="tnum text-[13.5px] text-ink-2">
+        {e.registration_count ?? 0}
+        {e.max_capacity > 0 ? ` of ${e.max_capacity}` : ''} registered
+      </p>
+    </div>
+  )
 
   return (
-    <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-      <AdminLayout>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Events</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Manage temple events and registrations
-              </p>
-            </div>
-            <Link
-              href="/admin/events/new"
-              className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-medium"
-            >
-              + Create Event
-            </Link>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Total Events</p>
-              <p className="text-2xl font-bold text-gray-900">{events.length}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Published</p>
-              <p className="text-2xl font-bold text-green-600">
-                {events.filter(e => e.status === 'Published').length}
-              </p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Upcoming</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {events.filter(e => !isEventPast(e) && e.status === 'Published').length}
-              </p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Total Registrations</p>
-              <p className="text-2xl font-bold text-orange-600">
-                {events.reduce((sum, e) => sum + (e.registration_count || 0), 0)}
-              </p>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Search */}
-              <input
-                type="text"
-                placeholder="Search events by name or category..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-              />
-
-              {/* Status Filter */}
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-              >
-                <option value="All">All Statuses</option>
-                <option value="Published">Published</option>
-                <option value="Draft">Draft</option>
-                <option value="Cancelled">Cancelled</option>
-                <option value="Completed">Completed</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Events List */}
-          <div className="bg-white shadow rounded-lg overflow-hidden">
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
-                <p className="mt-4 text-gray-600">Loading events...</p>
-              </div>
-            ) : filteredEvents.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500 mb-4">No events found</p>
-                <Link
-                  href="/admin/events/new"
-                  className="inline-block px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
-                >
-                  Create First Event
-                </Link>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-200">
-                {filteredEvents.map((event) => (
-                  <div key={event.id} className="p-6 hover:bg-gray-50">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="text-2xl">{getCategoryIcon(event.category)}</span>
-                          <h3 className="text-xl font-bold text-gray-900">
-                            {event.event_name}
-                          </h3>
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(event.status)}`}>
-                            {event.status}
-                          </span>
-                          {isEventFull(event) && (
-                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                              FULL
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-3">
-                          <div>
-                            <span className="font-medium">📅 Date:</span>{' '}
-                            {new Date(event.event_date).toLocaleDateString()}
-                          </div>
-                          <div>
-                            <span className="font-medium">⏰ Time:</span> {event.event_time}
-                          </div>
-                          <div>
-                            <span className="font-medium">📍 Location:</span> {event.location}
-                          </div>
-                          <div>
-                            <span className="font-medium">🎫 Category:</span> {event.category}
-                          </div>
-                        </div>
-
-                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                          {event.description}
-                        </p>
-
-                        <div className="flex items-center gap-6 text-sm">
-                          <div>
-                            <span className="font-medium text-gray-700">Registrations:</span>{' '}
-                            <span className="font-bold text-[#FF9933]">
-                              {event.registration_count || 0}
-                              {event.max_capacity > 0 && ` / ${event.max_capacity}`}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-700">Member:</span>{' '}
-                            ${event.member_price.toFixed(2)}
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-700">Non-Member:</span>{' '}
-                            ${event.non_member_price.toFixed(2)}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="ml-6 flex flex-col gap-2">
-                        <button
-                          onClick={() => router.push(`/admin/events/${event.id}`)}
-                          className="px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                        >
-                          View Details
-                        </button>
-                        <button
-                          onClick={() => router.push(`/admin/events/${event.id}/edit`)}
-                          className="px-4 py-2 text-sm bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
-                        >
-                          Edit Event
-                        </button>
-                        <button
-                          onClick={() => router.push(`/admin/events/${event.id}/registrations`)}
-                          className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                        >
-                          Registrations ({event.registration_count || 0})
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </AdminLayout>
-    </ProtectedRoute>
+    <AdminListView<Event>
+      eyebrow="Office console"
+      title="Events"
+      description="Festivals, classes and seva. Publish an event to open registration."
+      noun="event"
+      actions={
+        <AppLink to="/admin/events/new">
+          <Button icon={CalendarPlusIcon}>Create event</Button>
+        </AppLink>
+      }
+      rows={events}
+      columns={columns}
+      rowKey={(e) => e.id}
+      mobileCard={mobileCard}
+      loading={loading}
+      searchPlaceholder="Search by name or category…"
+      searchFields={(e) => [e.event_name, e.category]}
+      filters={['All', 'Draft', 'Published', 'Cancelled', 'Completed']}
+      filterValue={filterStatus}
+      onFilterChange={setFilterStatus}
+      filterFn={(e, f) => f === 'All' || e.status === f}
+      emptyIcon={CalendarDaysIcon}
+      emptyTitle="No events yet"
+      emptyDescription="Create an event to publish it to members and open registration."
+      emptyAction={
+        <AppLink to="/admin/events/new">
+          <Button icon={CalendarPlusIcon}>Create the first event</Button>
+        </AppLink>
+      }
+    />
   )
 }

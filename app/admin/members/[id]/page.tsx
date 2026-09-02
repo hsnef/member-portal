@@ -3,11 +3,27 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { FamilyMembersSection } from '@/components/admin/FamilyMembersSection'
 import { createClient } from '@/lib/supabase/client'
 import type { Member, FamilyMember, Membership } from '@/types/database'
+import { AppLink } from '@/components/nav/Nav'
+import { Alert } from '@/components/ui/Alert'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Card, CardHeader } from '@/components/ui/Card'
+import { DescriptionList } from '@/components/ui/DescriptionList'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { RecordHeader } from '@/components/ui/RecordHeader'
+import { Skeleton } from '@/components/ui/Skeleton'
+import {
+  UserIcon,
+  PencilIcon,
+  MailIcon,
+  FileClockIcon,
+  ShieldCheckIcon,
+  UserXIcon,
+} from 'lucide-react'
+import { formatDate } from '@/utils/format'
 
 export default function MemberDetailPage() {
   const params = useParams()
@@ -18,6 +34,8 @@ export default function MemberDetailPage() {
   const [memberships, setMemberships] = useState<Membership[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [sendingEmail, setSendingEmail] = useState(false)
+  const [emailMessage, setEmailMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   const supabase = createClient()
 
@@ -81,378 +99,315 @@ export default function MemberDetailPage() {
   const getLevelBadgeColor = (level: string) => {
     switch (level) {
       case 'Lifetime':
-        return 'bg-[#FF9933] text-white'
+        return 'bg-saffron text-white'
       case 'Annual':
         return 'bg-blue-500 text-white'
       case 'Community':
-        return 'bg-gray-500 text-white'
+        return 'bg-transparent0 text-white'
       default:
         return 'bg-gray-200 text-gray-800'
     }
   }
 
+  const handleSendInvitation = async () => {
+    if (!member) return
+
+    try {
+      setSendingEmail(true)
+      setEmailMessage(null)
+
+      const response = await fetch('/api/members/send-invitation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId: member.id }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send invitation')
+      }
+
+      setEmailMessage({ type: 'success', text: 'Invitation email sent successfully!' })
+
+      // Clear message after 5 seconds
+      setTimeout(() => setEmailMessage(null), 5000)
+    } catch (err) {
+      console.error('Error sending invitation:', err)
+      setEmailMessage({
+        type: 'error',
+        text: err instanceof Error ? err.message : 'Failed to send invitation email'
+      })
+    } finally {
+      setSendingEmail(false)
+    }
+  }
+
   if (loading) {
     return (
-      <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-        <AdminLayout>
-          <div className="flex items-center justify-center min-h-96">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
-              <p className="mt-4 text-gray-600">Loading member details...</p>
-            </div>
-          </div>
-        </AdminLayout>
-      </ProtectedRoute>
+      <div className="space-y-6" role="status" aria-live="polite">
+        <span className="sr-only">Loading this member...</span>
+        <Skeleton className="h-24 w-full rounded-2xl" />
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
     )
   }
 
   if (error || !member) {
     return (
-      <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-        <AdminLayout>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-red-800 mb-2">Error Loading Member</h2>
-              <p className="text-red-600">{error || 'Member not found'}</p>
-              <Link
-                href="/admin/members"
-                className="mt-4 inline-block text-[#FF9933] hover:text-[#FF8800] font-medium"
-              >
-                ← Back to Members
-              </Link>
-            </div>
-          </div>
-        </AdminLayout>
-      </ProtectedRoute>
+      <EmptyState
+        icon={UserXIcon}
+        title="Member not found"
+        description={error ?? 'This member may have been removed.'}
+        action={
+          <AppLink to="/admin/members">
+            <Button>Back to the directory</Button>
+          </AppLink>
+        }
+      />
     )
   }
 
-  const memberName = member.member_class === 'Personal'
-    ? `${member.first_name || ''} ${member.last_name || ''}`.trim() || 'Unnamed Member'
-    : member.business_name || 'Unnamed Business'
+  const isPersonal = member.member_class === 'Personal'
+  const displayName = isPersonal
+    ? [member.first_name, member.last_name].filter(Boolean).join(' ') || member.membership_id
+    : member.business_name || member.membership_id
+
+  const levelTone: Record<string, 'kumkum' | 'saffron' | 'tulsi' | 'neutral'> = {
+    Lifetime: 'kumkum',
+    Annual: 'saffron',
+    Community: 'tulsi',
+  }
 
   return (
-    <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-      <AdminLayout>
+    <div className="space-y-7">
+      <RecordHeader
+        crumbs={[{ label: 'Members', to: '/admin/members' }, { label: displayName }]}
+        icon={UserIcon}
+        tone="kumkum"
+        eyebrow={member.member_class}
+        title={displayName}
+        meta={
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge tone={levelTone[member.current_level] ?? 'neutral'}>
+              {member.current_level}
+            </Badge>
+            {member.is_founding_member && <Badge tone="marigold">Founding member</Badge>}
+            <span className="tnum text-[14px] text-ink-3">{member.membership_id}</span>
+          </div>
+        }
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <AppLink to={`/admin/members/${member.id}/audit-log`}>
+              <Button variant="secondary" icon={FileClockIcon}>
+                History
+              </Button>
+            </AppLink>
+            <AppLink to={`/admin/members/${member.id}/edit`}>
+              <Button icon={PencilIcon}>Edit</Button>
+            </AppLink>
+          </div>
+        }
+      />
+
+      {emailMessage && (
+        <Alert
+          tone={emailMessage.type === 'success' ? 'success' : 'danger'}
+          title={emailMessage.type === 'success' ? 'Sent' : "That didn't send"}
+        >
+          {emailMessage.text}
+        </Alert>
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:items-start">
         <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <Link
-                href="/admin/members"
-                className="text-sm text-gray-500 hover:text-gray-700 mb-2 inline-block"
-              >
-                ← Back to Members
-              </Link>
-              <h1 className="text-3xl font-bold text-gray-900">{memberName}</h1>
-              <div className="flex items-center gap-3 mt-2">
-                <span
-                  className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getLevelBadgeColor(
-                    member.current_level
-                  )}`}
-                >
-                  {member.current_level}
-                </span>
-                <span className="text-sm text-gray-500">
-                  ID: {member.membership_id}
-                </span>
-                {member.is_founding_member && (
-                  <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                    ⭐ Founding Member
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Link
-                href={`/admin/members/${member.id}/edit`}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                Edit
-              </Link>
-              <button
-                className="px-4 py-2 bg-gradient-to-r from-[#FF9933] to-[#800000] text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
-              >
-                Send Email
-              </button>
-            </div>
-          </div>
+          <Card>
+            <CardHeader title={isPersonal ? 'Member details' : 'Business details'} />
+            <DescriptionList
+              columns={2}
+              items={
+                isPersonal
+                  ? [
+                      { label: 'First name', value: member.first_name ?? '\—' },
+                      { label: 'Last name', value: member.last_name ?? '\—' },
+                      { label: 'Profile name', value: member.member_profile_name ?? '\—' },
+                      { label: 'Nakshatra', value: member.nakshatra ?? '\—' },
+                      { label: 'Family gotra', value: member.family_gotra ?? '\—' },
+                      {
+                        label: 'Member since',
+                        value: member.member_since ? formatDate(member.member_since) : '\—',
+                        numeric: true,
+                      },
+                    ]
+                  : [
+                      { label: 'Business name', value: member.business_name ?? '\—' },
+                      { label: 'EIN', value: member.business_ein ?? '\—', numeric: true },
+                      {
+                        label: 'Member since',
+                        value: member.member_since ? formatDate(member.member_since) : '\—',
+                        numeric: true,
+                      },
+                    ]
+              }
+            />
+          </Card>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column - Member Info */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Basic Information */}
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                  {member.member_class === 'Personal' ? 'Personal Information' : 'Business Information'}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {member.member_class === 'Personal' ? (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500">First Name</label>
-                        <p className="mt-1 text-gray-900">{member.first_name || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500">Last Name</label>
-                        <p className="mt-1 text-gray-900">{member.last_name || 'N/A'}</p>
-                      </div>
-                      {member.profile_name && (
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-500">Profile Name</label>
-                          <p className="mt-1 text-gray-900">{member.profile_name}</p>
-                        </div>
-                      )}
-                      {member.nakshatra && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-500">Nakshatra</label>
-                          <p className="mt-1 text-gray-900">{member.nakshatra}</p>
-                        </div>
-                      )}
-                      {member.family_gotra && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-500">Gotra</label>
-                          <p className="mt-1 text-gray-900">{member.family_gotra}</p>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-500">Business Name</label>
-                        <p className="mt-1 text-gray-900">{member.business_name || 'N/A'}</p>
-                      </div>
-                      {member.business_ein && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-500">EIN</label>
-                          <p className="mt-1 text-gray-900">{member.business_ein}</p>
-                        </div>
-                      )}
-                    </>
-                  )}
+          <Card>
+            <CardHeader title="Contact" />
+            <DescriptionList
+              columns={2}
+              items={[
+                { label: 'Email', value: member.primary_email },
+                { label: 'Phone', value: member.primary_phone ?? '\—', numeric: true },
+                ...(member.primary_phone_2
+                  ? [{ label: 'Alternate phone', value: member.primary_phone_2, numeric: true }]
+                  : []),
+              ]}
+            />
+
+            {isPersonal && (member.secondary_first_name || member.secondary_email) && (
+              <div className="mt-5 rounded-2xl border border-line bg-surface-sunk p-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
+                  Spouse or partner
+                </p>
+                <div className="mt-3">
+                  <DescriptionList
+                    columns={2}
+                    items={[
+                      {
+                        label: 'Name',
+                        value:
+                          [member.secondary_first_name, member.secondary_last_name]
+                            .filter(Boolean)
+                            .join(' ') || '\—',
+                      },
+                      { label: 'Email', value: member.secondary_email ?? '\—' },
+                      {
+                        label: 'Phone',
+                        value: member.secondary_phone ?? '\—',
+                        numeric: true,
+                      },
+                      { label: 'Nakshatra', value: member.secondary_nakshatra ?? '\—' },
+                    ]}
+                  />
                 </div>
               </div>
+            )}
+          </Card>
 
-              {/* Contact Information */}
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500">Primary Email</label>
-                    <p className="mt-1 text-gray-900">
-                      <a href={`mailto:${member.primary_email}`} className="text-[#FF9933] hover:text-[#FF8800]">
-                        {member.primary_email}
-                      </a>
-                    </p>
-                  </div>
-                  {member.primary_phone && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500">Primary Phone</label>
-                      <p className="mt-1 text-gray-900">
-                        <a href={`tel:${member.primary_phone}`} className="text-[#FF9933] hover:text-[#FF8800]">
-                          {member.primary_phone}
-                        </a>
+          <Card>
+            <CardHeader title="Address" />
+            <DescriptionList
+              columns={2}
+              items={[
+                { label: 'Line 1', value: member.address_line_1 ?? '\—' },
+                { label: 'Line 2', value: member.address_line_2 ?? '\—' },
+                { label: 'City', value: member.city ?? '\—' },
+                { label: 'State', value: member.state ?? '\—' },
+                { label: 'ZIP', value: member.zip ?? '\—', numeric: true },
+                { label: 'Country', value: member.country ?? '\—' },
+              ]}
+            />
+          </Card>
+
+          {isPersonal && (
+            <Card>
+              <FamilyMembersSection
+                memberId={member.id}
+                familyMembers={familyMembers}
+                onRefresh={fetchMemberData}
+              />
+            </Card>
+          )}
+
+          <Card>
+            <CardHeader title="Membership history" />
+            {memberships.length === 0 ? (
+              <p className="text-[15px] text-ink-2">No membership records yet.</p>
+            ) : (
+              <ul className="divide-y divide-line">
+                {memberships.map((m) => (
+                  <li key={m.id} className="flex items-center justify-between gap-4 py-3.5">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-ink">{m.level}</p>
+                      <p className="tnum mt-0.5 text-[13px] text-ink-3">
+                        {m.start_date ? formatDate(m.start_date) : '\—'}
+                        {m.end_date ? ` \→ ${formatDate(m.end_date)}` : ''}
                       </p>
                     </div>
-                  )}
-                  {member.primary_phone_2 && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500">Secondary Phone</label>
-                      <p className="mt-1 text-gray-900">{member.primary_phone_2}</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Secondary Contact (for Personal) */}
-                {member.member_class === 'Personal' && (member.secondary_first_name || member.secondary_email) && (
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <h3 className="text-md font-medium text-gray-900 mb-3">Secondary Contact / Spouse</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {member.secondary_first_name && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-500">Name</label>
-                          <p className="mt-1 text-gray-900">
-                            {member.secondary_first_name} {member.secondary_last_name || ''}
-                          </p>
-                        </div>
-                      )}
-                      {member.secondary_nakshatra && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-500">Nakshatra</label>
-                          <p className="mt-1 text-gray-900">{member.secondary_nakshatra}</p>
-                        </div>
-                      )}
-                      {member.secondary_email && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-500">Email</label>
-                          <p className="mt-1 text-gray-900">
-                            <a href={`mailto:${member.secondary_email}`} className="text-[#FF9933] hover:text-[#FF8800]">
-                              {member.secondary_email}
-                            </a>
-                          </p>
-                        </div>
-                      )}
-                      {member.secondary_phone && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-500">Phone</label>
-                          <p className="mt-1 text-gray-900">{member.secondary_phone}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Address */}
-              {(member.address_line_1 || member.city) && (
-                <div className="bg-white shadow rounded-lg p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Address</h2>
-                  <div className="space-y-2 text-gray-900">
-                    {member.address_line_1 && <p>{member.address_line_1}</p>}
-                    {member.address_line_2 && <p>{member.address_line_2}</p>}
-                    {(member.city || member.state || member.zip) && (
-                      <p>
-                        {member.city && `${member.city}, `}
-                        {member.state && `${member.state} `}
-                        {member.zip}
-                      </p>
-                    )}
-                    {member.country && <p>{member.country}</p>}
-                  </div>
-                  {member.mailing_address && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <label className="block text-sm font-medium text-gray-500 mb-2">Mailing Address (if different)</label>
-                      <p className="text-gray-900 whitespace-pre-line">{member.mailing_address}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Family Members */}
-              {member.member_class === 'Personal' && (
-                <FamilyMembersSection
-                  memberId={memberId}
-                  familyMembers={familyMembers}
-                  onRefresh={fetchMemberData}
-                />
-              )}
-
-              {/* Membership History */}
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Membership History</h2>
-                {memberships.length === 0 ? (
-                  <p className="text-gray-500 text-sm">No membership records yet.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Level</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Year</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Start Date</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">End Date</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {memberships.map((membership) => (
-                          <tr key={membership.id}>
-                            <td className="px-4 py-3 text-sm">
-                              <span
-                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getLevelBadgeColor(
-                                  membership.level
-                                )}`}
-                              >
-                                {membership.level}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-900">{membership.year || 'N/A'}</td>
-                            <td className="px-4 py-3 text-sm text-gray-900">{formatDate(membership.start_date)}</td>
-                            <td className="px-4 py-3 text-sm text-gray-900">{formatDate(membership.end_date)}</td>
-                            <td className="px-4 py-3 text-sm text-gray-900">${membership.amount.toFixed(2)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Right Column - Quick Info & Actions */}
-            <div className="space-y-6">
-              {/* Quick Info Card */}
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Info</h2>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500">Member Type</label>
-                    <p className="mt-1 text-gray-900">{member.member_class}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500">Membership Level</label>
-                    <p className="mt-1 text-gray-900">{member.current_level}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500">Membership ID</label>
-                    <p className="mt-1 text-gray-900 font-mono">{member.membership_id}</p>
-                  </div>
-                  {member.member_since && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500">Member Since</label>
-                      <p className="mt-1 text-gray-900">{formatDate(member.member_since)}</p>
-                    </div>
-                  )}
-                  {member.legacy_id && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500">Legacy ID</label>
-                      <p className="mt-1 text-gray-900">{member.legacy_id}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-                <div className="space-y-2">
-                  <Link
-                    href={`/admin/members/${memberId}/edit`}
-                    className="block w-full text-left px-4 py-2 text-sm text-white bg-[#FF9933] hover:bg-[#E68A2E] rounded-md transition-colors"
-                  >
-                    ✏️ Edit Member
-                  </Link>
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors">
-                    📧 Send Registration Invite
-                  </button>
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors">
-                    💳 Record Payment
-                  </button>
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors">
-                    📄 View Receipts
-                  </button>
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors">
-                    📊 View Payment History
-                  </button>
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors">
-                    🎫 View Event Registrations
-                  </button>
-                </div>
-              </div>
-
-              {/* Metadata */}
-              <div className="bg-gray-50 shadow rounded-lg p-6">
-                <h2 className="text-sm font-semibold text-gray-700 mb-3">Record Information</h2>
-                <div className="space-y-2 text-xs text-gray-600">
-                  <p>Created: {formatDate(member.created_at)}</p>
-                  <p>Updated: {formatDate(member.updated_at)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+                    <Badge tone={m.status === 'Active' ? 'tulsi' : 'neutral'}>{m.status}</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
         </div>
-      </AdminLayout>
-    </ProtectedRoute>
+
+        {/* Rail */}
+        <div className="space-y-5 lg:sticky lg:top-24">
+          <Card spine="saffron" className="pl-7">
+            <CardHeader title="At a glance" />
+            <DescriptionList
+              items={[
+                { label: 'Membership', value: member.membership_id, numeric: true },
+                { label: 'Level', value: member.current_level },
+                { label: 'Class', value: member.member_class },
+                {
+                  label: 'Portal access',
+                  value: member.auth_user_id ? 'Linked' : 'Not linked',
+                },
+                { label: 'Household', value: String(familyMembers.length + 1), numeric: true },
+              ]}
+            />
+          </Card>
+
+          <Card>
+            <CardHeader title="Actions" />
+            <div className="space-y-2.5">
+              <Button
+                variant="secondary"
+                fullWidth
+                icon={MailIcon}
+                loading={sendingEmail}
+                onClick={handleSendInvitation}
+              >
+                {member.auth_user_id ? 'Resend portal invitation' : 'Send portal invitation'}
+              </Button>
+              <AppLink to={`/admin/members/${member.id}/login-activity`} className="block">
+                <Button variant="secondary" fullWidth icon={ShieldCheckIcon}>
+                  Sign-in history
+                </Button>
+              </AppLink>
+              <AppLink to={`/admin/members/${member.id}/audit-log`} className="block">
+                <Button variant="secondary" fullWidth icon={FileClockIcon}>
+                  Change history
+                </Button>
+              </AppLink>
+            </div>
+          </Card>
+
+          <Card tone="sunk">
+            <CardHeader title="Record" />
+            <DescriptionList
+              items={[
+                {
+                  label: 'Created',
+                  value: member.created_at ? formatDate(member.created_at) : '\—',
+                  numeric: true,
+                },
+                {
+                  label: 'Updated',
+                  value: member.updated_at ? formatDate(member.updated_at) : '\—',
+                  numeric: true,
+                },
+                ...(member.legacy_id
+                  ? [{ label: 'Legacy id', value: member.legacy_id, numeric: true }]
+                  : []),
+              ]}
+            />
+          </Card>
+        </div>
+      </div>
+    </div>
   )
 }

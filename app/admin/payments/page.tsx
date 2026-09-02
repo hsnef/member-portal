@@ -3,10 +3,19 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
-import type { PaymentCategory, PaymentMethod } from '@/types/database'
+import { AdminListView } from '@/components/admin/AdminListView'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { StatCard } from '@/components/ui/StatCard'
+import { ToolbarFilter } from '@/components/ui/Toolbar'
+import { AppLink } from '@/components/nav/Nav'
+import { CreditCardIcon, PlusIcon } from 'lucide-react'
+import { formatCurrency, formatDate } from '@/utils/format'
+import type { Column } from '@/components/ui/DataTable'
+import type { PaymentPurpose, PaymentMethod } from '@/types/database'
+import { useTestData } from '@/lib/context/TestDataContext'
+import { getTestMemberIds } from '@/lib/utils/testDataFiltering'
 
 interface Payment {
   id: string
@@ -14,34 +23,39 @@ interface Payment {
   membership_id: string
   amount: number
   payment_date: string
-  payment_method: PaymentMethod
-  category: PaymentCategory
+  method: PaymentMethod
+  purpose: PaymentPurpose
   check_number?: string
-  transaction_id?: string
-  stripe_payment_id?: string
+  zelle_reference?: string
+  stripe_payment_intent_id?: string
   notes?: string
   member_name?: string
   member_email?: string
+  is_test_payment?: boolean
 }
 
 export default function PaymentsPage() {
   const router = useRouter()
   const supabase = createClient()
+  const { showTestData } = useTestData()
 
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterCategory, setFilterCategory] = useState<PaymentCategory | 'All'>('All')
+  const [filterPurpose, setFilterPurpose] = useState<PaymentPurpose | 'All'>('All')
   const [filterMethod, setFilterMethod] = useState<PaymentMethod | 'All'>('All')
 
   useEffect(() => {
     fetchPayments()
-  }, [])
+  }, [showTestData])
 
   const fetchPayments = async () => {
     try {
+      // Get test member IDs for filtering
+      const testMemberIds = await getTestMemberIds()
+
       // Fetch payments with member details
-      const { data, error } = await supabase
+      let query = supabase
         .from('payments')
         .select(`
           *,
@@ -56,15 +70,23 @@ export default function PaymentsPage() {
         .order('payment_date', { ascending: false })
         .limit(100)
 
+      // Filter out test payments unless showTestData toggle is ON
+      if (!showTestData && testMemberIds.length > 0) {
+        query = query.not('member_id', 'in', `(${testMemberIds.join(',')})`)
+      }
+
+      const { data, error } = await query
+
       if (error) throw error
 
-      // Transform data to include member name
+      // Transform data to include member name and test flag
       const transformedPayments = data?.map((payment: any) => ({
         ...payment,
         member_name: payment.members?.member_class === 'Personal'
           ? `${payment.members.first_name} ${payment.members.last_name}`
           : payment.members?.business_name || 'Unknown',
         member_email: payment.members?.primary_email,
+        is_test_payment: testMemberIds.includes(payment.member_id),
       })) || []
 
       setPayments(transformedPayments)
@@ -83,223 +105,139 @@ export default function PaymentsPage() {
       payment.member_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       payment.member_email?.toLowerCase().includes(searchQuery.toLowerCase())
 
-    const matchesCategory = filterCategory === 'All' || payment.category === filterCategory
-    const matchesMethod = filterMethod === 'All' || payment.payment_method === filterMethod
+    const matchesPurpose = filterPurpose === 'All' || payment.purpose === filterPurpose
+    const matchesMethod = filterMethod === 'All' || payment.method === filterMethod
 
-    return matchesSearch && matchesCategory && matchesMethod
+    return matchesSearch && matchesPurpose && matchesMethod
   })
 
   // Calculate totals
   const totalAmount = filteredPayments.reduce((sum, p) => sum + p.amount, 0)
 
-  const getCategoryBadgeColor = (category: PaymentCategory) => {
-    switch (category) {
-      case 'Membership': return 'bg-blue-100 text-blue-800'
-      case 'Donation': return 'bg-green-100 text-green-800'
-      case 'Service': return 'bg-purple-100 text-purple-800'
-      case 'Event': return 'bg-orange-100 text-orange-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
+  const purposeTone: Record<string, 'tulsi' | 'kumkum' | 'marigold' | 'copper' | 'neutral'> = {
+    Donation: 'tulsi',
+    Membership: 'kumkum',
+    Event: 'marigold',
+    Service: 'copper',
   }
 
-  const getMethodBadgeColor = (method: PaymentMethod) => {
-    switch (method) {
-      case 'Cash': return 'bg-yellow-100 text-yellow-800'
-      case 'Check': return 'bg-indigo-100 text-indigo-800'
-      case 'Card': return 'bg-pink-100 text-pink-800'
-      case 'Online': return 'bg-emerald-100 text-emerald-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
+  const reference = (p: Payment) =>
+    p.check_number || p.zelle_reference || p.stripe_payment_intent_id?.slice(-8) || '—'
+
+  const columns: Array<Column<Payment>> = [
+    {
+      key: 'member',
+      header: 'Member',
+      cell: (p) => (
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-ink">{p.member_name ?? '—'}</p>
+          <p className="tnum mt-0.5 truncate text-[13px] text-ink-3">{p.membership_id}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'payment_date',
+      header: 'Date',
+      sortable: true,
+      cell: (p) => <span className="tnum text-ink-2">{formatDate(p.payment_date)}</span>,
+    },
+    {
+      key: 'purpose',
+      header: 'Purpose',
+      cell: (p) => <Badge tone={purposeTone[String(p.purpose)] ?? 'neutral'}>{p.purpose}</Badge>,
+    },
+    {
+      key: 'method',
+      header: 'Method',
+      secondary: true,
+      cell: (p) => (
+        <div className="min-w-0">
+          <p className="text-ink-2">{p.method}</p>
+          <p className="tnum mt-0.5 truncate text-[13px] text-ink-3">{reference(p)}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'amount',
+      header: 'Amount',
+      align: 'right',
+      sortable: true,
+      cell: (p) => (
+        <span className="tnum font-semibold text-ink">{formatCurrency(p.amount, true)}</span>
+      ),
+    },
+  ]
+
+  const mobileCard = (p: Payment) => (
+    <div className="space-y-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-ink">{p.member_name ?? p.membership_id}</p>
+          <p className="tnum mt-0.5 text-[13px] text-ink-3">
+            {formatDate(p.payment_date)} · {p.method}
+          </p>
+        </div>
+        <Badge tone={purposeTone[String(p.purpose)] ?? 'neutral'}>{p.purpose}</Badge>
+      </div>
+      <p className="tnum font-serif text-[20px] text-ink">{formatCurrency(p.amount, true)}</p>
+    </div>
+  )
 
   return (
-    <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-      <AdminLayout>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Payments</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Manage and view all payment records
-              </p>
-            </div>
-            <Link
-              href="/admin/payments/new"
-              className="px-4 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] font-medium"
-            >
-              + Record Payment
-            </Link>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Total Payments</p>
-              <p className="text-2xl font-bold text-gray-900">{filteredPayments.length}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Total Amount</p>
-              <p className="text-2xl font-bold text-green-600">
-                ${totalAmount.toFixed(2)}
-              </p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Membership Payments</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {filteredPayments.filter(p => p.category === 'Membership').length}
-              </p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <p className="text-sm text-gray-600">Donations</p>
-              <p className="text-2xl font-bold text-green-600">
-                {filteredPayments.filter(p => p.category === 'Donation').length}
-              </p>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Search */}
-              <div className="md:col-span-2">
-                <input
-                  type="text"
-                  placeholder="Search by member name, ID, or email..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-                />
-              </div>
-
-              {/* Category Filter */}
-              <div>
-                <select
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value as any)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-                >
-                  <option value="All">All Categories</option>
-                  <option value="Membership">Membership</option>
-                  <option value="Donation">Donation</option>
-                  <option value="Service">Service</option>
-                  <option value="Event">Event</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              {/* Method Filter */}
-              <div>
-                <select
-                  value={filterMethod}
-                  onChange={(e) => setFilterMethod(e.target.value as any)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-                >
-                  <option value="All">All Methods</option>
-                  <option value="Cash">Cash</option>
-                  <option value="Check">Check</option>
-                  <option value="Card">Card</option>
-                  <option value="Online">Online</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Payments Table */}
-          <div className="bg-white shadow rounded-lg overflow-hidden">
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#FF9933] border-r-transparent"></div>
-                <p className="mt-4 text-gray-600">Loading payments...</p>
-              </div>
-            ) : filteredPayments.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No payments found</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Member
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Amount
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Category
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Method
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Reference
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredPayments.map((payment) => (
-                      <tr key={payment.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {new Date(payment.payment_date).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {payment.member_name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {payment.membership_id}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
-                          ${payment.amount.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryBadgeColor(payment.category)}`}>
-                            {payment.category}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getMethodBadgeColor(payment.payment_method)}`}>
-                            {payment.payment_method}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {payment.check_number && `Check #${payment.check_number}`}
-                          {payment.transaction_id && `TXN: ${payment.transaction_id}`}
-                          {payment.stripe_payment_id && `Stripe: ${payment.stripe_payment_id.slice(0, 12)}...`}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            onClick={() => router.push(`/admin/payments/${payment.id}`)}
-                            className="text-[#FF9933] hover:text-[#E68A2E] mr-4"
-                          >
-                            View
-                          </button>
-                          <button
-                            onClick={() => alert('Receipt generation coming soon')}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            Receipt
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-      </AdminLayout>
-    </ProtectedRoute>
+    <AdminListView<Payment>
+      eyebrow="Office console"
+      title="Payments"
+      description="Every payment recorded against a membership."
+      noun="payment"
+      actions={
+        <AppLink to="/admin/payments/new">
+          <Button icon={PlusIcon}>Record payment</Button>
+        </AppLink>
+      }
+      rows={payments}
+      columns={columns}
+      rowKey={(p) => p.id}
+      mobileCard={mobileCard}
+      loading={loading}
+      searchPlaceholder="Search by member, membership number or email…"
+      searchFields={(p) => [p.membership_id, p.member_name, p.member_email]}
+      filters={['All', 'Donation', 'Membership', 'Event', 'Service']}
+      filterValue={filterPurpose}
+      onFilterChange={(v) => setFilterPurpose(v as PaymentPurpose | 'All')}
+      filterFn={(p, f) => f === 'All' || p.purpose === f}
+      toolbarFilters={
+        <ToolbarFilter
+          label="Method"
+          value={filterMethod}
+          onChange={(v) => setFilterMethod(v as PaymentMethod | 'All')}
+          options={['All', 'Card', 'Check', 'Cash', 'Zelle']}
+        />
+      }
+      emptyIcon={CreditCardIcon}
+      emptyTitle="No payments recorded"
+      emptyDescription="Record a payment taken by cash, check or Zelle at the office."
+      emptyAction={
+        <AppLink to="/admin/payments/new">
+          <Button icon={PlusIcon}>Record the first payment</Button>
+        </AppLink>
+      }
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
+        <StatCard
+          label="Total recorded"
+          value={formatCurrency(totalAmount)}
+          caption={`${filteredPayments.length} payment${filteredPayments.length === 1 ? '' : 's'} shown`}
+          icon={CreditCardIcon}
+          tone="tulsi"
+        />
+        <StatCard
+          label="All payments"
+          value={String(payments.length)}
+          caption="Before filters"
+          icon={CreditCardIcon}
+          tone="sandal"
+        />
+      </div>
+    </AdminListView>
   )
 }

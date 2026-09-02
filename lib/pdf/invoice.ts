@@ -1,5 +1,7 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { PDF } from './theme'
+import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 
 interface InvoiceData {
   invoiceNumber: string
@@ -27,13 +29,13 @@ export function generateInvoice(data: InvoiceData): jsPDF {
   // Add temple logo/header
   doc.setFontSize(20)
   doc.setFont('helvetica', 'bold')
-  doc.text('Hindu Society of North East Florida', 105, 20, { align: 'center' })
+  doc.text(TEMPLE_CONFIG.name, 105, 20, { align: 'center' })
 
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
-  doc.text('HSNEF Temple', 105, 28, { align: 'center' })
-  doc.text('Jacksonville, FL', 105, 34, { align: 'center' })
-  doc.text('Tax ID: XX-XXXXXXX', 105, 40, { align: 'center' })
+  doc.text(TEMPLE_CONFIG.shortName + ' Temple', 105, 28, { align: 'center' })
+  doc.text(`${TEMPLE_CONFIG.address.city}, ${TEMPLE_CONFIG.address.state}`, 105, 34, { align: 'center' })
+  doc.text(`Tax ID: ${TEMPLE_CONFIG.taxId}`, 105, 40, { align: 'center' })
 
   // Invoice title
   doc.setFontSize(16)
@@ -51,15 +53,19 @@ export function generateInvoice(data: InvoiceData): jsPDF {
   }
 
   // Status badge
-  doc.setFillColor(data.status === 'Paid' ? 34 : data.status === 'Sent' ? 59 : 156,
-                   data.status === 'Paid' ? 197 : data.status === 'Sent' ? 130 : 163,
-                   data.status === 'Paid' ? 94 : data.status === 'Sent' ? 246 : 175)
+  const statusColor =
+    data.status === 'Paid'
+      ? PDF.success
+      : data.status === 'Sent'
+        ? PDF.warning
+        : PDF.neutral
+  doc.setFillColor(...statusColor)
   doc.roundedRect(150, 82, 40, 8, 2, 2, 'F')
-  doc.setTextColor(255, 255, 255)
+  doc.setTextColor(...PDF.white)
   doc.setFontSize(9)
   doc.setFont('helvetica', 'bold')
   doc.text(data.status.toUpperCase(), 170, 88, { align: 'center' })
-  doc.setTextColor(0, 0, 0)
+  doc.setTextColor(...PDF.ink)
 
   // Horizontal line
   doc.line(20, 95, 190, 95)
@@ -115,7 +121,8 @@ export function generateInvoice(data: InvoiceData): jsPDF {
       [data.requestType + ' - ' + data.serviceDescription.substring(0, 50), `$${data.amount.toFixed(2)}`]
     ],
     theme: 'striped',
-    headStyles: { fillColor: [255, 153, 51] },
+    headStyles: { fillColor: [...PDF.kumkum], textColor: [...PDF.white] },
+    alternateRowStyles: { fillColor: [...PDF.surfaceSunk] },
     styles: { fontSize: 10 },
     columnStyles: {
       0: { cellWidth: 140 },
@@ -125,15 +132,15 @@ export function generateInvoice(data: InvoiceData): jsPDF {
 
   // Total amount box
   const finalY = (doc as any).lastAutoTable.finalY || itemsY + 50
-  doc.setFillColor(255, 153, 51) // Orange color
+  doc.setFillColor(...PDF.kumkum) // white text on this passes AA
   doc.rect(130, finalY + 10, 60, 25, 'F')
-  doc.setTextColor(255, 255, 255)
+  doc.setTextColor(...PDF.white)
   doc.setFontSize(12)
   doc.setFont('helvetica', 'bold')
   doc.text('Total Amount', 160, finalY + 18, { align: 'center' })
   doc.setFontSize(18)
   doc.text(`$${data.amount.toFixed(2)}`, 160, finalY + 28, { align: 'center' })
-  doc.setTextColor(0, 0, 0)
+  doc.setTextColor(...PDF.ink)
 
   // Payment instructions
   if (data.status === 'Sent') {
@@ -143,9 +150,9 @@ export function generateInvoice(data: InvoiceData): jsPDF {
     doc.text('Payment Instructions:', 20, paymentY)
     doc.setFont('helvetica', 'normal')
     const instructions = [
-      '• Pay online through your member portal',
+      `• Pay online at ${TEMPLE_CONFIG.contact.memberPortal}`,
       '• Pay in person at the temple office',
-      '• Send check to: HSNEF Temple, Jacksonville, FL',
+      `• Send check to: ${TEMPLE_CONFIG.address.full}`,
     ]
     instructions.forEach((instruction, index) => {
       doc.text(instruction, 20, paymentY + 6 + (index * 6))
@@ -166,7 +173,7 @@ export function generateInvoice(data: InvoiceData): jsPDF {
   // Footer
   doc.setFontSize(8)
   doc.setFont('helvetica', 'italic')
-  doc.text('Thank you for your support!', 105, 280, { align: 'center' })
+  doc.text(TEMPLE_CONFIG.messaging.thankYou, 105, 280, { align: 'center' })
   doc.text('For questions about this invoice, please contact the temple office.', 105, 285, { align: 'center' })
 
   return doc

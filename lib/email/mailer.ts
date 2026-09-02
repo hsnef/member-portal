@@ -20,7 +20,7 @@ function getResendClient(): Resend {
 // Default from address
 const DEFAULT_FROM = {
   name: process.env.EMAIL_FROM_NAME || 'HSNEF Membership Portal',
-  address: process.env.EMAIL_FROM || 'noreply@members.hsnef.org',
+  address: process.env.EMAIL_FROM || 'noreply@portal.hsnef.org',
 }
 
 // Email options interface
@@ -140,7 +140,7 @@ export async function sendTestEmail(to: string) {
     subject: 'HSNEF Portal - Test Email',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #FF9933;">HSNEF Membership Portal</h2>
+        <h2 style="color: #c75b12;">HSNEF Membership Portal</h2>
         <p>This is a test email from your HSNEF Membership Portal.</p>
         <p>If you received this email, your Resend email configuration is working correctly!</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">

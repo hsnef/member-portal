@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSNEF Member Portal - User Reference Manual</title>
+    <style>
+        :root {
+            /* Mirrors the portal's design system -- see app/globals.css. */
+            --primary-color: #c75b12;   /* saffron */
+            --primary-dark: #a94a0c;    /* saffron-hover */
+            --secondary-color: #4e7a63; /* tulsi */
+            --accent-blue: #7b2d26;     /* kumkum */
+            --text-primary: #2b2018;    /* ink */
+            --text-secondary: #6a5b4b;  /* ink-2 */
+            --text-muted: #9b8c7a;      /* ink-3 */
+            --bg-light: #fffbf4;        /* canvas */
+            --bg-card: #ffffff;         /* surface */
+            --border-color: #f1e6d5;    /* line */
+            --success-color: #4e7a63;   /* tulsi */
+            --warning-color: #a06c05;   /* warning */
+            --error-color: #b23a2e;     /* danger */
+            --info-color: #6a5b4b;      /* neutral -- the system has no blue */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+
+        @media print {
+            body {
+                font-size: 11pt;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+            .no-print {
+                display: none;
+            }
+            nav {
+                display: none;
+            }
+            .toc-container {
+                page-break-after: always;
+            }
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background-color: var(--bg-light);
+            font-size: 14px;
+        }
+
+        /* Cover Page */
+        .cover-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #7b2d26;
+            color: white;
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .cover-logo {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .cover-logo-text {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .cover-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .cover-subtitle {
+            font-size: 28px;
+            font-weight: 300;
+            margin-bottom: 60px;
+            opacity: 0.95;
+        }
+
+        .cover-version {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .cover-date {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .cover-footer {
+            position: absolute;
+            bottom: 40px;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            z-index: 1000;
+            padding: 20px 0;
+        }
+
+        nav .nav-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        nav .nav-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        nav ul {
+            list-style: none;
+        }
+
+        nav li {
+            margin: 0;
+        }
+
+        nav a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        nav a:hover {
+            background: var(--bg-light);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        nav .nav-section {
+            font-weight: 600;
+            color: var(--text-primary);
+            padding: 12px 20px 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Content */
+        main {
+            margin-left: 280px;
+            padding: 40px 60px;
+            max-width: 1000px;
+        }
+
+        /* Section Styling */
+        section {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 32px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 24px 0 12px;
+        }
+
+        h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin: 20px 0 10px;
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 0 0 16px 24px;
+            color: var(--text-secondary);
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        li ul, li ol {
+            margin-top: 8px;
+            margin-bottom: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        th {
+            background: var(--bg-light);
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        td {
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) {
+            background: var(--bg-light);
+        }
+
+        /* Info Boxes */
+        .info-box {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid;
+        }
+
+        .info-box.note {
+            background: #eff6ff;
+            border-color: var(--info-color);
+        }
+
+        .info-box.warning {
+            background: #fffbeb;
+            border-color: var(--warning-color);
+        }
+
+        .info-box.tip {
+            background: #ecfdf5;
+            border-color: var(--success-color);
+        }
+
+        .info-box.important {
+            background: #fef2f2;
+            border-color: var(--error-color);
+        }
+
+        .info-box-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-admin { background: #fee2e2; color: #991b1b; }
+        .badge-manager { background: #fef3c7; color: #92400e; }
+        .badge-staff { background: #dbeafe; color: #1e40af; }
+        .badge-member { background: #d1fae5; color: #065f46; }
+
+        /* Code/Path */
+        code {
+            background: #faf5ec;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            color: #e11d48;
+        }
+
+        /* Steps */
+        .steps {
+            counter-reset: step;
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .steps li {
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 20px;
+        }
+
+        .steps li::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Feature Cards */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            background: var(--bg-light);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .feature-card-icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .feature-card-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .feature-card-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Role Access Table */
+        .access-yes { color: var(--success-color); font-weight: 600; }
+        .access-no { color: var(--text-muted); }
+        .access-limited { color: var(--warning-color); font-weight: 500; }
+
+        /* TOC */
+        .toc-container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .toc-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .toc {
+            columns: 2;
+            column-gap: 40px;
+        }
+
+        .toc-section {
+            break-inside: avoid;
+            margin-bottom: 24px;
+        }
+
+        .toc-section-title {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .toc-items {
+            list-style: none;
+            margin: 0;
+        }
+
+        .toc-items li {
+            margin-bottom: 4px;
+        }
+
+        .toc-items a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .toc-items a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Keyboard shortcuts */
+        kbd {
+            background: #faf5ec;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+        }
+
+        /* Workflow diagrams */
+        .workflow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            padding: 20px;
+            background: var(--bg-light);
+            border-radius: 8px;
+        }
+
+        .workflow-step {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .workflow-arrow {
+            color: var(--primary-color);
+            font-size: 20px;
+        }
+
+        /* Print-friendly */
+        @media print {
+            nav { display: none; }
+            main { margin-left: 0; padding: 0; }
+            section { box-shadow: none; border: 1px solid #ddd; }
+            .cover-page { min-height: auto; padding: 40px; }
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            nav { display: none; }
+            main { margin-left: 0; padding: 20px; }
+            .toc { columns: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Cover Page -->
+<div class="cover-page">
+    <div class="cover-logo">
+        <span class="cover-logo-text">HS</span>
+    </div>
+    <h1 class="cover-title">HSNEF Member Portal</h1>
+    <p class="cover-subtitle">User Reference Manual</p>
+    <p class="cover-version">Version 1.0</p>
+    <p class="cover-date">Last Updated: January 11, 2026</p>
+    <p class="cover-footer">Hindu Society of Northeast Florida</p>
+</div>
+
+<!-- Navigation Sidebar -->
+<nav class="no-print">
+    <div class="nav-header">
+        <div class="nav-title">Reference Manual</div>
+    </div>
+    <ul>
+        <li class="nav-section">Getting Started</li>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#roles">User Roles & Access</a></li>
+        <li><a href="#login">Logging In</a></li>
+
+        <li class="nav-section">Admin Dashboard</li>
+        <li><a href="#dashboard">Dashboard Overview</a></li>
+        <li><a href="#quick-actions">Quick Actions</a></li>
+
+        <li class="nav-section">Member Management</li>
+        <li><a href="#member-list">Member List</a></li>
+        <li><a href="#add-member">Adding Members</a></li>
+        <li><a href="#edit-member">Editing Members</a></li>
+        <li><a href="#import-members">Importing Members</a></li>
+
+        <li class="nav-section">Events</li>
+        <li><a href="#events-list">Events List</a></li>
+        <li><a href="#create-event">Creating Events</a></li>
+        <li><a href="#registrations">Registrations</a></li>
+
+        <li class="nav-section">Payments</li>
+        <li><a href="#payments">Payment Management</a></li>
+        <li><a href="#record-payment">Recording Payments</a></li>
+        <li><a href="#zelle">Zelle Processing</a></li>
+
+        <li class="nav-section">Services & Bookings</li>
+        <li><a href="#requests">Service Requests</a></li>
+        <li><a href="#bookings">Bookings</a></li>
+
+        <li class="nav-section">Tools</li>
+        <li><a href="#qr-scanner">QR Code Scanner</a></li>
+        <li><a href="#audit-logs">Audit Logs</a></li>
+
+        <li class="nav-section">Settings</li>
+        <li><a href="#staff-roles">Staff Roles</a></li>
+        <li><a href="#settings">Portal Settings</a></li>
+
+        <li class="nav-section">Member Portal</li>
+        <li><a href="#member-dashboard">Member Dashboard</a></li>
+        <li><a href="#member-features">Member Features</a></li>
+
+        <li class="nav-section">Reference</li>
+        <li><a href="#workflows">Common Workflows</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+        <li><a href="#quick-reference">Quick Reference</a></li>
+    </ul>
+</nav>
+
+<!-- Main Content -->
+<main>
+
+<!-- Table of Contents -->
+<div class="toc-container page-break">
+    <h2 class="toc-title">Table of Contents</h2>
+    <div class="toc">
+        <div class="toc-section">
+            <div class="toc-section-title">1. Getting Started</div>
+            <ul class="toc-items">
+                <li><a href="#introduction">1.1 Introduction</a></li>
+                <li><a href="#roles">1.2 User Roles & Access Levels</a></li>
+                <li><a href="#login">1.3 Logging Into the Portal</a></li>
+            </ul>
+        </div>
+        <div class="toc-section">
+            <div class="toc-section-title">2. Admin Dashboard</div>
+            <ul class="toc-items">
+                <li><a href="#dashboard">2.1 Dashboard Overview</a></li>
+                <li><a href="#quick-actions">2.2 Quick Actions</a></li>
+                <li><a href="#statistics">2.3 Statistics & Metrics</a></li>
+            </ul>
+        </div>
+        <div class="toc-section">
+            <div class="toc-section-title">3. Member Management</div>
+            <ul class="toc-items">
+                <li><a href="#member-list">3.1 Member List</a></li>
+                <li><a href="#add-member">3.2 Adding New Members</a></li>
+                <li><a href="#edit-member">3.3 Editing Members</a></li>
+                <li><a href="#member-detail">3.4 Member Detail View</a></li>
+                <li><a href="#import-members">3.5 Bulk Import (CSV)</a></li>
+            </ul>
+        </div>
+        <div class="toc-section">
+            <div class="toc-section-title">4. Event Management</div>
+            <ul class="toc-items">
+                <li><a href="#events-list">4.1 Events List</a></li>
+                <li><a href="#create-event">4.2 Creating Events</a></li>
+                <li><a href="#edit-event">4.3 Editing Events</a></li>
+                <li><a href="#registrations">4.4 Managing Registrations</a></li>
+            </ul>
+        </div>
+        <div class="toc-section">
+            <div class="toc-section-title">5. Payment Management</div>
+            <ul class="toc-items">
+                <li><a href="#payments">5.1 Payment List</a></li>
+                <li><a href="#record-payment">5.2 Recording Payments</a></li>
+                <li><a href="#zelle">5.3 Zelle Payment Processing</a></li>
+                <li><a href="#receipts">5.4 Generating Receipts</a></li>
+            </ul>
+        </div>
+        <div class="toc-section">
+            <div class="toc-section-title">6. Services & Bookings</div>
+            <ul class="toc-items">
+                <li><a href="#requests">6.1 Service Requests</a></li>
+                <li><a href="#bookings">6.2 Service Bookings</a></li>
+                <li><a href="#services">6.3 Services Catalog</a></li>
+            </ul>
+        </div>
+        <div class="toc-section">
+            <div class="toc-section-title">7. Tools & Utilities</div>
+            <ul class="toc-items">
+                <li><a href="#qr-scanner">7.1 QR Code Scanner</a></li>
+                <li><a href="#audit-logs">7.2 Audit Logs</a></li>
+                <li><a href="#login-activity">7.3 Login Activity</a></li>
+            </ul>
+        </div>
+        <div class="toc-section">
+            <div class="toc-section-title">8. Settings & Configuration</div>
+            <ul class="toc-items">
+                <li><a href="#staff-roles">8.1 Staff Role Management</a></li>
+                <li><a href="#settings">8.2 Portal Settings</a></li>
+                <li><a href="#test-accounts">8.3 Test Accounts</a></li>
+            </ul>
+        </div>
+        <div class="toc-section">
+            <div class="toc-section-title">9. Member Portal Guide</div>
+            <ul class="toc-items">
+                <li><a href="#member-dashboard">9.1 Member Dashboard</a></li>
+                <li><a href="#member-features">9.2 Member Features</a></li>
+                <li><a href="#member-faq">9.3 Helping Members (FAQ)</a></li>
+            </ul>
+        </div>
+        <div class="toc-section">
+            <div class="toc-section-title">10. Reference</div>
+            <ul class="toc-items">
+                <li><a href="#workflows">10.1 Common Workflows</a></li>
+                <li><a href="#troubleshooting">10.2 Troubleshooting</a></li>
+                <li><a href="#quick-reference">10.3 Quick Reference Tables</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Section 1: Getting Started -->
+<section id="introduction" class="page-break">
+    <h1>1. Getting Started</h1>
+
+    <h2 id="intro-overview">1.1 Introduction</h2>
+    <p>Welcome to the HSNEF Member Portal User Reference Manual. This comprehensive guide covers all features available to administrators, office managers, and office staff for managing temple membership, events, payments, and services.</p>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-card-icon">👥</div>
+            <div class="feature-card-title">Member Management</div>
+            <div class="feature-card-desc">Add, edit, search, and import members with comprehensive profiles</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon">📅</div>
+            <div class="feature-card-title">Event Management</div>
+            <div class="feature-card-desc">Create events, manage registrations, and track attendance</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon">💳</div>
+            <div class="feature-card-title">Payment Processing</div>
+            <div class="feature-card-desc">Record payments, process Zelle, and generate receipts</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon">📱</div>
+            <div class="feature-card-title">QR Verification</div>
+            <div class="feature-card-desc">Scan member QR codes for instant verification and check-in</div>
+        </div>
+    </div>
+
+    <h2 id="roles">1.2 User Roles & Access Levels</h2>
+    <p>The portal uses a role-based access control system with four distinct roles, each with specific permissions:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Role</th>
+                <th>Description</th>
+                <th>Access Level</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="badge badge-admin">Admin</span></td>
+                <td>Full system access including settings, role management, and all administrative functions</td>
+                <td>Complete</td>
+            </tr>
+            <tr>
+                <td><span class="badge badge-manager">Office Manager</span></td>
+                <td>Can manage members, approve bookings, record payments, import data, and access most admin features</td>
+                <td>High</td>
+            </tr>
+            <tr>
+                <td><span class="badge badge-staff">Office Staff</span></td>
+                <td>Can view members, process day-to-day transactions, record payments, and handle basic admin tasks</td>
+                <td>Standard</td>
+            </tr>
+            <tr>
+                <td><span class="badge badge-member">Member</span></td>
+                <td>Portal access for viewing own profile, registering for events, and making payments</td>
+                <td>Self-Service Only</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Permissions Matrix</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>Office Staff</th>
+                <th>Office Manager</th>
+                <th>Admin</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>View all members</td>
+                <td class="access-yes">Yes</td>
+                <td class="access-yes">Yes</td>
+                <td class="access-yes">Yes</td>
+            </tr>
+            <tr>
+                <td>Create/edit members</td>
+                <td class="access-yes">Yes</td>
+                <td class="access-yes">Yes</td>
+                <td class="access-yes">Yes</td>
+            </tr>
+            <tr>
+                <td>Import members (CSV)</td>
+                <td class="access-no">No</td>
+                <td class="access-yes">Yes</td>
+                <td class="access-yes">Yes</td>
+            </tr>
+            <tr>
+                <td>Record payments</td>
+                <td class="access-yes">Yes</td>
+                <td class="access-yes">Yes</td>
+                <td class="access-yes">Yes</td>
+            </tr>
+            <tr>
+                <td>Create/edit events</td>
+                <td class="access-no">No</td>
+                <td class="access-yes">Yes</td>
+                <td class="access-yes">Yes</td>
+            </tr>
+            <tr>
+                <td>View audit logs</td>
+                <td class="access-no">No</td>
+                <td class="access-yes">Yes</td>
+                <td class="access-yes">Yes</td>
+            </tr>
+            <tr>
+                <td>Manage staff roles</td>
+                <td class="access-no">No</td>
+                <td class="access-no">No</td>
+                <td class="access-yes">Yes</td>
+            </tr>
+            <tr>
+                <td>System settings</td>
+                <td class="access-no">No</td>
+                <td class="access-limited">Limited</td>
+                <td class="access-yes">Yes</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2 id="login">1.3 Logging Into the Portal</h2>
+    <p>The portal supports two secure login methods:</p>
+
+    <h3>Google Sign-In (Recommended)</h3>
+    <ol class="steps">
+        <li>Navigate to the portal login page</li>
+        <li>Click the <strong>"Sign in with Google"</strong> button</li>
+        <li>Select your Google account or enter credentials</li>
+        <li>You will be automatically redirected to the dashboard</li>
+    </ol>
+
+    <h3>Magic Link (Email)</h3>
+    <ol class="steps">
+        <li>Navigate to the portal login page</li>
+        <li>Enter your registered email address</li>
+        <li>Click <strong>"Email Me a Link to Login"</strong></li>
+        <li>Check your email inbox for the login link</li>
+        <li>Click the link within 1 hour to sign in</li>
+    </ol>
+
+    <div class="info-box note">
+        <div class="info-box-title">Note</div>
+        Magic links are single-use and expire after 1 hour. If the link doesn't work, request a new one.
+    </div>
+</section>
+
+<!-- Section 2: Admin Dashboard -->
+<section id="dashboard" class="page-break">
+    <h1>2. Admin Dashboard</h1>
+
+    <h2>2.1 Dashboard Overview</h2>
+    <p>The admin dashboard provides a centralized view of key metrics and quick access to common tasks. Access it by clicking "Admin Portal" from the member dashboard or navigating to <code>/admin</code>.</p>
+
+    <h3 id="statistics">Statistics Cards</h3>
+    <p>The dashboard displays real-time statistics:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Total Members</strong></td><td>Count of all member records (excludes test accounts by default)</td></tr>
+            <tr><td><strong>Active Members</strong></td><td>Members with current membership status</td></tr>
+            <tr><td><strong>Lifetime Members</strong></td><td>Count of Lifetime membership level</td></tr>
+            <tr><td><strong>Annual Members</strong></td><td>Count of Annual membership level</td></tr>
+            <tr><td><strong>Community Members</strong></td><td>Count of Community membership level</td></tr>
+            <tr><td><strong>Total Revenue</strong></td><td>Sum of all recorded payments</td></tr>
+            <tr><td><strong>Total Payments</strong></td><td>Number of payment transactions</td></tr>
+            <tr><td><strong>Pending Requests</strong></td><td>Service requests awaiting payment</td></tr>
+        </tbody>
+    </table>
+
+    <div class="info-box tip">
+        <div class="info-box-title">Tip</div>
+        Use the "Show Test Data" toggle in settings to include or exclude test account data from statistics.
+    </div>
+
+    <h2 id="quick-actions">2.2 Quick Actions</h2>
+    <p>The dashboard provides quick access buttons for common tasks:</p>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-card-icon">📱</div>
+            <div class="feature-card-title">Scan QR Code</div>
+            <div class="feature-card-desc">Verify members and record temple check-ins</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon">➕</div>
+            <div class="feature-card-title">Add New Member</div>
+            <div class="feature-card-desc">Register a new member to the portal</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon">📅</div>
+            <div class="feature-card-title">Create Event</div>
+            <div class="feature-card-desc">Schedule a new temple event</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon">💳</div>
+            <div class="feature-card-title">View Payments</div>
+            <div class="feature-card-desc">Review and manage payment records</div>
+        </div>
+    </div>
+</section>
+
+<!-- Section 3: Member Management -->
+<section id="member-list" class="page-break">
+    <h1>3. Member Management</h1>
+
+    <h2>3.1 Member List</h2>
+    <p>Access the member list at <code>/admin/members</code>. This page displays all members with search and filtering capabilities.</p>
+
+    <h3>Search & Filter Options</h3>
+    <ul>
+        <li><strong>Search:</strong> By Membership ID, Name, Business Name, Email, or Phone</li>
+        <li><strong>Filter by Level:</strong> All, Lifetime, Annual, Community</li>
+    </ul>
+
+    <h3>Table Columns</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Column</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Member ID</td><td>Unique 8-digit membership number (e.g., 20012300)</td></tr>
+            <tr><td>Name</td><td>Full name or Business name</td></tr>
+            <tr><td>Type</td><td>Personal or Business</td></tr>
+            <tr><td>Level</td><td>Lifetime (gold), Annual (blue), or Community (green)</td></tr>
+            <tr><td>Contact</td><td>Email and phone number</td></tr>
+            <tr><td>Actions</td><td>View details button</td></tr>
+        </tbody>
+    </table>
+
+    <h2 id="add-member">3.2 Adding New Members</h2>
+    <p>Navigate to <code>/admin/members/new</code> to create a new member record.</p>
+
+    <h3>Member Types</h3>
+
+    <h4>Personal Member</h4>
+    <table>
+        <thead>
+            <tr><th>Field</th><th>Required</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>First Name</td><td>Yes</td><td>Member's first name</td></tr>
+            <tr><td>Last Name</td><td>Yes</td><td>Member's last name</td></tr>
+            <tr><td>Profile Name</td><td>No</td><td>Display name (defaults to First + Last)</td></tr>
+            <tr><td>Nakshatra</td><td>No</td><td>Hindu birth star (27 options)</td></tr>
+            <tr><td>Family Gotra</td><td>No</td><td>Family lineage/clan</td></tr>
+            <tr><td>Secondary Contact</td><td>No</td><td>Spouse/partner information</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Business Member</h4>
+    <table>
+        <thead>
+            <tr><th>Field</th><th>Required</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Business Name</td><td>Yes</td><td>Company or organization name</td></tr>
+            <tr><td>Business EIN</td><td>No</td><td>Tax ID (format: XX-XXXXXXX)</td></tr>
+            <tr><td>Contact Person</td><td>Yes</td><td>First and Last name of primary contact</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Contact Information (Both Types)</h4>
+    <table>
+        <thead>
+            <tr><th>Field</th><th>Required</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Primary Email</td><td>Yes</td><td>Main email address (used for login)</td></tr>
+            <tr><td>Primary Phone</td><td>No</td><td>Main phone number</td></tr>
+            <tr><td>Secondary Phone</td><td>No</td><td>Alternate phone number</td></tr>
+            <tr><td>Address</td><td>No</td><td>Street address, City, State, ZIP, Country</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Membership Settings</h4>
+    <table>
+        <thead>
+            <tr><th>Field</th><th>Options</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Member Class</td><td>Personal, Business</td><td>Type of membership</td></tr>
+            <tr><td>Membership Level</td><td>Community, Annual, Lifetime</td><td>Membership tier</td></tr>
+            <tr><td>Founding Member</td><td>Checkbox</td><td>Mark as a founding member</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Membership ID Format</h4>
+    <p>Membership IDs are automatically generated using the format: <code>XXYYZZZZ00</code></p>
+    <ul>
+        <li><strong>XX:</strong> Level prefix (1=Lifetime, 2=Annual, 3=Community)</li>
+        <li><strong>YYZZZ:</strong> Sequential number</li>
+        <li><strong>00:</strong> Suffix</li>
+    </ul>
+
+    <div class="info-box note">
+        <div class="info-box-title">Portal Access</div>
+        Check "Send Registration Invitation" to automatically email the member a link to register for portal access.
+    </div>
+
+    <h2 id="edit-member">3.3 Editing Members</h2>
+    <p>From the member detail page, click "Edit" to modify member information. All fields except Member ID can be updated.</p>
+
+    <h2 id="member-detail">3.4 Member Detail View</h2>
+    <p>The detail page (<code>/admin/members/{id}</code>) shows:</p>
+    <ul>
+        <li>Complete member profile with all details</li>
+        <li>Membership status and level</li>
+        <li>Contact information and address</li>
+        <li>Family members (for Personal members) - <strong>admins can add unlimited</strong></li>
+        <li>Check-in history</li>
+        <li>Payment history</li>
+        <li>Associated requests and bookings</li>
+    </ul>
+
+    <h3>Available Actions</h3>
+    <ul>
+        <li><strong>Edit Member:</strong> Modify member details</li>
+        <li><strong>View Audit Log:</strong> See complete change history</li>
+        <li><strong>View Login Activity:</strong> Portal access history</li>
+        <li><strong>Generate QR Code:</strong> Member verification code</li>
+    </ul>
+
+    <h2 id="import-members">3.5 Bulk Import (CSV)</h2>
+    <p>Navigate to <code>/admin/members/import</code> to import multiple members from a CSV file.</p>
+
+    <div class="info-box warning">
+        <div class="info-box-title">Access Required</div>
+        Bulk import is available to Office Managers and Admins only.
+    </div>
+
+    <h3>CSV Format</h3>
+    <p>The CSV file must include the following columns (42 total supported):</p>
+
+    <h4>Required Columns</h4>
+    <ul>
+        <li><code>Member_First_Name</code></li>
+        <li><code>Member_Last_Name</code></li>
+        <li><code>Primary_Member_Email_Address</code></li>
+    </ul>
+
+    <h4>Optional Columns</h4>
+    <ul>
+        <li><code>Member_Number</code> - Leave blank to auto-generate</li>
+        <li><code>Member_Class</code> - Personal or Business</li>
+        <li><code>Member_Type</code> - Community, Annual, or Lifetime</li>
+        <li><code>Business_Name</code>, <code>Business_EIN</code></li>
+        <li><code>Primary_Phone_Number_1</code>, <code>Primary_Phone_Number_2</code></li>
+        <li><code>Secondary_First_Name</code>, <code>Secondary_Last_Name</code>, etc.</li>
+        <li><code>Child_1_First_Name</code> through <code>Child_4_First_Name</code> (template supports 4 children columns; more can be added via admin portal after import)</li>
+        <li><code>Address_1</code>, <code>City</code>, <code>State</code>, <code>Zip</code>, <code>Country</code></li>
+    </ul>
+
+    <h3>Import Workflow</h3>
+    <ol class="steps">
+        <li>Prepare your CSV file with member data</li>
+        <li>Click "Upload CSV File" and select your file</li>
+        <li>Review the preview table - green checkmarks indicate valid records, red X marks show errors</li>
+        <li>Fix any errors in your CSV and re-upload if needed</li>
+        <li>Click "Import X Valid Members" to proceed</li>
+        <li>View the import results showing success and failure counts</li>
+    </ol>
+
+    <div class="info-box important">
+        <div class="info-box-title">Important</div>
+        <ul>
+            <li>Member numbers must be unique</li>
+            <li>Invalid rows are skipped but don't stop the import</li>
+            <li>Family members (spouse, children) are created automatically</li>
+            <li>Review the Import History page to track all imports</li>
+        </ul>
+    </div>
+</section>
+
+<!-- Section 4: Event Management -->
+<section id="events-list" class="page-break">
+    <h1>4. Event Management</h1>
+
+    <h2>4.1 Events List</h2>
+    <p>Access at <code>/admin/events</code>. View all temple events with filtering and management options.</p>
+
+    <h3>Event Status Types</h3>
+    <table>
+        <thead>
+            <tr><th>Status</th><th>Description</th><th>Member Visibility</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Published</strong></td><td>Live and accepting registrations</td><td>Visible</td></tr>
+            <tr><td><strong>Draft</strong></td><td>In preparation, not yet live</td><td>Hidden</td></tr>
+            <tr><td><strong>Cancelled</strong></td><td>Event has been cancelled</td><td>Hidden</td></tr>
+            <tr><td><strong>Completed</strong></td><td>Event has ended</td><td>Visible (past)</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Event Categories</h3>
+    <ul>
+        <li>🎉 Festival</li>
+        <li>🙏 Puja</li>
+        <li>📚 Educational</li>
+        <li>👥 Social</li>
+        <li>🎭 Cultural</li>
+        <li>💰 Fundraiser</li>
+        <li>Other</li>
+    </ul>
+
+    <h2 id="create-event">4.2 Creating Events</h2>
+    <p>Navigate to <code>/admin/events/new</code> to create a new event.</p>
+
+    <h3>Event Fields</h3>
+    <table>
+        <thead>
+            <tr><th>Field</th><th>Required</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Event Name</td><td>Yes</td><td>Title displayed to members</td></tr>
+            <tr><td>Event Date</td><td>Yes</td><td>Date of the event</td></tr>
+            <tr><td>Event Time</td><td>Yes</td><td>Start time</td></tr>
+            <tr><td>Location</td><td>Yes</td><td>Venue or address</td></tr>
+            <tr><td>Category</td><td>Yes</td><td>Festival, Puja, Educational, etc.</td></tr>
+            <tr><td>Event Image</td><td>No</td><td>Banner image (see specs below)</td></tr>
+            <tr><td>Short Description</td><td>No</td><td>Brief summary (200 characters max)</td></tr>
+            <tr><td>Full Description</td><td>No</td><td>Rich text with formatting (see below)</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Image Upload Specifications</h4>
+    <ul>
+        <li><strong>Formats:</strong> PNG, JPG, GIF</li>
+        <li><strong>Max size:</strong> 5MB</li>
+        <li><strong>Recommended:</strong> 1200x675 pixels (16:9 aspect ratio)</li>
+        <li><strong>Upload:</strong> Drag-and-drop or file picker</li>
+    </ul>
+
+    <h4>Rich Text Editor Features</h4>
+    <p>The full description supports:</p>
+    <ul>
+        <li>Bold, Italic, Underline, Strikethrough</li>
+        <li>Headings (H2, H3)</li>
+        <li>Bullet and numbered lists</li>
+        <li>Text alignment (left, center, right)</li>
+        <li>Links, blockquotes, horizontal rules</li>
+    </ul>
+
+    <h3>Registration Settings</h3>
+    <table>
+        <thead>
+            <tr><th>Setting</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Enable RSVP</strong></td><td>Allow members to register (off = informational only)</td></tr>
+            <tr><td><strong>Require Payment</strong></td><td>Charge a fee for registration</td></tr>
+            <tr><td><strong>Max Capacity</strong></td><td>Limit registrations (0 = unlimited)</td></tr>
+            <tr><td><strong>Registration Deadline</strong></td><td>Cutoff date for registrations</td></tr>
+            <tr><td><strong>Member Price</strong></td><td>Price for Annual/Lifetime members</td></tr>
+            <tr><td><strong>Non-Member Price</strong></td><td>Price for Community/guests</td></tr>
+        </tbody>
+    </table>
+
+    <h2 id="edit-event">4.3 Editing Events</h2>
+    <p>From the event detail page, click "Edit" to modify event information, pricing, or status.</p>
+
+    <h2 id="registrations">4.4 Managing Registrations</h2>
+    <p>View registrations at <code>/admin/events/{id}/registrations</code>.</p>
+
+    <h3>Registration Information</h3>
+    <ul>
+        <li>Member name and contact</li>
+        <li>Registration status (Confirmed, Waitlist)</li>
+        <li>Payment status (for paid events)</li>
+        <li>Registration date/time</li>
+        <li>Attendance checkbox</li>
+    </ul>
+
+    <h3>Available Actions</h3>
+    <ul>
+        <li><strong>Mark attendance:</strong> Check/uncheck "Present" for each registrant</li>
+        <li><strong>Cancel registrations:</strong> Remove individual registrations</li>
+        <li><strong>Search:</strong> Filter by member name, ID, or email</li>
+    </ul>
+
+    <div class="info-box warning">
+        <div class="info-box-title">Current Limitations</div>
+        <ul style="margin-bottom: 0;">
+            <li><strong>Export to CSV:</strong> Coming soon (not yet implemented)</li>
+            <li><strong>Print attendance list:</strong> Coming soon (not yet implemented)</li>
+            <li><strong>Manual registration:</strong> Admins cannot manually add registrations - members must self-register</li>
+            <li><strong>Waitlist:</strong> Not implemented - full events reject new registrations</li>
+        </ul>
+    </div>
+</section>
+
+<!-- Section 5: Payment Management -->
+<section id="payments" class="page-break">
+    <h1>5. Payment Management</h1>
+
+    <h2>5.1 Payment List</h2>
+    <p>Access at <code>/admin/payments</code>. View all payment records with comprehensive filtering.</p>
+
+    <h3>Filter Options</h3>
+    <ul>
+        <li><strong>Search:</strong> By member name, ID, or email</li>
+        <li><strong>Purpose:</strong> Membership, Donation, Service, Event, Sponsorship, Request</li>
+        <li><strong>Method:</strong> Stripe, Cash, Check, Zelle</li>
+    </ul>
+
+    <h3>Payment Categories (Color-Coded)</h3>
+    <table>
+        <thead>
+            <tr><th>Category</th><th>Color</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Membership</td><td>Blue</td><td>Annual or Lifetime fees</td></tr>
+            <tr><td>Donation</td><td>Green</td><td>Tax-deductible contributions</td></tr>
+            <tr><td>Service</td><td>Purple</td><td>Temple service payments</td></tr>
+            <tr><td>Event</td><td>Orange</td><td>Event registration fees</td></tr>
+            <tr><td>Sponsorship</td><td>Yellow</td><td>Sponsorship contributions</td></tr>
+            <tr><td>Request</td><td>Pink</td><td>Service request/invoice payments</td></tr>
+        </tbody>
+    </table>
+
+    <h2 id="record-payment">5.2 Recording Payments</h2>
+    <p>Navigate to <code>/admin/payments/new</code> to manually record a payment.</p>
+
+    <h3>Payment Fields</h3>
+    <table>
+        <thead>
+            <tr><th>Field</th><th>Required</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Member</td><td>Yes</td><td>Search and select member</td></tr>
+            <tr><td>Amount</td><td>Yes</td><td>Payment amount in dollars</td></tr>
+            <tr><td>Payment Date</td><td>Yes</td><td>Date payment was received</td></tr>
+            <tr><td>Payment Method</td><td>Yes</td><td>Stripe, Cash, Check, or Zelle</td></tr>
+            <tr><td>Purpose</td><td>Yes</td><td>Membership, Donation, etc.</td></tr>
+            <tr><td>Reference Number</td><td>Varies</td><td>Check #, Zelle ref, or Stripe ID</td></tr>
+            <tr><td>Notes</td><td>No</td><td>Additional memo or description</td></tr>
+        </tbody>
+    </table>
+
+    <h2 id="zelle">5.3 Zelle Payment Processing</h2>
+    <p>Access at <code>/admin/zelle</code>. Process and confirm Zelle payment requests.</p>
+
+    <h3>Zelle Payment Status Flow</h3>
+    <div class="workflow">
+        <div class="workflow-step">Member Requests</div>
+        <span class="workflow-arrow">→</span>
+        <div class="workflow-step">Pending</div>
+        <span class="workflow-arrow">→</span>
+        <div class="workflow-step">Member Confirms</div>
+        <span class="workflow-arrow">→</span>
+        <div class="workflow-step">Auto or Staff Confirms</div>
+        <span class="workflow-arrow">→</span>
+        <div class="workflow-step">Completed</div>
+    </div>
+
+    <h3>Status Types</h3>
+    <table>
+        <thead>
+            <tr><th>Status</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>pending</strong></td><td>Request created, awaiting member action</td></tr>
+            <tr><td><strong>member_confirmed</strong></td><td>Member marked as sent, awaiting staff confirmation</td></tr>
+            <tr><td><strong>auto_confirmed</strong></td><td>Auto-confirmed (amount ≤ threshold, default $50)</td></tr>
+            <tr><td><strong>staff_confirmed</strong></td><td>Staff verified and confirmed receipt</td></tr>
+            <tr><td><strong>expired</strong></td><td>Request expired (default: 48 hours)</td></tr>
+            <tr><td><strong>cancelled</strong></td><td>Cancelled by member or staff</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Reference Code Format</h3>
+    <p>Zelle reference codes use the format: <code>HSNEF-Z-XXXX</code> (4 alphanumeric characters, excluding confusing characters like 0/O and 1/I)</p>
+
+    <h3>Processing Workflow</h3>
+    <ol class="steps">
+        <li><strong>Member initiates:</strong> Clicks "Pay with Zelle" and receives reference code (e.g., HSNEF-Z-A7X3)</li>
+        <li><strong>Member transfers:</strong> Sends payment via their bank's Zelle to configured email/phone</li>
+        <li><strong>Member confirms:</strong> Clicks confirmation on portal, optionally enters bank confirmation number</li>
+        <li><strong>Auto or Staff confirms:</strong> If amount ≤ $50 (configurable), auto-confirms immediately. Otherwise, staff must verify and confirm.</li>
+        <li><strong>Payment recorded:</strong> System creates payment record and marks complete</li>
+    </ol>
+
+    <div class="info-box tip">
+        <div class="info-box-title">Tip</div>
+        Filter by "Ready to Confirm" status to see payments that need staff action. The dashboard auto-refreshes every 30 seconds.
+    </div>
+
+    <div class="info-box note">
+        <div class="info-box-title">Walk-in Support</div>
+        Zelle requests can be created without a linked member account, supporting walk-in customers at the temple.
+    </div>
+
+    <h2 id="receipts">5.4 Generating Receipts</h2>
+    <p>Receipts can be generated for any payment record.</p>
+    <ul>
+        <li>Click "Download Receipt" on any payment</li>
+        <li>Receipt includes: Receipt number, member info, amount, date, method, and purpose</li>
+        <li>Donations marked as tax-deductible</li>
+    </ul>
+</section>
+
+<!-- Section 6: Services & Bookings -->
+<section id="requests" class="page-break">
+    <h1>6. Services & Bookings</h1>
+
+    <h2>6.1 Service Requests</h2>
+    <p>Access at <code>/admin/requests</code>. Create and manage service invoices sent to members.</p>
+
+    <h3>Request Types</h3>
+    <ul>
+        <li>🙏 Puja - Worship service requests</li>
+        <li>💝 Sponsorship - Sponsorship opportunities</li>
+        <li>🙌 Donation Request - Requested donations</li>
+        <li>⚙️ Service - General temple services</li>
+        <li>🏛️ Facility Rental - Space rental requests</li>
+        <li>📋 Other</li>
+    </ul>
+
+    <h3>Request Status Flow</h3>
+    <table>
+        <thead>
+            <tr><th>Status</th><th>Description</th><th>Member Action</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Draft</td><td>Not yet sent to member</td><td>Cannot view</td></tr>
+            <tr><td>Sent</td><td>Invoice sent, awaiting payment</td><td>Can pay</td></tr>
+            <tr><td>Paid</td><td>Payment received</td><td>View receipt</td></tr>
+            <tr><td>Completed</td><td>Service completed</td><td>View history</td></tr>
+            <tr><td>Cancelled</td><td>Request cancelled</td><td>View history</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Creating a Request</h3>
+    <ol class="steps">
+        <li>Navigate to <code>/admin/requests/new</code></li>
+        <li>Select the member</li>
+        <li>Choose request type and enter description</li>
+        <li>Set the amount</li>
+        <li>Set status to "Sent" to notify member</li>
+        <li>Member receives notification and can pay online</li>
+    </ol>
+
+    <h2 id="bookings">6.2 Service Bookings</h2>
+    <p>Access at <code>/admin/bookings</code>. Manage service booking requests from members.</p>
+
+    <h3>Booking Status Flow</h3>
+    <div class="workflow">
+        <div class="workflow-step">Pending Approval</div>
+        <span class="workflow-arrow">→</span>
+        <div class="workflow-step">Approved</div>
+        <span class="workflow-arrow">→</span>
+        <div class="workflow-step">Paid</div>
+        <span class="workflow-arrow">→</span>
+        <div class="workflow-step">Completed</div>
+    </div>
+
+    <h3>Review Actions</h3>
+    <ul>
+        <li><strong>Approve:</strong> Accept the booking and allow payment</li>
+        <li><strong>Reject:</strong> Decline with reason</li>
+        <li><strong>Mark Paid:</strong> Record payment received</li>
+        <li><strong>Complete:</strong> Mark service as delivered</li>
+        <li><strong>Cancel:</strong> Cancel the booking</li>
+    </ul>
+
+    <h2 id="services">6.3 Services Catalog</h2>
+    <p>Access at <code>/admin/services</code>. Configure available services for booking.</p>
+
+    <h3>Service Configuration</h3>
+    <table>
+        <thead>
+            <tr><th>Field</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Service Name</td><td>Internal name</td></tr>
+            <tr><td>Display Name</td><td>Name shown to members</td></tr>
+            <tr><td>Category</td><td>Puja, Rental, Other</td></tr>
+            <tr><td>Description</td><td>Service details</td></tr>
+            <tr><td>Temple Member Price</td><td>Price for members at temple</td></tr>
+            <tr><td>Temple Community Price</td><td>Price for non-members at temple</td></tr>
+            <tr><td>External Member Price</td><td>Price for members off-site</td></tr>
+            <tr><td>External Community Price</td><td>Price for non-members off-site</td></tr>
+            <tr><td>Display Order</td><td>Sort order in listings</td></tr>
+            <tr><td>Active</td><td>Show/hide from members</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- Section 7: Tools & Utilities -->
+<section id="qr-scanner" class="page-break">
+    <h1>7. Tools & Utilities</h1>
+
+    <h2>7.1 QR Code Scanner</h2>
+    <p>Access at <code>/admin/scan-qr</code>. Verify members and record check-ins using QR codes from membership passes.</p>
+
+    <h3>Scan Modes</h3>
+
+    <h4>Camera Scan Mode</h4>
+    <ol class="steps">
+        <li>Grant camera access when prompted</li>
+        <li>Point camera at member's QR code</li>
+        <li>System automatically detects and verifies</li>
+        <li>Member information displays immediately</li>
+    </ol>
+
+    <h4>Manual Lookup Mode</h4>
+    <ol class="steps">
+        <li>Click "Manual Lookup" tab</li>
+        <li>Select search type: ID, Name, Email, or Phone</li>
+        <li>Enter search term</li>
+        <li>Select matching member from results</li>
+    </ol>
+
+    <h3>Verification Display</h3>
+    <p>When a member is verified, the screen shows:</p>
+    <ul>
+        <li>✅ Large green checkmark for valid members</li>
+        <li>Member name and membership ID</li>
+        <li>Membership level (color-coded)</li>
+        <li>Member type (Personal/Business)</li>
+        <li>Contact information</li>
+        <li>Family members (if Personal)</li>
+        <li>⭐ Founding Member badge (if applicable)</li>
+    </ul>
+
+    <h3>Quick Actions</h3>
+    <table>
+        <thead>
+            <tr><th>Action</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>✓ Record Check-In</td><td>Log temple visit to member's activity</td></tr>
+            <tr><td>👤 View Full Profile</td><td>Open complete member details</td></tr>
+            <tr><td>💳 Record Payment</td><td>Quick payment recording</td></tr>
+            <tr><td>📅 Book Service</td><td>Create service booking</td></tr>
+        </tbody>
+    </table>
+
+    <h2 id="audit-logs">7.2 Audit Logs</h2>
+    <p>Access at <code>/admin/audit-logs</code>. View complete history of all member record changes.</p>
+
+    <div class="info-box note">
+        <div class="info-box-title">Access Required</div>
+        Audit logs are available to Office Managers and Admins only.
+    </div>
+
+    <h3>Information Tracked</h3>
+    <ul>
+        <li>Member record created</li>
+        <li>Fields updated (with before/after values)</li>
+        <li>Membership ID changes</li>
+        <li>Bulk updates from imports</li>
+        <li>Who made each change</li>
+        <li>When changes were made</li>
+        <li>Source of change (Import, Admin, Self-Registration)</li>
+    </ul>
+
+    <h3>Filter Options</h3>
+    <ul>
+        <li>Search by member name or ID</li>
+        <li>Search by staff member name</li>
+        <li>Filter by action type</li>
+        <li>Filter by creation source</li>
+        <li>Filter by date range</li>
+    </ul>
+
+    <h2 id="login-activity">7.3 Login Activity</h2>
+    <p>View portal access history to monitor usage and security.</p>
+
+    <h3>Per-Member Login History</h3>
+    <p>Access from member detail page → "View Login Activity"</p>
+    <ul>
+        <li>Login date and time</li>
+        <li>Login method (Google, Magic Link)</li>
+        <li>IP address and location</li>
+        <li>Browser and device info</li>
+        <li>Success/failure status</li>
+    </ul>
+</section>
+
+<!-- Section 8: Settings & Configuration -->
+<section id="staff-roles" class="page-break">
+    <h1>8. Settings & Configuration</h1>
+
+    <h2>8.1 Staff Role Management</h2>
+    <p>Access at <code>/admin/settings/staff-roles</code>. Assign and manage administrative roles.</p>
+
+    <div class="info-box important">
+        <div class="info-box-title">Admin Only</div>
+        Staff role management is restricted to Admins only.
+    </div>
+
+    <h3>Assigning Roles</h3>
+    <ol class="steps">
+        <li>Search for the member by name or email</li>
+        <li>Select the member from search results</li>
+        <li>Choose the role to assign (Admin, Office Manager, or Office Staff)</li>
+        <li>Click "Assign Role"</li>
+    </ol>
+
+    <div class="info-box warning">
+        <div class="info-box-title">Requirement</div>
+        Members must have registered on the portal (logged in at least once) before they can be assigned a role.
+    </div>
+
+    <h3>Removing Roles</h3>
+    <ul>
+        <li>Find the staff member in the Current Staff table</li>
+        <li>Click the × button next to the role to remove</li>
+        <li>Confirm the removal</li>
+    </ul>
+
+    <h3>Admin Protection</h3>
+    <p>The system prevents accidental lockout:</p>
+    <ul>
+        <li>At least one non-test Admin must exist at all times</li>
+        <li>The last remaining Admin cannot remove their own role</li>
+        <li>Assign Admin to another user before removing your own</li>
+    </ul>
+
+    <h2 id="settings">8.2 Portal Settings</h2>
+    <p>Access at <code>/admin/settings</code>. Configure system-wide settings.</p>
+
+    <h3>Available Settings Categories</h3>
+    <table>
+        <thead>
+            <tr><th>Category</th><th>Access</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Portal Settings</td><td>Admin</td><td>Authentication, registration, features</td></tr>
+            <tr><td>Appearance</td><td>Admin</td><td>Theme, colors, branding</td></tr>
+            <tr><td>Zelle Settings</td><td>Manager+</td><td>Zelle account configuration</td></tr>
+            <tr><td>Services</td><td>Staff+</td><td>Service catalog management</td></tr>
+            <tr><td>Priests</td><td>Staff+</td><td>Priest profiles and availability</td></tr>
+        </tbody>
+    </table>
+
+    <h2 id="test-accounts">8.3 Test Accounts</h2>
+    <p>Access at <code>/admin/test-accounts</code>. Create isolated test data for training and testing.</p>
+
+    <h3>Test Account Features</h3>
+    <ul>
+        <li>Test members use ID prefix <code>9</code> (e.g., 99991000)</li>
+        <li>Test data is completely isolated from production</li>
+        <li>Test accounts marked with 🧪 TEST badge</li>
+        <li>Toggle "Show Test Data" to include in views</li>
+    </ul>
+
+    <h3>Show Test Data Toggle</h3>
+    <p>When enabled:</p>
+    <ul>
+        <li>Test members appear in member lists</li>
+        <li>Test events visible in event management</li>
+        <li>Test payments included in reports</li>
+        <li>Statistics include test data</li>
+    </ul>
+    <p>When disabled (default):</p>
+    <ul>
+        <li>All test data is hidden</li>
+        <li>Statistics show production data only</li>
+        <li>Reports exclude test accounts</li>
+    </ul>
+</section>
+
+<!-- Section 9: Member Portal Guide -->
+<section id="member-dashboard" class="page-break">
+    <h1>9. Member Portal Guide</h1>
+    <p>This section helps staff understand what members see and how to assist them.</p>
+
+    <h2>9.1 Member Dashboard</h2>
+    <p>When members log in, they see their personal dashboard with:</p>
+
+    <h3>Membership Status Banner</h3>
+    <ul>
+        <li><strong>Active (green):</strong> Annual members with 60+ days remaining</li>
+        <li><strong>Expiring Soon (yellow):</strong> Annual members with 1-60 days remaining</li>
+        <li><strong>Expired (red):</strong> Annual membership has expired</li>
+        <li><strong>Active - Lifetime (green):</strong> Lifetime members (no expiration)</li>
+        <li><strong>Community (blue):</strong> Community-level members</li>
+    </ul>
+
+    <div class="info-box note">
+        <div class="info-box-title">Expiration Date Logic</div>
+        Annual membership expiration uses the <code>end_date</code> from the membership record if available. If no membership record exists, it defaults to December 31st of the current year.
+    </div>
+
+    <h3>Membership Pass</h3>
+    <ul>
+        <li>QR code for temple check-in</li>
+        <li>Member name and ID</li>
+        <li>Family members listed</li>
+        <li>Expiration date</li>
+        <li>Options to print or add to phone home screen</li>
+    </ul>
+
+    <h3>Quick Actions</h3>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-card-icon">👤</div>
+            <div class="feature-card-title">Edit Profile</div>
+            <div class="feature-card-desc">Update contact info</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon">👨‍👩‍👧‍👦</div>
+            <div class="feature-card-title">Manage Family</div>
+            <div class="feature-card-desc">Add/edit family members</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon">💳</div>
+            <div class="feature-card-title">Payments</div>
+            <div class="feature-card-desc">View history & receipts</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon">🎫</div>
+            <div class="feature-card-title">Events</div>
+            <div class="feature-card-desc">Register for events</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon">🙏</div>
+            <div class="feature-card-title">Donations</div>
+            <div class="feature-card-desc">Make tax-deductible gifts</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon">📋</div>
+            <div class="feature-card-title">Requests</div>
+            <div class="feature-card-desc">View service invoices</div>
+        </div>
+    </div>
+
+    <h2 id="member-features">9.2 Member Features</h2>
+
+    <h3>Profile Management</h3>
+    <p>Members can edit:</p>
+    <ul>
+        <li>Name and profile display name</li>
+        <li>Phone numbers</li>
+        <li>Address information</li>
+        <li>Nakshatra (birth star)</li>
+    </ul>
+    <p>Members <strong>cannot</strong> edit:</p>
+    <ul>
+        <li>Email address (contact office)</li>
+        <li>Membership ID</li>
+        <li>Membership level</li>
+    </ul>
+
+    <h3>Family Members</h3>
+    <p>Personal members can manage family members through the portal:</p>
+    <ul>
+        <li>Add family member with name, relationship, DOB, nakshatra, email</li>
+        <li>Edit existing family member details</li>
+        <li>Remove family members</li>
+        <li><strong>Self-service limit:</strong> Members can add up to 4 family members themselves</li>
+        <li><strong>Admin override:</strong> Staff can add unlimited family members via admin portal</li>
+    </ul>
+
+    <h3>Payments & Receipts</h3>
+    <ul>
+        <li>View all payment history by year</li>
+        <li>Download individual receipts as PDF</li>
+        <li>Download all receipts for a year</li>
+        <li>Export payment history to CSV</li>
+        <li>View tax-deductible donation totals</li>
+    </ul>
+
+    <h3>Event Registration</h3>
+    <ul>
+        <li>Browse upcoming events by category</li>
+        <li>View event details and pricing</li>
+        <li>Register for free events directly</li>
+        <li>Pay for paid events via Stripe or Zelle</li>
+        <li>Cancel registrations before event date</li>
+    </ul>
+
+    <h3>Membership Renewal</h3>
+    <ul>
+        <li>Renew Annual membership when expiring</li>
+        <li>Upgrade from Community to Annual or Lifetime</li>
+        <li>Pay via Stripe or Zelle</li>
+    </ul>
+
+    <h2 id="member-faq">9.3 Helping Members (FAQ)</h2>
+
+    <h4>Q: How do I change my email address?</h4>
+    <p><strong>A:</strong> Members cannot self-service email changes. The email is linked to authentication for security. Staff must update the email in the member's profile.</p>
+
+    <h4>Q: Can I add more than 4 family members?</h4>
+    <p><strong>A:</strong> The member self-service portal allows up to 4 family members. If more are needed, contact the office - staff can add additional family members through the admin portal with no limit.</p>
+
+    <h4>Q: When does my membership expire?</h4>
+    <p><strong>A:</strong> Annual memberships expire December 31st each year. Lifetime members never expire. Members can check their dashboard for the exact date.</p>
+
+    <h4>Q: How do I download my receipts?</h4>
+    <p><strong>A:</strong> Go to Payments page, click "Download Receipt" on any payment, or download all receipts for the year.</p>
+
+    <h4>Q: Can I cancel my event registration?</h4>
+    <p><strong>A:</strong> Yes, go to the event details page and click "Cancel Registration" (as long as the event hasn't started).</p>
+
+    <h4>Q: Are donations tax-deductible?</h4>
+    <p><strong>A:</strong> Yes, all donations are tax-deductible. Members can download receipts from the Payments page for tax records.</p>
+
+    <h4>Q: How does Zelle payment work?</h4>
+    <p><strong>A:</strong> Create Zelle request → System shows where to send payment → Send from your bank with reference code → Confirm payment sent on portal.</p>
+
+    <h4>Q: The QR code isn't scanning. What do I do?</h4>
+    <p><strong>A:</strong> Try refreshing the membership pass page. If still not working, use Manual Lookup mode in the scanner by entering the member ID or name.</p>
+</section>
+
+<!-- Section 10: Reference -->
+<section id="workflows" class="page-break">
+    <h1>10. Reference</h1>
+
+    <h2>10.1 Common Workflows</h2>
+
+    <h3>Workflow 1: Register a New Member</h3>
+    <ol class="steps">
+        <li>Navigate to <strong>Members → Add Member</strong></li>
+        <li>Select member type (Personal or Business)</li>
+        <li>Fill in required fields: Name, Email</li>
+        <li>Add contact information and address</li>
+        <li>Set membership level (Annual, Lifetime, Community)</li>
+        <li>Check "Send registration invitation" if desired</li>
+        <li>Click <strong>Create Member</strong></li>
+    </ol>
+
+    <h3>Workflow 2: Create and Publish an Event</h3>
+    <ol class="steps">
+        <li>Navigate to <strong>Events → Create Event</strong></li>
+        <li>Enter event name, date, time, and location</li>
+        <li>Select category and upload image</li>
+        <li>Write short and full descriptions</li>
+        <li>Enable RSVP and set capacity if needed</li>
+        <li>Enable payment and set pricing if paid event</li>
+        <li>Set status to <strong>"Published"</strong></li>
+        <li>Click <strong>Create Event</strong></li>
+    </ol>
+
+    <h3>Workflow 3: Record a Cash/Check Payment</h3>
+    <ol class="steps">
+        <li>Navigate to <strong>Payments → Record Payment</strong></li>
+        <li>Search and select the member</li>
+        <li>Enter the payment amount</li>
+        <li>Select payment date and method (Cash or Check)</li>
+        <li>Enter check number if applicable</li>
+        <li>Select payment purpose</li>
+        <li>Add notes if needed</li>
+        <li>Click <strong>Save Payment</strong></li>
+    </ol>
+
+    <h3>Workflow 4: Verify Member at Temple</h3>
+    <ol class="steps">
+        <li>Open <strong>QR Code Scanner</strong></li>
+        <li>Point camera at member's QR code (or use Manual Lookup)</li>
+        <li>Verify member information displays correctly</li>
+        <li>Click <strong>"Record Check-In"</strong> to log the visit</li>
+        <li>Click <strong>"Scan Next Member"</strong> to continue</li>
+    </ol>
+
+    <h3>Workflow 5: Process Zelle Payments</h3>
+    <ol class="steps">
+        <li>Navigate to <strong>Zelle Payments</strong></li>
+        <li>Filter by <strong>"Ready to Confirm"</strong> status</li>
+        <li>Verify payment was received in bank account</li>
+        <li>Click <strong>"Confirm"</strong> for each verified payment</li>
+        <li>Payment is automatically recorded</li>
+    </ol>
+
+    <h3>Workflow 6: Assign Admin Role to Staff</h3>
+    <ol class="steps">
+        <li>Ensure staff member has registered on portal (logged in once)</li>
+        <li>Navigate to <strong>Settings → Staff Roles</strong></li>
+        <li>Search for the member by name or email</li>
+        <li>Select from search results</li>
+        <li>Choose role (Admin, Office Manager, or Office Staff)</li>
+        <li>Click <strong>Assign Role</strong></li>
+    </ol>
+
+    <h2 id="troubleshooting">10.2 Troubleshooting</h2>
+
+    <table>
+        <thead>
+            <tr><th>Issue</th><th>Possible Cause</th><th>Solution</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Member can't log in</td>
+                <td>Email doesn't match any member record</td>
+                <td>Verify email is correct in member profile; update if needed</td>
+            </tr>
+            <tr>
+                <td>Camera won't work on QR Scanner</td>
+                <td>Browser permissions or hardware issue</td>
+                <td>Use Manual Lookup mode instead</td>
+            </tr>
+            <tr>
+                <td>CSV import shows validation errors</td>
+                <td>Missing required fields or invalid formats</td>
+                <td>Check CSV format; ensure required fields present</td>
+            </tr>
+            <tr>
+                <td>Payment not appearing in reports</td>
+                <td>Wrong date filter or test account</td>
+                <td>Check date range; verify "Show Test Data" setting</td>
+            </tr>
+            <tr>
+                <td>Event not visible to members</td>
+                <td>Status set to Draft</td>
+                <td>Change event status to "Published"</td>
+            </tr>
+            <tr>
+                <td>Can't assign role to member</td>
+                <td>Member hasn't registered on portal</td>
+                <td>Member must log in at least once first</td>
+            </tr>
+            <tr>
+                <td>Member shows "No Membership Found"</td>
+                <td>Email mismatch or account not linked</td>
+                <td>Verify email matches; member record exists</td>
+            </tr>
+            <tr>
+                <td>Zelle payment stuck as pending</td>
+                <td>Member hasn't confirmed yet</td>
+                <td>Ask member to confirm payment on their end</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2 id="quick-reference">10.3 Quick Reference Tables</h2>
+
+    <h3>Admin Portal URLs</h3>
+    <table>
+        <thead>
+            <tr><th>Page</th><th>URL</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Dashboard</td><td><code>/admin</code></td><td>Main admin overview</td></tr>
+            <tr><td>Members List</td><td><code>/admin/members</code></td><td>View all members</td></tr>
+            <tr><td>Add Member</td><td><code>/admin/members/new</code></td><td>Create new member</td></tr>
+            <tr><td>Import Members</td><td><code>/admin/members/import</code></td><td>Bulk CSV import</td></tr>
+            <tr><td>Events</td><td><code>/admin/events</code></td><td>Event management</td></tr>
+            <tr><td>Payments</td><td><code>/admin/payments</code></td><td>Payment records</td></tr>
+            <tr><td>Zelle</td><td><code>/admin/zelle</code></td><td>Zelle processing</td></tr>
+            <tr><td>QR Scanner</td><td><code>/admin/scan-qr</code></td><td>Member verification</td></tr>
+            <tr><td>Requests</td><td><code>/admin/requests</code></td><td>Service requests</td></tr>
+            <tr><td>Bookings</td><td><code>/admin/bookings</code></td><td>Service bookings</td></tr>
+            <tr><td>Audit Logs</td><td><code>/admin/audit-logs</code></td><td>Change history</td></tr>
+            <tr><td>Staff Roles</td><td><code>/admin/settings/staff-roles</code></td><td>Role management</td></tr>
+            <tr><td>Services</td><td><code>/admin/services</code></td><td>Service catalog</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Membership Level Prefixes</h3>
+    <table>
+        <thead>
+            <tr><th>Prefix</th><th>Level</th><th>Default Price</th><th>Example ID</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>1</td><td>Lifetime</td><td>$1,008 (one-time)</td><td>10012300</td></tr>
+            <tr><td>2</td><td>Annual</td><td>$101/year</td><td>20012300</td></tr>
+            <tr><td>3</td><td>Community</td><td>Free</td><td>30012300</td></tr>
+            <tr><td>9</td><td>Test Account</td><td>N/A</td><td>99991000</td></tr>
+        </tbody>
+    </table>
+
+    <div class="info-box note">
+        <div class="info-box-title">Pricing Configuration</div>
+        Membership pricing is configurable via Portal Settings (Admin access). Default prices shown above can be changed.
+    </div>
+
+    <h3>Payment Methods</h3>
+    <table>
+        <thead>
+            <tr><th>Method</th><th>Online</th><th>Manual Entry</th><th>Reference Field</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Stripe</td><td>Yes</td><td>No</td><td>Payment Intent ID</td></tr>
+            <tr><td>Zelle</td><td>Yes</td><td>Yes</td><td>Zelle Reference</td></tr>
+            <tr><td>Check</td><td>No</td><td>Yes</td><td>Check Number</td></tr>
+            <tr><td>Cash</td><td>No</td><td>Yes</td><td>None</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+        <thead>
+            <tr><th>Shortcut</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><kbd>Ctrl</kbd> + <kbd>K</kbd></td><td>Quick search</td></tr>
+            <tr><td><kbd>Esc</kbd></td><td>Close modal/dropdown</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- Document Footer -->
+<section class="page-break" style="padding: 60px 40px;">
+    <h2 style="border: none; text-align: center;">Document Information</h2>
+    <table style="max-width: 500px; margin: 40px auto;">
+        <tbody>
+            <tr><td><strong>Document Title:</strong></td><td>User Reference Manual</td></tr>
+            <tr><td><strong>Version:</strong></td><td>1.0</td></tr>
+            <tr><td><strong>Last Updated:</strong></td><td>January 11, 2026</td></tr>
+            <tr><td><strong>Applicable To:</strong></td><td>HSNEF Member Portal v1.0.36+</td></tr>
+            <tr><td><strong>Maintained By:</strong></td><td>HSNEF IT Administration</td></tr>
+        </tbody>
+    </table>
+
+    <h3 style="margin-top: 40px;">Revision History</h3>
+    <table style="max-width: 700px; margin: 20px auto;">
+        <thead>
+            <tr>
+                <th>Version</th>
+                <th>Date</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1.0</td>
+                <td>January 11, 2026</td>
+                <td>Initial release - Complete documentation of all admin, manager, and staff features</td>
+            </tr>
+            <tr>
+                <td>1.0.1</td>
+                <td>January 11, 2026</td>
+                <td>Accuracy review: Corrected family member limits, Zelle status flow, event export limitations, membership expiration logic, pricing configuration</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="info-box note" style="max-width: 700px; margin: 40px auto;">
+        <div class="info-box-title">Document Maintenance</div>
+        <p style="margin-bottom: 8px;">This document should be updated when:</p>
+        <ul style="margin-left: 20px; margin-bottom: 0;">
+            <li>New features are added to the portal</li>
+            <li>Existing workflows or UI change significantly</li>
+            <li>User permissions or role access changes</li>
+            <li>Major version releases occur</li>
+        </ul>
+        <p style="margin-top: 12px; margin-bottom: 0; font-size: 13px; color: var(--text-muted);">
+            To report inaccuracies or request updates, contact the IT administrator.
+        </p>
+    </div>
+
+    <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid var(--border-color); text-align: center;">
+        <p style="color: var(--text-muted); font-size: 13px;">
+            Hindu Society of Northeast Florida<br>
+            This document is intended for internal staff use only.
+        </p>
+    </div>
+</section>
+
+</main>
+
+</body>
+</html>

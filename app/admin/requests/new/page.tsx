@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { AdminLayout } from '@/components/admin/AdminLayout'
 import { createClient } from '@/lib/supabase/client'
+import { AdminFormView, FormSection } from '@/components/admin/AdminFormView'
+import { MemberPicker } from '@/components/admin/MemberPicker'
+import { Field, Input, Select, Textarea } from '@/components/ui/Field'
+import { ScrollTextIcon } from 'lucide-react'
 
 export default function NewRequestPage() {
   const router = useRouter()
@@ -77,11 +79,29 @@ export default function NewRequestPage() {
 
       if (error) throw error
 
-      alert('Request created successfully!')
+      // Send invoice email if send_invoice is true
+      if (formData.send_invoice && formData.status === 'Sent' && request) {
+        try {
+          const emailResponse = await fetch('/api/requests/send-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              requestId: request.id,
+              status: 'Sent',
+            }),
+          })
 
-      // TODO: Send invoice email if send_invoice is true
-      if (formData.send_invoice) {
-        console.log('TODO: Send invoice email to', selectedMember.primary_email)
+          if (emailResponse.ok) {
+            alert('Request created and invoice email sent successfully!')
+          } else {
+            alert('Request created but failed to send email notification.')
+          }
+        } catch (emailError) {
+          console.error('Error sending invoice email:', emailError)
+          alert('Request created but failed to send email notification.')
+        }
+      } else {
+        alert('Request created successfully!')
       }
 
       router.push('/admin/requests')
@@ -100,255 +120,136 @@ export default function NewRequestPage() {
   }
 
   return (
-    <ProtectedRoute requiredRoles={['Office Staff', 'Office Manager', 'Admin']}>
-      <AdminLayout>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Create Service Request</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Create a new service request or invoice for a member
-              </p>
-            </div>
-            <button
-              onClick={() => router.push('/admin/requests')}
-              className="text-sm text-gray-600 hover:text-gray-900"
+    <AdminFormView
+      eyebrow="Requests"
+      title="Raise a request"
+      description="Invoice a member for a service. Save as a draft, or send it straight away."
+      backHref="/admin/requests"
+      onSubmit={handleSubmit}
+      saving={loading}
+      saveLabel="Create request"
+      disabled={!selectedMember}
+      disabledReason="Choose a member first."
+    >
+      <MemberPicker
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        onSearch={handleSearch}
+        results={searchResults}
+        selected={selectedMember}
+        onSelect={(m) => {
+          setSelectedMember(m)
+          setSearchResults([])
+        }}
+        onClear={() => setSelectedMember(null)}
+      />
+
+      <FormSection icon={ScrollTextIcon} tone="lotus" title="Request">
+        <div className="space-y-5">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="Type" required>
+              {({ id }) => (
+                <Select
+                  id={id}
+                  value={formData.request_type}
+                  onChange={(e) => setFormData({ ...formData, request_type: e.target.value })}
+                >
+                  <option value="Puja">Puja</option>
+                  <option value="Sponsorship">Sponsorship</option>
+                  <option value="Donation Request">Donation request</option>
+                  <option value="Service">Service</option>
+                  <option value="Facility Rental">Facility rental</option>
+                </Select>
+              )}
+            </Field>
+            <Field label="Amount" required>
+              {({ id }) => (
+                <Input
+                  id={id}
+                  type="number"
+                  step="0.01"
+                  className="tnum"
+                  value={formData.amount}
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                />
+              )}
+            </Field>
+          </div>
+
+          <Field label="Description" required hint="What the member is being invoiced for.">
+            {({ id }) => (
+              <Textarea
+                id={id}
+                rows={3}
+                value={formData.service_description}
+                onChange={(e) =>
+                  setFormData({ ...formData, service_description: e.target.value })
+                }
+              />
+            )}
+          </Field>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="Requested for">
+              {({ id }) => (
+                <Input
+                  id={id}
+                  type="date"
+                  className="tnum"
+                  value={formData.requested_date}
+                  onChange={(e) => setFormData({ ...formData, requested_date: e.target.value })}
+                />
+              )}
+            </Field>
+            <Field
+              label="Status"
+              hint="Draft stays with the office. Sent makes it visible to the member."
             >
-              ← Back to Requests
-            </button>
+              {({ id }) => (
+                <Select
+                  id={id}
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value as 'Draft' | 'Sent' })
+                  }
+                >
+                  <option value="Draft">Draft</option>
+                  <option value="Sent">Sent</option>
+                </Select>
+              )}
+            </Field>
           </div>
 
-          {/* Form */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Member Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Member *
-                </label>
+          <Field label="Office notes" hint="Not shown to the member.">
+            {({ id }) => (
+              <Textarea
+                id={id}
+                rows={3}
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              />
+            )}
+          </Field>
 
-                {!selectedMember ? (
-                  <>
-                    <div className="flex gap-2 mb-4">
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
-                        placeholder="Search by name, membership ID, or email..."
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleSearch}
-                        className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E]"
-                      >
-                        Search
-                      </button>
-                    </div>
-
-                    {searchResults.length > 0 && (
-                      <div className="border border-gray-200 rounded-md divide-y">
-                        {searchResults.map((member) => (
-                          <button
-                            key={member.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedMember(member)
-                              setSearchResults([])
-                              setSearchQuery('')
-                            }}
-                            className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center justify-between"
-                          >
-                            <div>
-                              <p className="font-medium text-gray-900">
-                                {getMemberDisplayName(member)}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                {member.membership_id} • {member.primary_email}
-                              </p>
-                            </div>
-                            <span className="text-[#FF9933]">Select →</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-md">
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {getMemberDisplayName(selectedMember)}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {selectedMember.membership_id} • {selectedMember.primary_email}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMember(null)}
-                      className="text-sm text-red-600 hover:text-red-800"
-                    >
-                      Change
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Request Details */}
-              <div className="border-t pt-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Request Details</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Request Type *
-                    </label>
-                    <select
-                      required
-                      value={formData.request_type}
-                      onChange={(e) => setFormData({ ...formData, request_type: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-                    >
-                      <option value="Puja">Puja</option>
-                      <option value="Sponsorship">Sponsorship</option>
-                      <option value="Donation Request">Donation Request</option>
-                      <option value="Service">Service</option>
-                      <option value="Facility Rental">Facility Rental</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Requested Date *
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={formData.requested_date}
-                      onChange={(e) => setFormData({ ...formData, requested_date: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Service Description *
-                    </label>
-                    <textarea
-                      required
-                      rows={3}
-                      value={formData.service_description}
-                      onChange={(e) => setFormData({ ...formData, service_description: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-                      placeholder="Describe the service or request in detail..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Amount * ($)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      required
-                      value={formData.amount}
-                      onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Additional Information */}
-              <div className="border-t pt-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Additional Information</h2>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Notes
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#FF9933] focus:border-transparent"
-                    placeholder="Additional notes or special instructions..."
-                  />
-                </div>
-              </div>
-
-              {/* Status and Actions */}
-              <div className="border-t pt-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Status & Actions</h2>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-6">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="Draft"
-                        checked={formData.status === 'Draft'}
-                        onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Draft' })}
-                        className="mr-2"
-                      />
-                      <span className="text-sm font-medium text-gray-700">
-                        Save as Draft (not sent to member)
-                      </span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="Sent"
-                        checked={formData.status === 'Sent'}
-                        onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Sent' })}
-                        className="mr-2"
-                      />
-                      <span className="text-sm font-medium text-gray-700">
-                        Mark as Sent
-                      </span>
-                    </label>
-                  </div>
-
-                  {formData.status === 'Sent' && (
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.send_invoice}
-                        onChange={(e) => setFormData({ ...formData, send_invoice: e.target.checked })}
-                        className="mr-2 w-4 h-4 text-[#FF9933] rounded focus:ring-[#FF9933]"
-                      />
-                      <span className="text-sm text-gray-700">
-                        Send invoice email to member
-                      </span>
-                    </label>
-                  )}
-                </div>
-              </div>
-
-              {/* Submit */}
-              <div className="flex justify-end gap-4 pt-6 border-t">
-                <button
-                  type="button"
-                  onClick={() => router.push('/admin/requests')}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading || !selectedMember}
-                  className="px-6 py-2 bg-[#FF9933] text-white rounded-md hover:bg-[#E68A2E] disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
-                >
-                  {loading ? 'Creating...' : 'Create Request'}
-                </button>
-              </div>
-            </form>
-          </div>
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={formData.send_invoice}
+              disabled={formData.status !== 'Sent'}
+              onChange={(e) => setFormData({ ...formData, send_invoice: e.target.checked })}
+              className="mt-1 h-4 w-4 rounded border-line-strong text-saffron focus:ring-saffron-ring"
+            />
+            <span>
+              <span className="block text-[15px] text-ink">Email the invoice now</span>
+              <span className="block text-[13.5px] text-ink-3">
+                {formData.status === 'Sent'
+                  ? 'The member gets the invoice as soon as you save.'
+                  : 'Set the status to Sent first - a draft is not sent to anyone.'}
+              </span>
+            </span>
+          </label>
         </div>
-      </AdminLayout>
-    </ProtectedRoute>
+      </FormSection>
+    </AdminFormView>
   )
 }
