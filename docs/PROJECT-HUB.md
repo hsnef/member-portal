@@ -24,6 +24,9 @@ _Last checked 2026-09-01._
    decision still owed.
 3. `git log --oneline -20` on `dev`. If this file and git disagree, trust git and fix this file.
 
+Who can sign in and what each role unlocks: **[`docs/ACCESS-AND-ROLES.md`](ACCESS-AND-ROLES.md)**
+(live account list: `node scripts/list-access.mjs`).
+
 ## Architecture at a glance
 
 Next.js 15 App Router · React 19 · Tailwind 3.4 · Supabase (auth + Postgres + RLS) · Stripe · Resend · Vercel.
