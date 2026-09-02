@@ -64,8 +64,12 @@ preview and production.
 
 ### 1.5 — Point production at `main` — STILL TO DO
 
-`vercel.com/hsnef/member` → **Settings → Git** → **Production Branch** → change
-`dev` to `main` → Save.
+`vercel.com/hsnef/member` → **Settings → Environments → Production →
+Branch Tracking** → change `dev` to `main` → **Save**.
+
+> Older Vercel docs (and an earlier version of this runbook) say *Settings →
+> Git → Production Branch*. In the current UI it lives under **Environments**,
+> on the Production environment page. Verified from the dashboard 2026-09-02.
 
 The API ignores this field — three different payload shapes were tried and all
 returned success while leaving it unchanged. It has to be the dashboard.
@@ -73,9 +77,15 @@ returned success while leaving it unchanged. It has to be the dashboard.
 > **Until this is done, merging PR #4 will not deploy to production**, and
 > `member.hsnef.org` serves whatever is on `dev`.
 
-**Immediately afterwards:** **Settings → Domains** → open `dev.member.hsnef.org`
-and assign it to the **`dev` branch**. It is currently on production, so once the
-production branch flips it would start serving `main`.
+**Then, in this order, repoint the dev URL.** All three domains currently follow
+the production branch — verified via the API — so the moment production becomes
+`main`, `dev.member.hsnef.org` starts serving `main` too and the dev environment
+is lost. Fix it via **Project domain settings** → `dev.member.hsnef.org` → assign
+to git branch **`dev`**.
+
+*Order matters:* pinning that domain to `dev` while `dev` is still the production
+branch is ambiguous — Vercel treats it as a branch deployment that may not exist
+yet, and the URL can 404 until the next push. Flip production first, pin second.
 
 ### 1.7 — Add the two missing variables — STILL TO DO
 
