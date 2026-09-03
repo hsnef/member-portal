@@ -180,7 +180,7 @@ a sibling presentational component takes plain props and renders.
 <!-- govkit:start -->
 # HSNEF Member Portal — Engineering Guardrails
 
-_Last checked 2026-08-31._
+_Last checked 2026-09-03._
 
 > Scaffolded by [govkit](https://github.com/techsilon-oss/govkit) `/govkit-init`. This block is delimited by `govkit:start`/`govkit:end` markers so re-running init won't duplicate it. Edit freely — but keep the markers if you want idempotent updates.
 
@@ -209,6 +209,8 @@ feature/* (optional)  →  dev  →  main
 - **Every merge requires explicit per-merge approval.** Green CI is necessary but NOT sufficient; wait for an explicit "merge it" / "ship it".
 - Feature branches are optional for small changes, recommended for larger/riskier work.
   **`redesign/design-system` branched off `dev`** and merges back into `dev` like any other feature branch.
+  As of 2026-09-02 it is **level with `dev`** — the port landed and PR #4 took it to `main`. Treat it as
+  the working branch, not an unmerged spike, and expect `git log` on the two to be identical.
 
 **The flow, end to end:**
 
@@ -217,13 +219,17 @@ feature/* (optional)  →  dev  →  main
 3. **Sujit merges on GitHub. Claude never merges.**
 4. **Merge to `main` → Vercel PRODUCTION deploy** (member.hsnef.org).
 
-| | Vercel | Supabase |
-|---|---|---|
-| `dev` | Preview | `hsnef-member-portal-dev` (`gapvsdrzavjaublwkqfm`) |
-| `main` | Production | `hsnef-member-portal-prod` — **not yet created, see DEC-006** |
+| | Vercel | Supabase | URL |
+|---|---|---|---|
+| `dev` | Preview | `dev-mp` (`bcujsesgrzijyisvmnwm`) | https://dev.member.hsnef.org |
+| `main` | Production | `prod-mp` (`gapvsdrzavjaublwkqfm`) | https://member.hsnef.org |
 
-⚠️ **Today all environments share one Supabase project, and Vercel cannot deploy this repo at all
-on the Hobby plan.** Both are blocking; see DEC-006 and DEC-007 in [`docs/PROJECT-HUB.md`](docs/PROJECT-HUB.md).
+⚠️ **`gapvsdrzavjaublwkqfm` is PRODUCTION.** It was the shared project before the split
+(2026-09-02) and it kept its ref, so older notes show it under `dev` — they are wrong. Dev is
+`bcujsesgrzijyisvmnwm`. Check which ref your `.env.local` carries before you write anything.
+
+Both environments deploy and each resolves its own database (DEC-006 and DEC-007 are closed;
+`member.hsnef.org` came up 2026-09-02).
 
 ## Tests-With-Features Policy
 

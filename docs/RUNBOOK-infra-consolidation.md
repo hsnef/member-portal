@@ -4,18 +4,18 @@ A walk-through you can stop and resume. **Nothing here assumes you remember the
 session it came from.** Do the phases in order; each says what to expect and how
 to tell it worked.
 
-Target state:
+Target state — **reached 2026-09-02 except Phase 4, which is optional:**
 
 ```
-GitHub dev   ──► Vercel PREVIEW     ──► Supabase  hsnef-member-portal-dev  (new, to create)
-GitHub main  ──► Vercel PRODUCTION  ──► Supabase  gapvsdrzavjaublwkqfm     (existing, becomes prod)
-                 ONE Vercel project
+GitHub dev   ──► Vercel PREVIEW     ──► Supabase  dev-mp   bcujsesgrzijyisvmnwm   (created 2026-09-02)
+GitHub main  ──► Vercel PRODUCTION  ──► Supabase  prod-mp  gapvsdrzavjaublwkqfm   (existing, is prod)
+                 ONE Vercel project, `member`
 ```
 
 **Progress — tick these as you go, so a later session knows where you stopped:**
 
 - [x] Phase 1 — Vercel down to one project — **DONE 2026-09-02**
-- [ ] Phase 2 — fix `member.hsnef.org` (it is DOWN)
+- [x] Phase 2 — fix `member.hsnef.org` — **DONE 2026-09-02, verified 2026-09-03**
 - [x] Phase 3 — apply the events migration — **DONE 2026-09-02**
 - [ ] Phase 4 — clean the test data
 - [x] Phase 5 — create the dev Supabase project — **DONE 2026-09-02, environments verified separate**
@@ -25,10 +25,10 @@ GitHub main  ──► Vercel PRODUCTION  ──► Supabase  gapvsdrzavjaublwkq
 
 ## Before you start — three facts that are easy to get wrong
 
-1. **`member.hsnef.org` is currently DOWN.** It resolves to Cloudflare, not
-   Vercel, and returns a 308 redirect to itself forever. It is not serving the
-   app and has not been for some time. Phase 2 deals with it — do not be alarmed
-   when the Vercel work alone does not fix it.
+1. **`member.hsnef.org` is UP** as of 2026-09-02, verified 2026-09-03. It used to
+   resolve to Cloudflare rather than Vercel and return a 308 redirect to itself
+   forever; the proxy was switched off and it now serves the app. Phase 2 records
+   what was done. Nothing here still depends on it.
 2. **The Supabase ref `gapvsdrzavjaublwkqfm` is permanent.** You can rename the
    project in the dashboard, but production's URL will always be
    `gapvsdrzavjaublwkqfm.supabase.co`. That is fine; just do not go hunting for
@@ -124,8 +124,9 @@ commits). The production deployment built and went **READY** from `main`, and
 `devportal-iota.vercel.app` serves the redesign: HTTP 200 with `--saffron`,
 `--kumkum` and `--marigold` in the CSS and zero legacy hex values.
 
-`member.hsnef.org` still returns **308** — Cloudflare, Phase 2. Production is
-built and healthy; only DNS stands between it and the public.
+At the time of the merge `member.hsnef.org` still returned **308** — Cloudflare,
+Phase 2 — so production was built and healthy but not yet reachable. **That was
+fixed later the same day; the domain now serves 200 from Vercel.** See Phase 2.
 
 ### Both URLs are public, deliberately — and what that costs
 
@@ -151,7 +152,32 @@ authentication.
 
 ---
 
-## Phase 2 — Fix `member.hsnef.org`
+## Phase 2 — Fix `member.hsnef.org` — DONE 2026-09-02
+
+**The fix that worked:** the `member` record was proxied (orange cloud) and
+resolved to Cloudflare IPs, which looped with Vercel. Whoever held Cloudflare
+access set it to a CNAME → `b71df0496b881ead.vercel-dns-017.com` with **Proxy
+status: DNS only** — identical to the sibling `dev.member` record that had always
+worked. No SSL/TLS mode change and no redirect-rule edit were needed.
+
+**Verified 2026-09-03:**
+
+```
+$ curl -sI https://member.hsnef.org | head -3
+HTTP/1.1 200 OK
+Server: Vercel
+
+$ nslookup member.hsnef.org
+Name:    b71df0496b881ead.vercel-dns-017.com
+Addresses:  64.29.17.1, 216.198.79.1        # Vercel anycast, not Cloudflare
+Aliases:  member.hsnef.org
+```
+
+The shipped stylesheet on that host carries the design-system tokens
+(`--saffron --kumkum --tulsi --marigold --canvas --ink`), so production is serving
+the redesign and not a stale build.
+
+### 2.0 (original instructions, for reference)
 
 > **Shareable version:** [`docs/RUNBOOK-cloudflare-member-domain.md`](RUNBOOK-cloudflare-member-domain.md)
 > is a self-contained walkthrough for whoever holds Cloudflare access. It assumes
@@ -408,5 +434,6 @@ Only once Phase 1 leaves a single green Vercel check.
   One line in `app/globals.css` — a brand decision, not a technical one.
 - **`hsnef.org` publishes three `v=spf1` records.** RFC 7208 allows one, so
   receivers see a permerror.
-- **`npx tsc --noEmit` reports 187 errors**, mostly local `interface` shapes that
-  have drifted from `types/database.ts`. Real, not urgent.
+- **Type errors remain**, mostly local `interface` shapes that have drifted from
+  `types/database.ts`. Real, not urgent. Do not quote a count from this file —
+  run `npx tsc --noEmit` and read the tail.

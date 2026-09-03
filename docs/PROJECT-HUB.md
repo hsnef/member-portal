@@ -2,12 +2,13 @@
 
 > The single source of truth for architecture decisions, current state, and session-to-session context. `/sdlc status` reads this file. Keep it current — a stale hub poisons the next session's context.
 
-_Last checked 2026-09-02._
+_Last checked 2026-09-03._
 
 ## Current Status
 
-**The portal is deployed, on the new design system, with dev and production
-properly separated. One thing stands between it and the public: DNS.**
+**The portal is live at https://member.hsnef.org, on the new design system, with dev
+and production on separate databases. The DNS blocker cleared on 2026-09-02. There is
+no infrastructure blocker left — the open items are quality and hygiene, not launch.**
 
 - **Production** — `main` → Vercel production → Supabase `prod-mp`
   (`gapvsdrzavjaublwkqfm`). PR #4 merged 2026-09-02 (110 commits on `main`, a real
@@ -16,12 +17,12 @@ properly separated. One thing stands between it and the public: DNS.**
 - **Dev** — `dev` → Vercel preview → Supabase `dev-mp` (`bcujsesgrzijyisvmnwm`).
   Verified from the shipped JS that each host resolves its own database. The public
   dev URL no longer touches live member data.
-- **`member.hsnef.org` is DOWN and it is the only blocker.** It returns a 308
-  redirect to itself and never reaches Vercel, because the Cloudflare record is
-  proxied. **Handed to the person with Cloudflare access on 2026-09-02** using
-  [`docs/RUNBOOK-cloudflare-member-domain.md`](RUNBOOK-cloudflare-member-domain.md).
-  Awaiting their confirmation — then verify with
-  `curl -sI https://member.hsnef.org | head -3` (want `200` and `server: Vercel`).
+- **`member.hsnef.org` is UP.** Fixed 2026-09-02 by the person with Cloudflare access,
+  verified here 2026-09-03: the record is a CNAME to
+  `b71df0496b881ead.vercel-dns-017.com` with **Proxy status: DNS only**, resolving to
+  Vercel anycast (`64.29.17.1` / `216.198.79.1`), returning `200` with `Server: Vercel`,
+  and its stylesheet carries the design-system tokens. Re-check any time with
+  `curl -sI https://member.hsnef.org | head -3`.
 - **Health:** build clean (86/86 pages) · tests **still none installed** · lint
   failing (pre-existing) · types: run `npx tsc --noEmit`, do not trust a number
   written here.
@@ -30,21 +31,25 @@ properly separated. One thing stands between it and the public: DNS.**
 
 ### Start here next session
 
-1. **[`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md)** — its
-   checkboxes are the source of truth for how far the infrastructure work got.
-   Phases 1, 3, 5 and 6 are done. **Phase 2 (Cloudflare) is outstanding and is
-   with a third party.** Phase 4 (test-data cleanup) is optional.
-2. Read the **Session 4** handoff at the bottom of this file.
-3. `git log --oneline -20` on `dev`. If this file and git disagree, trust git and
-   fix this file.
+1. **The infrastructure work is done.**
+   [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) phases 1, 2,
+   3, 5 and 6 are all ticked; only Phase 4 (test-data cleanup) remains and it is
+   optional. Do not restart that runbook — read its ticks first.
+2. **Revoke the two tokens** issued to Claude on 2026-09-02 (Vercel + Supabase PAT) and
+   delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local`. Still outstanding as of
+   2026-09-03; the line is still in the file.
+3. Read the **Session 5** handoff at the bottom of this file.
+4. `git log --oneline -20` on `dev`. If this file and git disagree, trust git and
+   fix this file. **Local `main` and local `dev` are both stale** — as of 2026-09-03
+   local `main` sat 100+ commits behind `origin/main`. Compare against `origin/*`.
 
 ### Still open, in rough priority order
 
 | | |
 |---|---|
-| **Cloudflare** | With the friend. Nothing else can proceed until `member.hsnef.org` resolves |
-| **Tokens to revoke** | A Vercel token and a Supabase PAT were issued to Claude on 2026-09-02. **Revoke both**, and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local` |
+| **Tokens to revoke** | A Vercel token and a Supabase PAT were issued to Claude on 2026-09-02. **Revoke both**, and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local` — still present 2026-09-03. Now the top item |
 | **No tests at all** | `CLAUDE.md` has a tests-with-features policy and the repo has zero tests. Nine real bugs shipped behind `ignoreBuildErrors`. Adding `vitest` needs approval |
+| **No `ci.yml`** | `/govkit-doctor`'s one missing guardrail. `.github/workflows/` holds only `deploy.yml` and `sdlc-docs.yml`. Jobs must be named to match `release-gate.config.json`'s `ciJob` values |
 | **Contrast** | White on `#c75b12` is 4.26:1, below WCAG AA's 4.5. `#b8530e` gives 4.90. One line in `app/globals.css`; a brand decision |
 | **PII in git history** | Rewritten and branches deleted, but GitHub keeps orphaned commits reachable by SHA. Closes when the repo goes private, which is the plan. See DEC-010 |
 | **SPF** | `hsnef.org` publishes three `v=spf1` records; RFC 7208 allows one |
@@ -65,7 +70,8 @@ Next.js 15 App Router · React 19 · Tailwind 3.4 · Supabase (auth + Postgres +
 
 ## Environments & deployment flow
 
-**The intended flow (agreed 2026-08-31). Nothing merges to `main` without a PR that Sujit merges.**
+**The flow (agreed 2026-08-31), and as of 2026-09-02 it is fully real end to end.
+Nothing merges to `main` without a PR that Sujit merges.**
 
 ```
 feature/*  ──►  dev  ──────────────►  PR  ──────────────►  main
@@ -75,16 +81,21 @@ feature/*  ──►  dev  ──────────────►  PR  �
         dev.member.hsnef.org                         member.hsnef.org
                  │                                           │
                  ▼                                           ▼
-        Supabase hsnef-member-portal-dev             Supabase hsnef-member-portal-prod
-        (gapvsdrzavjaublwkqfm)                       (TO BE CREATED)
+        Supabase dev-mp                              Supabase prod-mp
+        (bcujsesgrzijyisvmnwm)                       (gapvsdrzavjaublwkqfm)
 ```
+
+⚠️ **`gapvsdrzavjaublwkqfm` is PRODUCTION.** It was the single shared project before the
+split and kept its ref, so anything written before 2026-09-02 shows it as dev. Dev is
+`bcujsesgrzijyisvmnwm`. Confirm which ref `.env.local` holds before writing data.
 
 1. Work lands on `dev` (directly, or via `feature/*`). Push to `dev` triggers the Vercel **preview** deploy.
 2. Raise the PR `dev → main` immediately after pushing (`gh pr create --base main --head dev --fill`).
 3. **Sujit merges on GitHub.** Claude never merges. The pre-push hook blocks direct pushes to `main`.
 4. Merge to `main` triggers the Vercel **production** deploy.
 
-⚠️ **Two blockers, both open — see DEC-006 and DEC-007.**
+✅ **Both former blockers are closed** — DEC-006 (shared database) on 2026-09-02, DEC-007
+(Vercel could not deploy) on 2026-09-01.
 
 ## Key Decisions Log
 
@@ -133,6 +144,13 @@ error count *dropped* from 469 to 2 and briefly looked like a win. Swap the wrap
 then collapse redundant nesting.
 
 ### DEC-006: All three environments currently share ONE Supabase project — must be split
+**2026-08-31 · CLOSED 2026-09-02.** Resolved as the entry itself proposed: a NEW project became
+`dev` (`dev-mp`, `bcujsesgrzijyisvmnwm`) and the existing `gapvsdrzavjaublwkqfm` stayed as
+production (`prod-mp`), so not one real member row was migrated. Verified from the shipped JS
+that each host resolves its own database. **Watch the ref confusion this leaves behind:**
+`gapvsdrzavjaublwkqfm` reads as "the dev project" in everything written before the split.
+Original entry follows.
+
 **2026-08-31 · Open, blocking.** `docs/ENVIRONMENT_QUICK_REFERENCE.md` lists
 `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` under "Same Across All Environments".
 So **local, dev and production all read and write the same live member database**
@@ -173,6 +191,11 @@ Claude has the Supabase CLI (2.116.0) and can run `supabase link` + `db push` on
 exists and it has the ref and DB password. Creating the project is a dashboard/billing action.
 
 ### DEC-007: Vercel Hobby cannot deploy this repo — do NOT solve it by going public
+**2026-08-31 · CLOSED 2026-09-01 — and closed by the route this entry warned against.** The repo
+was made public, which restored Vercel builds. That was accepted knowingly and the PII consequence
+is tracked separately as DEC-010; the repo going private again is still the plan. Original entry
+follows.
+
 **2026-08-31 · Open, blocking.** Both Vercel checks fail on the PR with *"Cannot deploy from a
 private GitHub organization repository on the Hobby plan."* Hobby allows private **personal** repos,
 not private **organization** repos, and `hsnef` is an org.
@@ -322,6 +345,47 @@ Supabase auth hook, which is dashboard configuration.
 
 Related: 18 of 21 member routes had no "no membership" state and rendered against
 a null member. Nine reachable ones now share `NoMembershipState`.
+
+### Session 5 — 2026-09-03 — the launch blocker cleared; four docs reconciled
+
+A `/sdlc status` read, no code changed.
+
+**`member.hsnef.org` came up.** The Cloudflare handoff from session 4 worked and nobody
+reported back, so every doc still said production was down. Sujit produced the DNS
+screenshot: `member` CNAME → `b71df0496b881ead.vercel-dns-017.com`, **Proxy status: DNS
+only**. Verified independently — `200` / `Server: Vercel`, resolving to Vercel anycast
+`64.29.17.1` / `216.198.79.1`, and the shipped stylesheet carries `--saffron --kumkum
+--tulsi --marigold`. Neither an SSL/TLS mode change nor a redirect-rule edit was needed;
+the orange cloud was the whole bug.
+
+**What the doc-drift check caught.** `docs/PRIORITY-ROADMAP.md` and `CLAUDE.md` both
+declared 2026-08-31 against code that moved 2026-09-02. Reconciled:
+
+- **`CLAUDE.md` was actively dangerous.** Its environment table listed
+  `gapvsdrzavjaublwkqfm` under `dev`. That ref is *production* — it was the shared
+  project and kept its ID through the split. Anyone building a local env from CLAUDE.md
+  would have pointed dev at live member data, the exact failure DEC-006 was closed to
+  prevent. Fixed, with a warning note, in CLAUDE.md and in this file.
+- **This file passed the freshness check and still contradicted itself.** Its date was
+  current while *Environments & deployment flow*, sixty lines below Current Status, still
+  showed prod Supabase as "TO BE CREATED" and closed with "⚠️ Two blockers, both open."
+  **A fresh date is not freshness** — `docs:sync-check` compares dates, not claims.
+- Five roadmap items described finished work: Phase 2 and Phase 3, the Supabase split,
+  the `userData` bug in the admin bookings pages (zero occurrences remain), and stage 8.
+- **Three files quoted three different type-error counts** — the roadmap said 469, this
+  runbook said 187, `release-gate.config.json` said 469, and only this file said "run the
+  command". They all point at `npx tsc --noEmit` now. Measured this session: 137 errors
+  under `app|components|lib|utils|types`, 191 total, the remaining 50 in
+  `tailwind.config.ts`. No `TS1xxx` parse abort, so the fall is real, not `tsc` aborting
+  the way DEC-005 describes — but per DEC-008's caution, treat the direction as the
+  finding and every figure as perishable.
+
+**Not done, deliberately:** the two tokens from session 4 are still live and
+`SUPABASE_ACCESS_TOKEN` is still in `.env.local`. That is now the top open item.
+
+**Also worth knowing:** local `main` sat at `3ee148c` while `origin/main` was at
+`7a67505` — 100+ commits behind. Local `dev` was stale too. `redesign/design-system`,
+`origin/dev` and `origin/redesign/design-system` are all level at `2ab5dac`.
 
 ### Session 4 — 2026-09-02 — infrastructure consolidated, environments separated
 

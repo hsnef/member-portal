@@ -13,7 +13,7 @@
       "cmd": "npm run lint"
     },
     {
-      "_why": "~469 pre-existing errors, ~400 from types/database.ts being out of sync with what Supabase generates (every insert/update resolves to never). Regenerate that file, then enable. Note next.config.ts sets ignoreBuildErrors, so Build passing says nothing about types.",
+      "_why": "Pre-existing errors remain -- measure with `npx tsc --noEmit`, do not trust a count written here (this line said 469 long after it stopped being true). The types/database.ts regeneration that caused most of them landed in 9f9fb37 and 4e024be; what is left is local interface shapes that drifted, plus ~50 in tailwind.config.ts. Clear them, then enable. Note next.config.ts sets ignoreBuildErrors, so Build passing says nothing about types.",
       "label": "Type check",
       "ciJob": "Lint & Type Check",
       "cmd": "npx tsc --noEmit"
