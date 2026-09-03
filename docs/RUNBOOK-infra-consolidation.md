@@ -16,7 +16,7 @@ GitHub main  ──► Vercel PRODUCTION  ──► Supabase  gapvsdrzavjaublwkq
 
 - [x] Phase 1 — Vercel down to one project — **DONE 2026-09-02**
 - [ ] Phase 2 — fix `member.hsnef.org` (it is DOWN)
-- [ ] Phase 3 — apply the events migration
+- [x] Phase 3 — apply the events migration — **DONE 2026-09-02**
 - [ ] Phase 4 — clean the test data
 - [x] Phase 5 — create the dev Supabase project — **DONE 2026-09-02, environments verified separate**
 - [x] Phase 6 — merge the PR — **DONE 2026-09-02**

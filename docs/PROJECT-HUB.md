@@ -213,8 +213,13 @@ the figures as unreliable. **Open:** upgrade `@supabase/ssr` and remove
 the return-type annotations in `lib/supabase/{client,server}.ts`. That package
 handles PKCE cookies, so it needs its own testing pass.
 
-### DEC-009: THE EVENTS FEATURE CANNOT WORK AGAINST THIS DATABASE
-**2026-09-01 · OPEN, not fixed. Needs a product decision.**
+### DEC-009: the events feature could not work against this database
+**2026-09-01 · RESOLVED 2026-09-02.**
+
+Migration `20260901000001_events_align_with_application.sql` was applied to BOTH
+projects. The prod and dev `events` tables are now identical at 26 columns, and
+the queries that returned 400 return 200. Both tables were empty, so nothing had
+to be migrated. Original diagnosis follows.
 
 Verified with live queries, not inferred:
 
