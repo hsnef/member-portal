@@ -18,7 +18,7 @@ GitHub main  ──► Vercel PRODUCTION  ──► Supabase  gapvsdrzavjaublwkq
 - [ ] Phase 2 — fix `member.hsnef.org` (it is DOWN)
 - [ ] Phase 3 — apply the events migration
 - [ ] Phase 4 — clean the test data
-- [ ] Phase 5 — create the dev Supabase project
+- [~] Phase 5 — create the dev Supabase project — **schema built 2026-09-02; only 5.3 left**
 - [x] Phase 6 — merge the PR — **DONE 2026-09-02**
 
 ---
@@ -261,7 +261,34 @@ Note the org is on the **Free plan**: two active projects is the cap, so this us
 the allowance exactly, and **free projects pause after about 7 days idle** — a dead
 dev environment usually just needs an unpause from the dashboard.
 
-### 5.2 — Push the schema
+### 5.2 — Push the schema — DONE 2026-09-02
+
+All 28 migrations applied to `bcujsesgrzijyisvmnwm` via the Supabase Management
+API (`POST /v1/projects/{ref}/database/query`). Verified against production:
+
+```
+prod tables: 30   dev tables: 30
+in prod only: none
+in dev only : none
+RLS enabled on all 30 dev tables
+6 test member records seeded
+```
+
+The dev database has the events columns (`event_name`, `status`, `category`,
+`member_price`, `non_member_price`, `is_test_event`); **production still has
+none of them** — that is DEC-009, still outstanding, and it is Phase 3.
+
+Two things that had to be fixed to get here, both recorded in git:
+
+1. **A latent ordering bug.** `test_accounts` inserted membership IDs in the
+   `9xxxxxxx` range one migration *before* `update_constraints_for_test_accounts`
+   relaxed `chk_membership_id_format` from `^[1-3][0-9]{5}00$`. It failed with
+   `23514`. The two were swapped. **These migrations had never built a database
+   from scratch** — the bug only surfaced when a second environment was created.
+2. The Management API returns Cloudflare `error code: 1010` for requests with no
+   `User-Agent` header. Not a Postgres error; send one.
+
+### 5.2 (original instructions, for reference)
 
 Two ways, both fine:
 
