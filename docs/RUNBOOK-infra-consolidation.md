@@ -153,6 +153,16 @@ authentication.
 
 ## Phase 2 — Fix `member.hsnef.org`
 
+> **Shareable version:** [`docs/RUNBOOK-cloudflare-member-domain.md`](RUNBOOK-cloudflare-member-domain.md)
+> is a self-contained walkthrough for whoever holds Cloudflare access. It assumes
+> no knowledge of this project — send them that file rather than this one.
+>
+> **The diagnosis, short version:** the `member` record is proxied (orange cloud)
+> and resolves to Cloudflare IPs `172.67.142.57` / `104.21.39.23`. The sibling
+> `dev.member` record is a CNAME to `b71df0496b881ead.vercel-dns-017.com` with the
+> proxy **off**, and it works. Turning the proxy off for `member` is the fix.
+
+
 **Why:** it is on Cloudflare, looping, and never reaches Vercel. Phase 1 does not
 touch DNS, so this is separate work.
 
