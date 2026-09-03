@@ -1,5 +1,12 @@
 # Member Audit Log System - Implementation Summary (Phases 1-3)
 
+> **Historical — a point-in-time implementation summary.**
+> The migration filename it gives (`20260108000004_member_audit_log.sql`) is wrong; the file is `20260108000010_member_audit_log.sql`.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 ## Overview
 
 Successfully implemented the complete backend foundation for the Member Audit Log system. This system automatically tracks all member creation, field changes, and membership ID changes with comprehensive audit trail capabilities.

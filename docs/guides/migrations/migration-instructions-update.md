@@ -1,5 +1,12 @@
 # Database Migration Instructions - UPDATE
 
+> **Historical — these migrations are already applied.**
+> A one-off instruction sheet. The two test-account migrations it describes have since had their numeric prefixes SWAPPED so the constraint update runs first, so every filename below is wrong. See the migration guide note in docs/PRIORITY-ROADMAP.md.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../../PRIORITY-ROADMAP.md).
+
 ## New Migration Added
 
 A new migration has been added for test accounts functionality:

@@ -1,5 +1,12 @@
 # Logging Systems Status & Implementation Summary
 
+> **Historical — a point-in-time status summary.**
+> Migration filenames and login-method descriptions here have both drifted.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 **Date:** January 9, 2025
 **Status:** Partial Implementation
 

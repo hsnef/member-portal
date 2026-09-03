@@ -17,7 +17,7 @@
 - **Status:** ✅ Built, ready to deploy
 
 #### 3. **Traditional Registration**
-- Email/password registration at `/register`
+- Registration at `/register` (it sets a password, but sign-in is magic link or Google)
 - Auto-linking to member records
 - **Status:** ✅ Complete
 
@@ -31,10 +31,10 @@ Run migrations in this order:
 
 ```bash
 # 1. Update constraints for test accounts (if not already done)
-supabase db push --include 20260108000005_update_constraints_for_test_accounts.sql
+supabase db push --include 20260108000004_update_constraints_for_test_accounts.sql
 
 # 2. Create test accounts (if not already done)
-supabase db push --include 20260108000004_test_accounts.sql
+supabase db push --include 20260108000005_test_accounts.sql
 
 # 3. Create pending registrations table (NEW)
 supabase db push --include 20260108000006_pending_member_registrations.sql

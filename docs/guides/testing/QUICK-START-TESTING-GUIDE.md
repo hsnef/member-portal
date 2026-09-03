@@ -14,7 +14,23 @@ Open your browser and go to: **https://dev.member.hsnef.org**
 
 ## Test Account Credentials
 
-All test accounts use the same password. Contact the admin (devmp@hsnef.org) for the password.
+> ### ⚠️ Sign-in is magic link or Google — there is no password login
+>
+> The login page offers exactly two options: **"Email me a sign-in link"**
+> (Supabase `signInWithOtp`) and **Sign in with Google** (`signInWithOAuth`).
+> It says so on the page: *"Sign in with your email — no password to remember."*
+>
+> Registration at `/register` still asks you to set a password, and still stores
+> one — but **nothing on the login page can use it**, and there is no
+> "Forgot password" link or `/forgot-password` route. Any test case below that
+> asks you to sign in with a password cannot pass, and is marked N/A.
+>
+> Verified against the code 2026-09-03: `signInWithPassword` appears only inside
+> `loginWithMembershipNumber()` in `lib/auth/helpers.ts`, which nothing calls.
+
+All test accounts sign in with **"Email me a sign-in link"**. There are no
+passwords to request — see the note above. You need access to the inbox for the
+address you are testing with; they are `+` aliases of `dev-mp@hsnef.org`.
 
 | Account Type | Email | What to Test |
 |--------------|-------|--------------|
@@ -55,10 +71,10 @@ Test the complete registration flow:
 
 Test different ways to login:
 
-1. **Email/Password Login:**
+1. **Magic link (the normal path):**
    - Go to https://dev.member.hsnef.org/login
-   - Enter test account email and password
-   - Click Login
+   - Enter the test account email
+   - Click "Email me a sign-in link", then open the link in the inbox
 
 2. **Google Sign-In:**
    - Click "Sign in with Google"

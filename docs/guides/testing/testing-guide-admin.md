@@ -1,5 +1,12 @@
 # HSNEF Member Portal - Admin Testing Guide
 
+> ### ⚠️ Sign-in is magic link or Google — there is no password login
+>
+> The login page offers only **"Email me a sign-in link"** and **Sign in with
+> Google**. Registration stores a password but nothing can use it to sign in.
+> Steps below that rely on a password are marked N/A or as known bugs.
+> Verified against the code 2026-09-03.
+
 This guide is for testing the portal as an Administrator.
 
 ---
@@ -28,7 +35,8 @@ Before testing Admin features, the Test Admin account must be set up:
 **Step 1: Register the Test Admin Account**
 1. Navigate to `https://dev.member.hsnef.org/register`
 2. Register using email: `dev-mp+testadmin@hsnef.org`
-3. Create a password (e.g., "TestPassword123!")
+3. Set a password when asked (e.g. "TestPassword123!") — **stored, but never
+   used to sign in**; sign-in is magic link or Google
 
 **Step 2: Real Admin Assigns Test Admin Role**
 1. Login with your **real Admin account** (not the test account)
@@ -49,7 +57,8 @@ Before testing Admin features, the Test Admin account must be set up:
 | MembershipID | 99990000 |
 | Membership Level | Lifetime |
 
-**Recommended Password:** `TestPassword123!`
+**Password:** registration asks for one (`TestPassword123!` is fine). It is
+never used to sign in — see the note at the top.
 
 ---
 
@@ -208,7 +217,7 @@ Before testing Admin features, the Test Admin account must be set up:
 
 ---
 
-### TC-ADM-08: Reset Test Account Password
+### TC-ADM-08: Reset Test Account Password — ⚠️ KNOWN BUG, expected to fail
 
 **Steps:**
 1. On Test Accounts page
@@ -216,10 +225,15 @@ Before testing Admin features, the Test Admin account must be set up:
 3. Check email inbox for reset link
 4. Complete password reset
 
-**Expected Results:**
-- Password reset email sent
-- Link opens password reset form
-- New password works for login
+**Expected Results — this is where it breaks:**
+- ✅ Password reset email IS sent (the button calls `resetPasswordForEmail`)
+- ❌ **The link in that email 404s.** It points at `/auth/reset-password`, and
+  that route does not exist — the only route under `/auth/` is
+  `/auth/callback-handler`. Verified 2026-09-03.
+- ❌ No new password can be set, and it would not help if it could, since the
+  login page has no password field.
+
+Report it as a failure; it is a real defect, not a tester error.
 
 ---
 
@@ -616,7 +630,7 @@ As Admin, you are responsible for:
 | - Annual:    dev-mp+testannual@hsnef.org     (99994000)          |
 | - Community: dev-mp+testcommunity@hsnef.org  (99995000)          |
 +------------------------------------------------------------------+
-| Password:    TestPassword123!                                    |
+| Password:    TestPassword123! (stored; sign in via magic link)   |
 +------------------------------------------------------------------+
 | KEY PAGES                                                        |
 | - Test Accounts: /admin/test-accounts                            |
@@ -642,7 +656,7 @@ As Admin, you are responsible for:
 1. Check if account exists in members table
 2. Verify email address is correct
 3. Check if auth account is linked (auth_user_id not null)
-4. Try password reset
+4. Try password reset (see TC-ADM-08 — the emailed link 404s)
 5. Check Supabase auth logs
 
 ### Test Data Appearing in Reports

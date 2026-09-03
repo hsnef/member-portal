@@ -36,11 +36,26 @@ While public user testing doesn't require login, you may need these for verifica
 
 Test accounts use prefix `9` and are marked with a purple "TEST" badge.
 
-**Recommended Password:** `TestPassword123!`
+**Password:** registration asks for one (`TestPassword123!` is fine), but it is
+never used to sign in. Sign-in is magic link or Google — see the note above.
 
 ---
 
 ## Test Cases
+
+> ### ⚠️ Sign-in is magic link or Google — there is no password login
+>
+> The login page offers exactly two options: **"Email me a sign-in link"**
+> (Supabase `signInWithOtp`) and **Sign in with Google** (`signInWithOAuth`).
+> It says so on the page: *"Sign in with your email — no password to remember."*
+>
+> Registration at `/register` still asks you to set a password, and still stores
+> one — but **nothing on the login page can use it**, and there is no
+> "Forgot password" link or `/forgot-password` route. Any test case below that
+> asks you to sign in with a password cannot pass, and is marked N/A.
+>
+> Verified against the code 2026-09-03: `signInWithPassword` appears only inside
+> `loginWithMembershipNumber()` in `lib/auth/helpers.ts`, which nothing calls.
 
 ### TC-PUB-01: View Home Page
 
@@ -88,21 +103,14 @@ Test accounts use prefix `9` and are marked with a purple "TEST" badge.
 
 ---
 
-### TC-PUB-04: Login with Email/Password (Traditional)
+### TC-PUB-04: ~~Login with Email/Password (Traditional)~~ — N/A
 
-**Prerequisite:** Traditional login must be enabled in Portal Settings
+**This test case cannot be run.** There is no password login. The login page
+offers only "Email me a sign-in link" and "Sign in with Google", and there is no
+Portal Settings toggle that adds one. Kept here so the case numbering matches the
+other role guides.
 
-**Steps:**
-1. Navigate to /login
-2. If visible, click "Use Email/Password" or similar toggle
-3. Enter email address
-4. Enter password
-5. Click "Sign In"
-
-**Expected Results:**
-- If credentials valid: Redirected to dashboard
-- If invalid: Error message displayed
-- If account not found: Appropriate error message
+Test the magic-link path in TC-PUB-03 instead.
 
 ---
 
@@ -219,16 +227,14 @@ Test accounts use prefix `9` and are marked with a purple "TEST" badge.
 
 ---
 
-### TC-PUB-11: Password Reset Request
+### TC-PUB-11: ~~Password Reset Request~~ — N/A
 
-**Steps:**
-1. Navigate to /login
-2. Click "Forgot Password?" link
-3. Enter your email address
-4. Click "Send Reset Link"
+**This test case cannot be run.** There is no "Forgot Password?" link on the
+login page and no `/forgot-password` route. Since sign-in is by magic link, a
+reset flow would have nothing to reset — requesting a new sign-in link *is* the
+recovery path.
 
-**Expected Results:**
-- Confirmation: "Password reset email sent"
+**Expected Results:** n/a
 - Email arrives with reset link
 - Link opens password reset form
 
