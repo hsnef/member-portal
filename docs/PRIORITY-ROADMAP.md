@@ -97,9 +97,9 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
   `docs/status/**` move correctly.
 
 **Blocked on Sujit:**
-- `tailwind-merge` dependency approval. The kit's `cn()` needs it (17 components, 44 call sites);
-  without it a caller's `className` override can silently lose to the component's own default.
-  `utils/cn.ts` is a plain join with a note explaining the one-line swap.
+- ~~`tailwind-merge` dependency approval.~~ ✅ **Approved and done 2026-09-03.** `utils/cn.ts`
+  is backed by `twMerge`, with 12 tests. Verified no visual change on the public routes by
+  diffing rendered class attributes before and after; authenticated pages were not checked.
 - **Real temple opening hours** — not in `lib/constants/temple.ts`. The login hero and the shell's
   office card both want them and currently show the office phone instead. Inventing hours on a
   sign-in page was not acceptable.
