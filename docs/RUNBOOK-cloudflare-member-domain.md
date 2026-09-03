@@ -1,5 +1,12 @@
 # Fix `member.hsnef.org` — Cloudflare DNS
 
+> ## ✅ DONE 2026-09-02 — this runbook is historical
+>
+> The record is now a CNAME to `b71df0496b881ead.vercel-dns-017.com` with
+> **Proxy status: DNS only**, and `member.hsnef.org` returns `200` with
+> `Server: Vercel` (verified 2026-09-03). Nothing below needs doing.
+> Keep the file as the record of what the problem was and how it was fixed.
+
 **For whoever has admin access to the `hsnef.org` zone in Cloudflare.**
 You need no knowledge of the application. This is a DNS change, about five
 minutes, and it is reversible.

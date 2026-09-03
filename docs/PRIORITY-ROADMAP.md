@@ -2,35 +2,45 @@
 
 > What to work on next, and why. Start each session by reading this + `gh issue list`. This file captures the WHY and ORDER; GitHub Issues capture the WHAT and STATUS.
 
-## START HERE — the active runbook
+## START HERE
 
-> **Resolved 2026-09-02.** The dev URL previously pointed at the production
-> database. `dev-mp` (`bcujsesgrzijyisvmnwm`) now exists with the full schema, and
-> Preview is pointed at it — verified from the shipped JS on both hosts. Dev and
-> production are genuinely separate.
+> ## ✅ The infrastructure work is finished — 2026-09-02
 >
-> **Next: Phase 2 (Cloudflare).** `member.hsnef.org` still returns 308 and never
-> reaches Vercel, so production is built and healthy but unreachable. And Phase 3
-> — production still has none of the events columns.
+> **The portal is live at https://member.hsnef.org.** There is no infrastructure
+> blocker left. Do not restart
+> [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) — phases 1, 2,
+> 3, 5 and 6 are ticked, and only Phase 4 (test-data cleanup) remains, which is optional.
+>
+> - **Cloudflare (Phase 2) is done.** The `member` record is a CNAME to
+>   `b71df0496b881ead.vercel-dns-017.com` with **Proxy status: DNS only**. Verified
+>   2026-09-03: `200`, `Server: Vercel`, Vercel anycast IPs.
+> - **Databases are split.** Dev is `dev-mp` (`bcujsesgrzijyisvmnwm`); production is
+>   `prod-mp` (`gapvsdrzavjaublwkqfm`). **That second ref is PRODUCTION** — it was the
+>   shared project and kept its ID, so anything written before 2026-09-02 shows it as dev.
+> - **Events migration (Phase 3) is applied to production.**
 
-**[`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md)** is a
-step-by-step walk-through of the current infrastructure work: consolidating the two
-Vercel projects into one, fixing `member.hsnef.org` (which is DOWN — Cloudflare
-redirect loop, not reaching Vercel at all), applying the events migration, splitting
-Supabase, and finally merging PR #3. It carries its own progress checkboxes, so if a
-session ended mid-way, the ticks say where.
+**The next three things, in order:**
 
-Everything in Tier 0 below is either covered by that runbook or superseded by it.
-Where the two disagree, the runbook is newer.
+1. **Revoke the two tokens** issued to Claude on 2026-09-02 (a Vercel token and a
+   Supabase PAT) and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local`. Still
+   outstanding as of 2026-09-03.
+2. **Install a test framework** (Tier 2) — needs Sujit's `vitest` approval. The repo is
+   in production with zero tests.
+3. **Add `.github/workflows/ci.yml`** (Tier 2) — `/govkit-doctor`'s one missing guardrail.
 
-## Current Priority Tiers (as of 2026-08-31)
+## Current Priority Tiers (as of 2026-09-03)
 
-### Tier 0 — blocking, do before more feature work
+### Tier 0 — EMPTY as of 2026-09-03
+
+**Nothing is blocking.** All three items below closed between 2026-09-01 and 2026-09-02.
+They are kept struck through because each one's reasoning still explains why the current
+setup looks the way it does. The live work is in Tier 1 and Tier 2.
 
 - ~~**Restore deployment (DEC-007).**~~ **RESOLVED 2026-09-01** — the repo was made
-  public, Vercel builds again, and `dev.member.hsnef.org` is live on the design system.
-  The repo is staying public for now, which keeps the PII history readable (DEC-010).
-  The remaining deployment work is Vercel project consolidation — see the runbook above.
+  public, Vercel builds again, and both `dev.member.hsnef.org` and `member.hsnef.org` are
+  live on the design system. The repo is staying public for now, which keeps the PII
+  history readable (DEC-010). Vercel project consolidation finished 2026-09-02: one
+  project, `member`.
   Superseded text follows:
 - **Restore deployment (DEC-007). Nothing has deployed since January** — the Actions workflow is
   disabled and Vercel's Git integration is blocked for private org repos on Hobby. Moving the
@@ -39,23 +49,31 @@ Where the two disagree, the runbook is newer.
   `deploy.yml` to deploy via the Vercel CLI with a token, which sidesteps the Git-integration
   restriction but may not sidestep Hobby's non-commercial licensing. **Do not fix this by making the
   repo public** — see the PII item below.
+- ~~**Split the Supabase projects (DEC-006).**~~ **RESOLVED 2026-09-02** — done exactly as
+  proposed: the NEW project became `dev` (`dev-mp`, `bcujsesgrzijyisvmnwm`) and
+  `gapvsdrzavjaublwkqfm` stayed as production (`prod-mp`), so no real member row moved.
+  **Remember that `gapvsdrzavjaublwkqfm` is therefore PRODUCTION**, not dev, despite how
+  every pre-split note reads. Superseded text follows:
 - **Split the Supabase projects (DEC-006).** All three environments share one live database today,
   so dev testing writes to real member data. **Make the NEW project `dev`, not prod** — that reaches
   the same goal without migrating a single real member row or auth user, and leaves production
   untouched. Renumber the two duplicate migration prefixes first or the fresh `db push` will fail.
-- **Remove the member-data CSVs regardless.** `docs/reference/data/current-member-data-import-template*.csv`
-  should not be in the repo at all, private or not. Delete from HEAD now; purge from history if/when
-  the repo's visibility changes.
+- ~~**Remove the member-data CSVs regardless.**~~ **RESOLVED 2026-09-02** in `305c5e1`
+  *"fix(privacy): remove real member households from the repo"*. The two
+  `docs/reference/data/current-member-data-import-template*.csv` files still exist but now
+  carry synthetic rows (`904-555-*` numbers). **Purging real data from git history is still
+  open** — see DEC-010, which closes when the repo goes private.
 
 ### Tier 1 — now
 
-- **Fix the `userData` bug in the two remaining admin files.** `useAuth()` has no
-  `userData`, so `userData?.user?.id` is always undefined:
-  `app/admin/bookings/new/page.tsx` and `app/admin/bookings/[id]/page.tsx`. Beyond the
-  failed member lookup, it feeds `reviewed_by` — **the record of who approved or
-  rejected a booking is being written as null.** Fix alongside those routes in stage 7.
-  (`app/admin/members/import` also has a `userData` but it is a local from a real
-  `supabase.auth.getUser()` call — that one is fine.)
+- ~~**Fix the `userData` bug in the two remaining admin files.**~~ ✅ **Done** — verified
+  2026-09-03: `grep -rn userData app/admin/bookings/` returns nothing. Fixed during
+  stage 7 as planned. What it was, for the record: `useAuth()` has no `userData`, so
+  `userData?.user?.id` was always undefined in `app/admin/bookings/new/page.tsx` and
+  `app/admin/bookings/[id]/page.tsx`; beyond the failed member lookup it fed
+  `reviewed_by`, so **the record of who approved or rejected a booking was written as
+  null.** (`app/admin/members/import` also has a `userData`, but it is a local from a real
+  `supabase.auth.getUser()` call — that one was always fine.)
 - ~~**Design-system port, stage 6: member screens (21 routes).**~~ ✅ **Done.**
   Previous plan, kept for reference:
   Order: `/member` → `/member/pass` → `/member/profile` → `/member/payments` → `/member/donate` →
@@ -63,15 +81,20 @@ Where the two disagree, the runbook is newer.
   `/member/bookings/[id]` → the payment/success routes → `/member/events`.
   One route per commit. Exemplar map below.
 - ~~**Stage 7** (admin, 40 routes)~~ ✅ **Done.**
-- **Stage 8** — the non-React surfaces: `lib/email/templates.ts`, `lib/email/templates/payment.ts`,
-  `lib/email/mailer.ts`, the inline HTML in `app/api/bookings/send-notification`, and
-  `lib/pdf/{receipt,invoice}.ts`.
-- **Then: review everything under `docs/` for alignment (agreed with Sujit 2026-09-01).**
+- ~~**Stage 8** — the non-React surfaces~~ ✅ **Done 2026-09-01.** The design-system port
+  is complete, stages 1–8. `lib/email/theme.ts` and `lib/pdf/theme.ts` now restate the
+  tokens for the surfaces that cannot read CSS variables — **change them together with
+  `app/globals.css`.**
+- **Review everything under `docs/` for alignment (agreed with Sujit 2026-09-01).**
+  Partly done 2026-09-03 — this file, `CLAUDE.md`, `docs/PROJECT-HUB.md` and the two
+  runbooks were reconciled. The rest of `docs/` has not been swept.
   Any design element, colour, route, screenshot or component name referenced in documentation
-  must match what the code now does. Known drift to fix: `#FF9933` in `lib/constants/temple.ts`
-  and the testing guides, the ~26 `portal.hsnef.org` references, the role-gate tables that
-  disagree with the code (DEC-004), and `CLAUDE.md` rule 9 naming root `*.md` files that were
-  moved into `docs/`.
+  must match what the code now does. Remaining known drift: the ~26 `portal.hsnef.org`
+  references, and the role-gate tables that disagree with the code (DEC-004).
+  **Already fixed:** `#FF9933` is gone from `lib/constants/temple.ts` (it is `#c75b12`
+  now) and survives only in `lib/themes/themes/built-in/default.ts`, which IS the legacy
+  palette by definition — verified 2026-09-03. `CLAUDE.md` rule 9 now describes the
+  `docs/status/**` move correctly.
 
 **Blocked on Sujit:**
 - `tailwind-merge` dependency approval. The kit's `cn()` needs it (17 components, 44 call sites);
@@ -86,10 +109,16 @@ Where the two disagree, the runbook is newer.
 
 ### Tier 2 — next (high-value, start-ready)
 
-- **Regenerate `types/database.ts` from Supabase. AGREED with Sujit 2026-09-01: do this at the
-  END of the design-system port, before anything else.** ~400 of the type errors trace to this one
-  stale file — every insert/update resolves to `never` — and that noise is what makes the other ~50
-  unreadable.
+- ~~**Regenerate `types/database.ts` from Supabase.**~~ **Largely done** — `9f9fb37`
+  *"fix(types): make the Supabase schema resolve"* and `4e024be` (events schema) landed it,
+  and the bulk of the errors went with it. What remains is the long tail the stale schema
+  was hiding: local `interface` shapes that drifted. Measure before you start, and read
+  the "Type gate" note above rather than any number in this file. Original framing follows,
+  because its argument still holds:
+
+  **AGREED with Sujit 2026-09-01: do this at the END of the design-system port, before
+  anything else.** Most of the type errors trace to this one stale file — every
+  insert/update resolves to `never` — and that noise is what makes the rest unreadable.
 
   This is not cleanup. **The type checker has been reporting live defects all along and nothing was
   reading its output.** Five bugs found during stage 6-7 were each visible to it:
@@ -174,21 +203,28 @@ to; both are live pages (566 + 372 lines). Restyle them.
   build wipes the dev server's stylesheet, leaving an unstyled page and a 404 on
   `/_next/static/css/app/layout.css`. This cost a debugging cycle. Use `npx tsc --noEmit` while
   developing; build only with the dev server stopped.
-- **Type gate:** must not report MORE than the **469** baseline in `app|components|lib|utils|types`.
-  A sudden *drop* means something failed to parse — `tsc` aborts its semantic pass on a syntax error.
+- **Type gate:** the count must not go UP. **Do not trust a baseline written in a doc** — three
+  files quoted three different numbers and all had rotted, and DEC-008 records a fourth that was
+  a mis-measurement in the first place. Measure first:
+  `npx tsc --noEmit 2>&1 | grep -cE '^(app|components|lib|utils|types)/'`, then compare your
+  change against that. A sudden *drop* is not automatically a win — `tsc` aborts its semantic
+  pass on a syntax error, so check for `TS1xxx` codes before celebrating (see DEC-005).
 - **`npm run build` proves little about types or lint:** `next.config.ts` sets `ignoreBuildErrors`
   and `ignoreDuringBuilds`.
 - **Open a browser.** Both real bugs in session 1 were invisible to build and typecheck.
 
 ## Environments
 
-| | URL | Branch |
-|---|---|---|
-| Local | http://localhost:3000 | — |
-| Dev | https://dev.member.hsnef.org | `dev` |
-| Production | https://member.hsnef.org | `main` |
+| | URL | Branch | Supabase |
+|---|---|---|---|
+| Local | http://localhost:3000 | — | `dev-mp` (`bcujsesgrzijyisvmnwm`) |
+| Dev | https://dev.member.hsnef.org | `dev` | `dev-mp` (`bcujsesgrzijyisvmnwm`) |
+| Production | https://member.hsnef.org | `main` | `prod-mp` (`gapvsdrzavjaublwkqfm`) |
 
-Main site: https://hsnef.org · See `docs/ENVIRONMENT_QUICK_REFERENCE.md`.
+Main site: https://hsnef.org · See `docs/ENVIRONMENT_QUICK_REFERENCE.md` — **that file is
+pre-split and still lists the Supabase keys as "Same Across All Environments", which is no
+longer true.** It has not been swept yet.
+
 `.env.local` is complete and points at the real dev Supabase. `QR_TOKEN_SECRET` /
 `ZELLE_TOKEN_SECRET` / `CRON_SECRET` are locally generated, so QR codes issued by dev will not
 verify locally — copy dev's `QR_TOKEN_SECRET` from Vercel if you need that.
@@ -197,4 +233,5 @@ verify locally — copy dev's `QR_TOKEN_SECRET` from Vercel if you need that.
 
 | Date | Session | Changes |
 |------|---------|---------|
+| 2026-09-03 | 5 | Reconciled against the repo after `docs:sync-check` flagged this file stale. Tier 0 emptied (all three items closed 09-01/09-02). Cloudflare Phase 2 recorded as done — production is live. `userData` bug and stage 8 marked done. Every hardcoded type-error count replaced with the command. Environments table gained the Supabase refs, with a warning that `gapvsdrzavjaublwkqfm` is PRODUCTION. |
 | 2026-08-31 | 1 | Roadmap scaffolded by govkit; migrated from `tasks/NEXT_PRIORITIES.md`. |
