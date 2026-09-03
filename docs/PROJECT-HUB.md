@@ -2,49 +2,54 @@
 
 > The single source of truth for architecture decisions, current state, and session-to-session context. `/sdlc status` reads this file. Keep it current — a stale hub poisons the next session's context.
 
-_Last checked 2026-09-01._
+_Last checked 2026-09-02._
 
 ## Current Status
 
-- **Stage:** Design-system port **complete — all 8 stages**, on `dev`, awaiting the
-  `dev` → `main` merge in **[PR #3](https://github.com/hsnef/member-portal/pull/3)**
-  (Sujit merges). `dev` is 81 commits ahead of `main`.
-- **Health:** tests **none installed** · build **clean** (85/85 pages) · lint failing (pre-existing) ·
-  types **see `npx tsc --noEmit`** — a large but finite pile of real schema drift,
-  down from a state where the schema did not resolve at all (DEC-008) · CI ok.
-- **Deploys work again as of 2026-09-01.** Sujit made the GitHub repo **public**,
-  which unblocked the Vercel builds that had not run since 11 January (DEC-007).
-  `dev.member.hsnef.org` is live and serving the design system — its CSS carries
-  the tokens and zero legacy hex values. **Making the repo private again will stop
-  deploys**, so that setting and DEC-007 are now the same decision.
-- **The `member` Vercel project's preview build of `dev` still fails.** The
-  `dev.member` project succeeds. The build log lives under the **`hsnef` Vercel
-  scope, which the CLI login `jisujit` and the Vercel MCP connection cannot read** —
-  both only reach `techsilon`. Ruled out from this side: the tree builds clean
-  locally, `npm ci` is in sync, and nothing references the untracked CSVs. Get
-  someone with `hsnef` access to read it, or add `jisujit` to that Vercel team.
-- **Blocking a real launch:** DEC-009 (events feature is broken against the DB),
-  DEC-007 (no deploys), and the Supabase dev/prod split.
+**The portal is deployed, on the new design system, with dev and production
+properly separated. One thing stands between it and the public: DNS.**
+
+- **Production** — `main` → Vercel production → Supabase `prod-mp`
+  (`gapvsdrzavjaublwkqfm`). PR #4 merged 2026-09-02 (110 commits on `main`, a real
+  merge commit). The build is READY and serves the design system; verified from the
+  shipped CSS.
+- **Dev** — `dev` → Vercel preview → Supabase `dev-mp` (`bcujsesgrzijyisvmnwm`).
+  Verified from the shipped JS that each host resolves its own database. The public
+  dev URL no longer touches live member data.
+- **`member.hsnef.org` is DOWN and it is the only blocker.** It returns a 308
+  redirect to itself and never reaches Vercel, because the Cloudflare record is
+  proxied. **Handed to the person with Cloudflare access on 2026-09-02** using
+  [`docs/RUNBOOK-cloudflare-member-domain.md`](RUNBOOK-cloudflare-member-domain.md).
+  Awaiting their confirmation — then verify with
+  `curl -sI https://member.hsnef.org | head -3` (want `200` and `server: Vercel`).
+- **Health:** build clean (86/86 pages) · tests **still none installed** · lint
+  failing (pre-existing) · types: run `npx tsc --noEmit`, do not trust a number
+  written here.
+- **Vercel** is now ONE project, `member`. The old empty project is retired as
+  `member-legacy` with its git link removed; delete it whenever.
 
 ### Start here next session
 
-0. **If infrastructure work is in flight, go straight to
-   [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md).**
-   It is the step-by-step for the Vercel consolidation, the `member.hsnef.org`
-   outage, the events migration, the Supabase split and the PR #3 merge, and its
-   checkboxes record how far it got.
-1. Read this Current Status, then **DEC-008 and DEC-009** below.
-2. Read the **Session 3** handoff at the bottom — it lists every bug fixed and every
-   decision still owed.
-3. `git log --oneline -20` on `dev`. If this file and git disagree, trust git and fix this file.
+1. **[`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md)** — its
+   checkboxes are the source of truth for how far the infrastructure work got.
+   Phases 1, 3, 5 and 6 are done. **Phase 2 (Cloudflare) is outstanding and is
+   with a third party.** Phase 4 (test-data cleanup) is optional.
+2. Read the **Session 4** handoff at the bottom of this file.
+3. `git log --oneline -20` on `dev`. If this file and git disagree, trust git and
+   fix this file.
 
-Moving off Vercel/Supabase to Railway — feasibility, effort and risk:
-**[`docs/ANALYSIS-railway-migration.md`](ANALYSIS-railway-migration.md)**.
-Fixing `member.hsnef.org` (Cloudflare, shareable): **[`docs/RUNBOOK-cloudflare-member-domain.md`](RUNBOOK-cloudflare-member-domain.md)**.
-Who can sign in and what each role unlocks: **[`docs/ACCESS-AND-ROLES.md`](ACCESS-AND-ROLES.md)**
-(live account list: `node scripts/list-access.mjs`).
-What each role can actually do: **[`docs/ROLES-GUIDE.md`](ROLES-GUIDE.md)**.
-Bringing a new developer on: **[`docs/ONBOARDING.md`](ONBOARDING.md)**.
+### Still open, in rough priority order
+
+| | |
+|---|---|
+| **Cloudflare** | With the friend. Nothing else can proceed until `member.hsnef.org` resolves |
+| **Tokens to revoke** | A Vercel token and a Supabase PAT were issued to Claude on 2026-09-02. **Revoke both**, and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local` |
+| **No tests at all** | `CLAUDE.md` has a tests-with-features policy and the repo has zero tests. Nine real bugs shipped behind `ignoreBuildErrors`. Adding `vitest` needs approval |
+| **Contrast** | White on `#c75b12` is 4.26:1, below WCAG AA's 4.5. `#b8530e` gives 4.90. One line in `app/globals.css`; a brand decision |
+| **PII in git history** | Rewritten and branches deleted, but GitHub keeps orphaned commits reachable by SHA. Closes when the repo goes private, which is the plan. See DEC-010 |
+| **SPF** | `hsnef.org` publishes three `v=spf1` records; RFC 7208 allows one |
+| **Type errors** | Mostly local `interface` shapes drifted from `types/database.ts`. Real, not urgent |
+| **Railway** | Parked. Analysis in [`docs/ANALYSIS-railway-migration.md`](ANALYSIS-railway-migration.md) |
 
 ## Architecture at a glance
 
@@ -317,6 +322,74 @@ Supabase auth hook, which is dashboard configuration.
 
 Related: 18 of 21 member routes had no "no membership" state and rendered against
 a null member. Nine reachable ones now share `NoMembershipState`.
+
+### Session 4 — 2026-09-02 — infrastructure consolidated, environments separated
+
+The portal went from "built but undeployable" to "deployed, separated, and one
+DNS change from public".
+
+**Done, in order:**
+
+1. **PR #3 raised, then replaced by PR #4** after the PII history rewrite
+   force-pushed `dev` and GitHub auto-closed #3.
+2. **PII history rewrite** (DEC-010). `git filter-repo` over 101 commits. A sweep
+   of every remote branch found the data also on `feature/theme-system`, a stale
+   branch merged in PR #1 — deleting only the intended backup would have missed
+   it. **GitHub still serves the old commits by SHA**; that closes when the repo
+   goes private.
+3. **Login hardened** (DEC-011). `signInWithOtp` was creating an account for any
+   address typed. Now gated on an existing member record *or* an existing auth
+   account — both arms needed, since `gsujit@gmail.com` holds no member record and
+   a member-only rule would have locked Sujit out. Google OAuth cannot be gated
+   the same way, so `AuthContext` signs out an account holding neither membership
+   nor role *after* the callback.
+4. **Roles fixed.** All four are now held and testable. The fixtures were
+   half-built since January: `Test Manager` had a member row and an auth account
+   never linked; `Test Staff` had a member row and no auth account.
+5. **Vercel consolidated to one project.** The failing project had **zero
+   environment variables** — not wrongly scoped, none. Retired as `member-legacy`
+   with its git link removed rather than deleted.
+6. **PR #4 merged.** Production live on the design system.
+7. **Supabase split** (DEC-006 closed). `prod-mp` keeps `gapvsdrzavjaublwkqfm`;
+   `dev-mp` is `bcujsesgrzijyisvmnwm`, built from all 28 migrations and verified
+   identical — 30 tables each side, RLS on all 30.
+8. **Events fixed** (DEC-009 closed). Migration applied to both projects; the
+   queries that returned 400 return 200.
+
+**Three bugs found that had never surfaced before:**
+
+- **The migrations had never built a database from scratch.** `test_accounts`
+  inserted `9xxxxxxx` membership IDs one migration *before*
+  `update_constraints_for_test_accounts` relaxed `chk_membership_id_format`.
+  Failed with `23514`. Only appeared the first time a second environment was
+  created. Swapped.
+- **Two pairs of migrations shared a version number**, which Supabase treats as a
+  primary key — a `db push` to any new project would have been rejected outright.
+  Renumbered, dependency order verified.
+- **`CRON_SECRET` and `ZELLE_TOKEN_SECRET` were absent from Vercel entirely**, so
+  the nightly cleanup silently errored, and Zelle fell back to `QR_TOKEN_SECRET`
+  — and past that, to a literal string committed in a public repo.
+
+**Two mistakes worth remembering:**
+
+- I told Sujit `main` would be untouched by the history rewrite. It could not be —
+  rewriting `dev` renumbers `main`'s commits too, since they are its ancestors.
+  He had to approve a second force-push mid-operation.
+- I twice reported member records as missing when they existed. A `+` in an email
+  decodes as a space in a URL query, so `dev-mp+teststaff@hsnef.org` never
+  matched. **Query by `auth_user_id`, or encode the `+`.**
+
+**Useful things learned about the tooling:**
+
+- The Supabase Management API returns Cloudflare `error code: 1010` — not a
+  Postgres error — if the request carries no `User-Agent`.
+- Vercel's API silently ignores `productionBranch`; it must be set in the
+  dashboard, under **Settings → Environments → Production**, not Settings → Git.
+- On Vercel's domain editor, connecting a domain to Preview leaves **Save greyed
+  out** until an actual branch is picked. "All Branches" is placeholder text.
+- To see why a Vercel build failed, list env var *targets* via the API. A missing
+  environment tick is invisible in the dashboard and produces
+  `@supabase/ssr: Your project's URL and API key are required`.
 
 ### Session 3 — 2026-09-01 — port complete, docs synced, types fixed
 
