@@ -40,8 +40,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# generated version JSON (TypeScript file is kept as placeholder)
+# generated build stamp -- rewritten by `npm run generate-version` on every
+# build, dev start and `npm install` (via `prepare`). Both files are generated;
+# neither is committed, so a local build no longer dirties the working tree.
+# `lib/constants/version.ts` imports the .ts one, so it MUST exist before
+# `npx tsc --noEmit` will pass -- `npm install` creates it on a fresh clone.
+# If you ever see TS2307 on './version.generated', run `npm run generate-version`.
 lib/constants/version.generated.json
+lib/constants/version.generated.ts
 
 # supabase
 supabase/.temp/
