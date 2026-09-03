@@ -23,7 +23,8 @@ no infrastructure blocker left — the open items are quality and hygiene, not l
   Vercel anycast (`64.29.17.1` / `216.198.79.1`), returning `200` with `Server: Vercel`,
   and its stylesheet carries the design-system tokens. Re-check any time with
   `curl -sI https://member.hsnef.org | head -3`.
-- **Health:** build clean (86/86 pages) · tests **still none installed** · lint
+- **Health:** build clean (86/86 pages) · tests **48, all passing** (vitest, added
+  2026-09-03) · lint
   failing (pre-existing) · types: run `npx tsc --noEmit`, do not trust a number
   written here.
 - **Vercel** is now ONE project, `member`. The old empty project is retired as
@@ -48,7 +49,7 @@ no infrastructure blocker left — the open items are quality and hygiene, not l
 | | |
 |---|---|
 | **Tokens to revoke** | A Vercel token and a Supabase PAT were issued to Claude on 2026-09-02. **Revoke both**, and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local` — still present 2026-09-03. Now the top item |
-| **No tests at all** | `CLAUDE.md` has a tests-with-features policy and the repo has zero tests. Nine real bugs shipped behind `ignoreBuildErrors`. Adding `vitest` needs approval |
+| **Test coverage is thin** | vitest landed 2026-09-03 with 48 tests over the QR pass, the Zelle money path and the shared formatter. The `Tests` check is now live in the release gate. Everything touching Supabase, Stripe and the API routes is still untested |
 | **No `ci.yml`** | `/govkit-doctor`'s one missing guardrail. `.github/workflows/` holds only `deploy.yml` and `sdlc-docs.yml`. Jobs must be named to match `release-gate.config.json`'s `ciJob` values |
 | **Contrast** | White on `#c75b12` is 4.26:1, below WCAG AA's 4.5. `#b8530e` gives 4.90. One line in `app/globals.css`; a brand decision |
 | **PII in git history** | Rewritten and branches deleted, but GitHub keeps orphaned commits reachable by SHA. Closes when the repo goes private, which is the plan. See DEC-010 |
