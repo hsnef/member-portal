@@ -251,19 +251,48 @@ not need.
 **Why:** today every environment shares one database, so a mistake made while
 testing lands on live member data.
 
-### 5.1 — Create it
+### 5.1 — Create it — DONE 2026-09-02
 
-Supabase dashboard → **New project** → name `hsnef-member-portal-dev` → same
-region as the existing one. Note its ref.
+The existing project was renamed **`prod-mp`** (ref `gapvsdrzavjaublwkqfm`, which
+never changes) and a new **`dev-mp`** created: ref **`bcujsesgrzijyisvmnwm`**,
+`us-west-2`, Free/Nano.
+
+Note the org is on the **Free plan**: two active projects is the cap, so this uses
+the allowance exactly, and **free projects pause after about 7 days idle** — a dead
+dev environment usually just needs an unpause from the dashboard.
 
 ### 5.2 — Push the schema
 
+Two ways, both fine:
+
+**Without any CLI login** — concatenate the migrations and paste them into the
+dev project's SQL Editor:
+
 ```bash
+python - <<'EOF'
+import io,glob,os
+files=sorted(glob.glob('supabase/migrations/*.sql'))
+io.open('schema.sql','w',encoding='utf-8',newline='
+').write(
+  ''.join(f"
+-- {os.path.basename(f)}
+"+io.open(f,encoding='utf-8').read() for f in files))
+print(len(files),'migrations ->  schema.sql')
+EOF
+```
+
+Verified safe to concatenate: no explicit `BEGIN`/`COMMIT`, no
+`CREATE INDEX CONCURRENTLY`, no psql meta-commands.
+
+**Or via the CLI**, which needs a Supabase login *and* the database password:
+
+```bash
+npx supabase login
 npx supabase link --project-ref <the new ref>
 npx supabase db push
 ```
 
-**Expect:** 29 migrations apply cleanly.
+**Expect:** 28 migrations apply cleanly.
 
 *This now works.* Two pairs of migrations previously shared a version number,
 which Supabase treats as a primary key, so the push would have failed outright.
