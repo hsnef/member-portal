@@ -38,6 +38,8 @@ _Last checked 2026-09-01._
    decision still owed.
 3. `git log --oneline -20` on `dev`. If this file and git disagree, trust git and fix this file.
 
+Moving off Vercel/Supabase to Railway — feasibility, effort and risk:
+**[`docs/ANALYSIS-railway-migration.md`](ANALYSIS-railway-migration.md)**.
 Fixing `member.hsnef.org` (Cloudflare, shareable): **[`docs/RUNBOOK-cloudflare-member-domain.md`](RUNBOOK-cloudflare-member-domain.md)**.
 Who can sign in and what each role unlocks: **[`docs/ACCESS-AND-ROLES.md`](ACCESS-AND-ROLES.md)**
 (live account list: `node scripts/list-access.mjs`).
