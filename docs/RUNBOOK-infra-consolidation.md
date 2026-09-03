@@ -4,31 +4,31 @@ A walk-through you can stop and resume. **Nothing here assumes you remember the
 session it came from.** Do the phases in order; each says what to expect and how
 to tell it worked.
 
-Target state:
+Target state — **reached 2026-09-02 except Phase 4, which is optional:**
 
 ```
-GitHub dev   ──► Vercel PREVIEW     ──► Supabase  hsnef-member-portal-dev  (new, to create)
-GitHub main  ──► Vercel PRODUCTION  ──► Supabase  gapvsdrzavjaublwkqfm     (existing, becomes prod)
-                 ONE Vercel project
+GitHub dev   ──► Vercel PREVIEW     ──► Supabase  dev-mp   bcujsesgrzijyisvmnwm   (created 2026-09-02)
+GitHub main  ──► Vercel PRODUCTION  ──► Supabase  prod-mp  gapvsdrzavjaublwkqfm   (existing, is prod)
+                 ONE Vercel project, `member`
 ```
 
 **Progress — tick these as you go, so a later session knows where you stopped:**
 
 - [x] Phase 1 — Vercel down to one project — **DONE 2026-09-02**
-- [ ] Phase 2 — fix `member.hsnef.org` (it is DOWN)
-- [ ] Phase 3 — apply the events migration
+- [x] Phase 2 — fix `member.hsnef.org` — **DONE 2026-09-02, verified 2026-09-03**
+- [x] Phase 3 — apply the events migration — **DONE 2026-09-02**
 - [ ] Phase 4 — clean the test data
-- [ ] Phase 5 — create the dev Supabase project
-- [ ] Phase 6 — merge the PR
+- [x] Phase 5 — create the dev Supabase project — **DONE 2026-09-02, environments verified separate**
+- [x] Phase 6 — merge the PR — **DONE 2026-09-02**
 
 ---
 
 ## Before you start — three facts that are easy to get wrong
 
-1. **`member.hsnef.org` is currently DOWN.** It resolves to Cloudflare, not
-   Vercel, and returns a 308 redirect to itself forever. It is not serving the
-   app and has not been for some time. Phase 2 deals with it — do not be alarmed
-   when the Vercel work alone does not fix it.
+1. **`member.hsnef.org` is UP** as of 2026-09-02, verified 2026-09-03. It used to
+   resolve to Cloudflare rather than Vercel and return a 308 redirect to itself
+   forever; the proxy was switched off and it now serves the app. Phase 2 records
+   what was done. Nothing here still depends on it.
 2. **The Supabase ref `gapvsdrzavjaublwkqfm` is permanent.** You can rename the
    project in the dashboard, but production's URL will always be
    `gapvsdrzavjaublwkqfm.supabase.co`. That is fine; just do not go hunting for
@@ -117,7 +117,77 @@ That is the correct behaviour — do it by hand.
 
 ---
 
-## Phase 2 — Fix `member.hsnef.org`
+## Phase 6 — Merge the PR — DONE 2026-09-02
+
+PR #4 merged as a **merge commit** (2 parents, not a squash — `main` is now 110
+commits). The production deployment built and went **READY** from `main`, and
+`devportal-iota.vercel.app` serves the redesign: HTTP 200 with `--saffron`,
+`--kumkum` and `--marigold` in the CSS and zero legacy hex values.
+
+At the time of the merge `member.hsnef.org` still returned **308** — Cloudflare,
+Phase 2 — so production was built and healthy but not yet reachable. **That was
+fixed later the same day; the domain now serves 200 from Vercel.** See Phase 2.
+
+### Both URLs are public, deliberately — and what that costs
+
+Repointing `dev.member.hsnef.org` to the `dev` branch briefly put it behind
+Vercel's login, because it began serving a *preview* rather than a production
+deployment and `ssoProtection` only exempts **production** custom domains.
+
+**That was reverted on purpose.** `ssoProtection` is now `null`. The requirement
+is that anyone can reach both `member.hsnef.org` and `dev.member.hsnef.org` —
+testers are invited to try the site and will not have Vercel accounts, so a login
+wall makes the dev URL useless for its actual job. Both return HTTP 200 with no
+authentication.
+
+> **This raises the stakes on Phase 5.** Every environment still shares ONE
+> Supabase database (DEC-006). So a publicly reachable dev portal now sits in
+> front of **live member data**, and anyone testing on `dev.member.hsnef.org` is
+> reading and writing real member records — bookings, profiles, payments.
+>
+> The fix is not a login wall; it is Phase 5. Once `dev` points at its own
+> Supabase project, the dev URL can stay wide open and cost nothing, because
+> there will be nothing real behind it. **Until then, treat every action taken on
+> the dev URL as an action against production.**
+
+---
+
+## Phase 2 — Fix `member.hsnef.org` — DONE 2026-09-02
+
+**The fix that worked:** the `member` record was proxied (orange cloud) and
+resolved to Cloudflare IPs, which looped with Vercel. Whoever held Cloudflare
+access set it to a CNAME → `b71df0496b881ead.vercel-dns-017.com` with **Proxy
+status: DNS only** — identical to the sibling `dev.member` record that had always
+worked. No SSL/TLS mode change and no redirect-rule edit were needed.
+
+**Verified 2026-09-03:**
+
+```
+$ curl -sI https://member.hsnef.org | head -3
+HTTP/1.1 200 OK
+Server: Vercel
+
+$ nslookup member.hsnef.org
+Name:    b71df0496b881ead.vercel-dns-017.com
+Addresses:  64.29.17.1, 216.198.79.1        # Vercel anycast, not Cloudflare
+Aliases:  member.hsnef.org
+```
+
+The shipped stylesheet on that host carries the design-system tokens
+(`--saffron --kumkum --tulsi --marigold --canvas --ink`), so production is serving
+the redesign and not a stale build.
+
+### 2.0 (original instructions, for reference)
+
+> **Shareable version:** [`docs/RUNBOOK-cloudflare-member-domain.md`](RUNBOOK-cloudflare-member-domain.md)
+> is a self-contained walkthrough for whoever holds Cloudflare access. It assumes
+> no knowledge of this project — send them that file rather than this one.
+>
+> **The diagnosis, short version:** the `member` record is proxied (orange cloud)
+> and resolves to Cloudflare IPs `172.67.142.57` / `104.21.39.23`. The sibling
+> `dev.member` record is a CNAME to `b71df0496b881ead.vercel-dns-017.com` with the
+> proxy **off**, and it works. Turning the proxy off for `member` is the fix.
+
 
 **Why:** it is on Cloudflare, looping, and never reaches Vercel. Phase 1 does not
 touch DNS, so this is separate work.
@@ -217,19 +287,75 @@ not need.
 **Why:** today every environment shares one database, so a mistake made while
 testing lands on live member data.
 
-### 5.1 — Create it
+### 5.1 — Create it — DONE 2026-09-02
 
-Supabase dashboard → **New project** → name `hsnef-member-portal-dev` → same
-region as the existing one. Note its ref.
+The existing project was renamed **`prod-mp`** (ref `gapvsdrzavjaublwkqfm`, which
+never changes) and a new **`dev-mp`** created: ref **`bcujsesgrzijyisvmnwm`**,
+`us-west-2`, Free/Nano.
 
-### 5.2 — Push the schema
+Note the org is on the **Free plan**: two active projects is the cap, so this uses
+the allowance exactly, and **free projects pause after about 7 days idle** — a dead
+dev environment usually just needs an unpause from the dashboard.
+
+### 5.2 — Push the schema — DONE 2026-09-02
+
+All 28 migrations applied to `bcujsesgrzijyisvmnwm` via the Supabase Management
+API (`POST /v1/projects/{ref}/database/query`). Verified against production:
+
+```
+prod tables: 30   dev tables: 30
+in prod only: none
+in dev only : none
+RLS enabled on all 30 dev tables
+6 test member records seeded
+```
+
+The dev database has the events columns (`event_name`, `status`, `category`,
+`member_price`, `non_member_price`, `is_test_event`); **production still has
+none of them** — that is DEC-009, still outstanding, and it is Phase 3.
+
+Two things that had to be fixed to get here, both recorded in git:
+
+1. **A latent ordering bug.** `test_accounts` inserted membership IDs in the
+   `9xxxxxxx` range one migration *before* `update_constraints_for_test_accounts`
+   relaxed `chk_membership_id_format` from `^[1-3][0-9]{5}00$`. It failed with
+   `23514`. The two were swapped. **These migrations had never built a database
+   from scratch** — the bug only surfaced when a second environment was created.
+2. The Management API returns Cloudflare `error code: 1010` for requests with no
+   `User-Agent` header. Not a Postgres error; send one.
+
+### 5.2 (original instructions, for reference)
+
+Two ways, both fine:
+
+**Without any CLI login** — concatenate the migrations and paste them into the
+dev project's SQL Editor:
 
 ```bash
+python - <<'EOF'
+import io,glob,os
+files=sorted(glob.glob('supabase/migrations/*.sql'))
+io.open('schema.sql','w',encoding='utf-8',newline='
+').write(
+  ''.join(f"
+-- {os.path.basename(f)}
+"+io.open(f,encoding='utf-8').read() for f in files))
+print(len(files),'migrations ->  schema.sql')
+EOF
+```
+
+Verified safe to concatenate: no explicit `BEGIN`/`COMMIT`, no
+`CREATE INDEX CONCURRENTLY`, no psql meta-commands.
+
+**Or via the CLI**, which needs a Supabase login *and* the database password:
+
+```bash
+npx supabase login
 npx supabase link --project-ref <the new ref>
 npx supabase db push
 ```
 
-**Expect:** 29 migrations apply cleanly.
+**Expect:** 28 migrations apply cleanly.
 
 *This now works.* Two pairs of migrations previously shared a version number,
 which Supabase treats as a primary key, so the push would have failed outright.
@@ -238,7 +364,34 @@ They were renumbered on 2026-09-02 — `member_audit_log` to `20260108000010` an
 preserved (`test_accounts` still runs before `update_constraints_for_test_accounts`,
 and `member_audit_log` still runs before `fix_audit_trigger_permissions`).
 
-### 5.3 — Point Preview at the new project
+### 5.3 — Point Preview at the new project — DONE 2026-09-02
+
+Verified from the shipped JavaScript, not from the settings page:
+
+```
+dev.member.hsnef.org  ->  bcujsesgrzijyisvmnwm.supabase.co   (dev-mp)
+production            ->  gapvsdrzavjaublwkqfm.supabase.co   (prod-mp)
+```
+
+**The public dev URL no longer touches live member data.**
+
+> **A trap that cost a build.** The first attempt failed with
+> `@supabase/ssr: Your project's URL and API key are required`. The cause was a
+> single mis-ticked box: `NEXT_PUBLIC_SUPABASE_ANON_KEY` had been saved with
+> target **`development` only**, not `preview`. The URL and service-role key were
+> right, so Preview had two of three values and the build died at prerender.
+>
+> If a preview build ever fails that way again, list the targets rather than
+> reading the dashboard — a missing tick is invisible at a glance:
+>
+> ```bash
+> curl -s "https://api.vercel.com/v10/projects/<projectId>/env?teamId=<teamId>" >   -H "Authorization: Bearer $VERCEL_TOKEN" > | python -c "import json,sys;[print(e['key'],sorted(e.get('target') or [])) for e in json.load(sys.stdin)['envs']]"
+> ```
+>
+> Note also that `dev` and `redesign/design-system` both build, so a failure on
+> one is not a failure on the other — check the ref before reading a log.
+
+### 5.3 (original instructions, for reference)
 
 Vercel → project `member` → **Settings → Environment Variables**. For
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and
@@ -281,5 +434,6 @@ Only once Phase 1 leaves a single green Vercel check.
   One line in `app/globals.css` — a brand decision, not a technical one.
 - **`hsnef.org` publishes three `v=spf1` records.** RFC 7208 allows one, so
   receivers see a permerror.
-- **`npx tsc --noEmit` reports 187 errors**, mostly local `interface` shapes that
-  have drifted from `types/database.ts`. Real, not urgent.
+- **Type errors remain**, mostly local `interface` shapes that have drifted from
+  `types/database.ts`. Real, not urgent. Do not quote a count from this file —
+  run `npx tsc --noEmit` and read the tail.
