@@ -1,9 +1,19 @@
 {
-  "_comment": "Scoped to what this repo can pass TODAY (2026-08-31). A gate that is red on day one for reasons unrelated to the change being gated gets bypassed, and then it protects nothing. Re-enable each check below as its debt is paid; see docs/PRIORITY-ROADMAP.md Tier 2.",
+  "_comment": "Scoped to what this repo can pass TODAY (Tests enabled 2026-09-03). A gate that is red on day one for reasons unrelated to the change being gated gets bypassed, and then it protects nothing. Re-enable each check below as its debt is paid; see docs/PRIORITY-ROADMAP.md Tier 2.",
   "junitPath": "test-results/junit.xml",
   "reportPath": "test-results/release-gate-report.md",
   "checks": [
-    { "label": "Build", "ciJob": "Build", "cmd": "npm run build" }
+    {
+      "label": "Build",
+      "ciJob": "Build",
+      "cmd": "npm run build"
+    },
+    {
+      "label": "Unit & Integration",
+      "ciJob": "Tests",
+      "cmd": "npx vitest run --reporter=junit --outputFile=test-results/junit.xml",
+      "parseJunit": true
+    }
   ],
   "_disabledChecks": [
     {
@@ -17,13 +27,6 @@
       "label": "Type check",
       "ciJob": "Lint & Type Check",
       "cmd": "npx tsc --noEmit"
-    },
-    {
-      "_why": "No test framework is installed and there are no test files. Install vitest and write tests before enabling.",
-      "label": "Unit & Integration",
-      "ciJob": "Tests",
-      "cmd": "npx vitest run --reporter=junit --outputFile=test-results/junit.xml",
-      "parseJunit": true
     },
     {
       "_why": "No E2E framework and no test:e2e script.",
