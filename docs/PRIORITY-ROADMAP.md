@@ -89,8 +89,10 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
   Partly done 2026-09-03 — this file, `CLAUDE.md`, `docs/PROJECT-HUB.md` and the two
   runbooks were reconciled. The rest of `docs/` has not been swept.
   Any design element, colour, route, screenshot or component name referenced in documentation
-  must match what the code now does. Remaining known drift: the ~26 `portal.hsnef.org`
-  references, and the role-gate tables that disagree with the code (DEC-004).
+  must match what the code now does. **A full audit ran 2026-09-03** — every doc under `docs/`
+  was checked against the code, wrong ones were fixed, and everything out of date now carries a
+  banner explaining why it is not a good reference. See the Session 6 handoff in
+  `docs/PROJECT-HUB.md` for what was found.
   **Already fixed:** `#FF9933` is gone from `lib/constants/temple.ts` (it is `#c75b12`
   now) and survives only in `lib/themes/themes/built-in/default.ts`, which IS the legacy
   palette by definition — verified 2026-09-03. `CLAUDE.md` rule 9 now describes the
@@ -191,8 +193,12 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
 - Add `loading.tsx` / `error.tsx` / `not-found.tsx` per section — there are none anywhere in `app/`.
 - Replace the 69 hand-rolled loading spinners. Left deliberately: the loading state should match
   each page's final layout, so they go during that page's redesign, not before.
-- Sweep `portal.hsnef.org` out of `docs/` (~26 occurrences presented as current). Risk: someone
-  configures a Stripe webhook or OAuth callback against the wrong host.
+- ~~Sweep `portal.hsnef.org` out of `docs/`.~~ **This item was wrong — do not action it.**
+  Checked 2026-09-03: of 30 occurrences, **29 are correct** and must stay. They are the Resend
+  sending domain (`EMAIL_FROM=noreply@portal.hsnef.org`), which is verified in Resend while
+  `member.hsnef.org` is not. Sweeping them would break email sending. The single stale one is in
+  `docs/status/implementation-status.md`, which is bannered historical. See the resolved
+  `EMAIL_FROM` note above.
 - `app/admin/settings/page.tsx` has a `roles` field on `settingsCategories` that is never used —
   Office Staff see cards they cannot open. Filter them, or use `PermissionNote`.
 - `/admin/settings/appearance` uses a fourth role-gate pattern (inline `useEffect` + `router.push`)

@@ -1,5 +1,12 @@
 # Terms of Use & Terminology Update - Deployment Guide
 
+> **Historical — a deployment record for work already shipped.**
+> Its "next steps" (such as creating an `/admin/terms-management` page) were proposals and were not built.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 ## 🎉 Implementation Complete!
 
 This guide covers the deployment and testing of the Terms of Use system and updated terminology ("Magic Link" → "Email Me a Link to Login").

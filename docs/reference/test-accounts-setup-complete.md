@@ -1,5 +1,12 @@
 # Test Accounts Setup Complete! ✅
 
+> **Historical — a completion record.**
+> Describes what was created at the time. For the current test accounts run `node scripts/list-access.mjs`, which is authoritative.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 ## What Was Created
 
 ### Database Changes:

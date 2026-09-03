@@ -1,5 +1,12 @@
 # Google Workspace SMTP Setup Guide
 
+> **Not used — an alternative that was never adopted.**
+> Email goes through **Resend** (`lib/email/mailer.ts`), not SMTP. No `SMTP_*` variable is read anywhere in the codebase. Keep this only as a record of the option that was considered.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../../PRIORITY-ROADMAP.md).
+
 This guide explains how to configure Google Workspace SMTP Relay for the HSNEF Membership Portal.
 
 ## Overview

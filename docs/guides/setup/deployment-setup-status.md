@@ -1,5 +1,12 @@
 # Deployment Setup Status
 
+> **Historical — a point-in-time status tracker.**
+> Deployment works: `dev` builds to preview and `main` to production, both live. See docs/PROJECT-HUB.md for current state.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../../PRIORITY-ROADMAP.md).
+
 This document tracks the status of the deployment setup implementation.
 
 ## ✅ Completed (Code/Documentation)

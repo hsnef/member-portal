@@ -6,13 +6,35 @@ This directory contains all project documentation organized by category. Use thi
 
 | Document | What it is |
 |----------|------------|
-| [`PROJECT-HUB.md`](PROJECT-HUB.md) | **Current state.** Architecture, the decisions log (DEC-001..007), session handoffs. `/sdlc status` reads this. |
+| [`ONBOARDING.md`](ONBOARDING.md) | **New here? Start with this.** Access to grant, local setup, and the live hazards. |
+| [`PROJECT-HUB.md`](PROJECT-HUB.md) | **Current state.** Architecture, the decisions log (DEC-001..DEC-011), session handoffs. `/sdlc status` reads this. |
 | [`PRIORITY-ROADMAP.md`](PRIORITY-ROADMAP.md) | **What to work on next**, in tiers. |
 | [`../CLAUDE.md`](../CLAUDE.md) | Working rules, the design system, and the route/role gates. |
+| [`../.env.local.example`](../.env.local.example) | **The canonical environment-variable list**, checked against the code. |
+| [`ROLES-GUIDE.md`](ROLES-GUIDE.md) | What each of the four roles can actually do. |
+| [`ACCESS-AND-ROLES.md`](ACCESS-AND-ROLES.md) | How access works mechanically — roles vs membership. |
+| [`ENVIRONMENT_QUICK_REFERENCE.md`](ENVIRONMENT_QUICK_REFERENCE.md) | Which value goes where, per environment. |
+| [`RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) | The 2026-09 infrastructure work, phase by phase. Complete. |
+| [`RUNBOOK-cloudflare-member-domain.md`](RUNBOOK-cloudflare-member-domain.md) | How `member.hsnef.org` was fixed. Complete. |
+| [`ANALYSIS-railway-migration.md`](ANALYSIS-railway-migration.md) | A parked evaluation of moving off Vercel. |
 
-Everything below is reference material. **`status/` is historical** — those
-files are point-in-time records, deliberately not updated, and each carries a
-banner saying so. Do not use them to decide anything current.
+## How to read the rest
+
+Everything below is reference material, and **not all of it is current**. As of
+the 2026-09-03 documentation audit, every doc that is out of date carries a
+banner at the top saying so and why. Trust the banners:
+
+| Banner | Means |
+|---|---|
+| **Historical** | A point-in-time record. Deliberately not updated. Expect stale filenames, routes, component names, colours and URLs. |
+| **Proposal / Plan** | Describes intended work. Some of it was built, some never was. Check the code. |
+| **Not used** | Documents an option that was evaluated and not adopted. |
+| **⚠️ Correction / warning box** | The doc is broadly useful but contains a specific error, named in the box. |
+
+**Everything in `status/` is historical.** If a doc has no banner, it is meant to
+be current — if you find it is not, fix it or add a banner in the same change.
+
+When a doc and the code disagree, **the code is right**.
 
 ## 📚 Quick Navigation
 
@@ -223,7 +245,7 @@ Reference materials, specifications, and design documents.
 ## 📖 How to Use This Documentation
 
 ### For New Team Members
-1. Start with [`../../README.md`](../../README.md) for project overview
+1. Start with [`../../README.md`](../README.md) for project overview
 2. Review [`architecture/architecture.md`](architecture/architecture.md) for system understanding
 3. Follow [`guides/setup/deployment-checklist.md`](guides/setup/deployment-checklist.md) for initial setup
 
@@ -247,7 +269,7 @@ Reference materials, specifications, and design documents.
 
 ## 🔗 Related Resources
 
-- **Root README:** [`../../README.md`](../../README.md) - Project overview and getting started
+- **Root README:** [`../../README.md`](../README.md) - Project overview and getting started
 - **Main Website:** [hsnef.org](https://hsnef.org)
 - **Portal URL:** [member.hsnef.org](https://member.hsnef.org)
 

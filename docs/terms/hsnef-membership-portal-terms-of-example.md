@@ -2,6 +2,13 @@
 
 # for new members registering on the portal.hsnef,org website which is a membership portal for Hindu Society of North East Florida,  how can I build out a simple and safe disclaimer or T\&C page, maybe based on some standard simple language? Can you give me a template that I could use? It should have verbiage around use of teh website etc
 
+> **NOT a legal document — an AI-generated example, kept as a drafting starting point.**
+> This is a saved chat transcript containing a generic template. It has not been reviewed by a lawyer, it is not the portal's actual terms, and it names the wrong domain. The live terms are served from the database at `/terms`.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 Below is a simple, neutral template you can adapt for HSNEF’s membership portal. Treat it as a starting point and have a qualified attorney review it before production use.
 
 ***

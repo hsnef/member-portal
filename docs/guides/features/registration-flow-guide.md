@@ -1,5 +1,23 @@
 # Member Registration Flow Guide
 
+> ### ⚠️ What `enable_traditional_login` actually does
+>
+> Verified against the code 2026-09-03. **The setting does not enable password
+> sign-in.** The login page has no password field under any setting — it calls
+> only `signInWithOtp` (magic link) and `signInWithOAuth` (Google).
+>
+> What the flag really controls is one line on the login page
+> (`components/auth/LoginView.tsx`, gated on `showTraditionalLogin`):
+> *"Existing member without portal access? **Create a portal account**"* — a link
+> to `/register`.
+>
+> `/register` does call `supabase.auth.signUp` with a password, so an account
+> gets one. **Nothing can then use it to sign in.** Read "traditional login"
+> below as "the registration link is visible", not "password login works".
+>
+> The setting is misleadingly named; renaming it is a code change and has not
+> been made.
+
 ## Overview
 
 The HSNEF Member Portal uses a **flexible authentication and registration system** with configurable settings. Administrators can control authentication methods and member registration workflows through `/admin/portal-settings`.

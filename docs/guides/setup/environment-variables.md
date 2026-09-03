@@ -1,5 +1,15 @@
 # Environment Variables Reference
 
+> ### ⚠️ Some variables below do not exist
+>
+> Verified against the code 2026-09-03 — **nothing in this codebase reads**
+> `OPENROUTER_API_KEY`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` or `SMTP_PASSWORD`.
+> They were planned or copied in and never wired up. Do not provision keys or
+> set values for them; you will be configuring nothing.
+>
+> The canonical list of variables the code *actually* reads is
+> [`.env.local.example`](../../../.env.local.example).
+
 > **The canonical list is [`.env.local.example`](../../../.env.local.example)**, which is
 > checked against the code. This document is the narrative version; where the two
 > disagree, the example file wins. Start with `cp .env.local.example .env.local`.

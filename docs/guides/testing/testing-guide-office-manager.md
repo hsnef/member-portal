@@ -1,5 +1,12 @@
 # HSNEF Member Portal - Office Manager Testing Guide
 
+> ### ⚠️ Sign-in is magic link or Google — there is no password login
+>
+> Registration sets a password, but the login page has no password field under
+> any setting. Sign in with **"Email me a sign-in link"** or Google. The
+> "Reset Password" button on `/admin/test-accounts` sends mail whose link 404s
+> (`/auth/reset-password` does not exist). Verified 2026-09-03.
+
 This guide is for testing the portal as an Office Manager.
 
 ---
@@ -30,14 +37,14 @@ As Office Manager, you have all Staff features plus:
 | MembershipID | 99991000 |
 | Membership Level | Lifetime |
 
-**Recommended Password:** `TestPassword123!`
+**Password:** registration asks for one (`TestPassword123!` is fine); it is never used to sign in.
 
 ### First-Time Setup
 
 If not yet registered:
 1. Navigate to `/register`
 2. Enter: dev-mp+testmanager@hsnef.org
-3. Create password (e.g., "TestPassword123!")
+3. Set a password when asked (stored, but never used to sign in)
 4. System links auth to existing member record
 
 ### After Registration - Assign Role
@@ -376,8 +383,8 @@ All test accounts:
 
 **Expected Results:**
 - Setting saved successfully
-- Login page now shows email/password option
-- Users can register with password
+- Login page now shows the "Create a portal account" link (this setting does NOT add a password field — see `docs/guides/features/portal-settings-guide.md`)
+- Users can register (a password is set but is not usable for sign-in)
 
 ---
 
@@ -435,7 +442,7 @@ All test accounts:
 1. Navigate to Admin > Test Accounts (or /admin/test-accounts)
 2. View all 5 test accounts
 3. Check registration status for each
-4. Use "Reset Password" if needed
+4. "Reset Password" exists but its emailed link 404s — see TC-ADM-08
 
 **Expected Results:**
 - All test accounts listed:

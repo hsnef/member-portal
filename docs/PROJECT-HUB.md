@@ -171,7 +171,7 @@ risky half. Instead:
 | Dev stops writing to live data | yes | yes |
 
 Both reach the actual goal. The inverted one gets there without moving a single real row: the new
-dev database comes up empty and seeds itself, because `20260108000004_test_accounts.sql` and
+dev database comes up empty and seeds itself, because `20260108000005_test_accounts.sql` and
 `20260110000001_add_test_admin_account.sql` are already migrations. Losing real data on dev is the
 point, not a cost.
 
@@ -285,6 +285,11 @@ choosing.** Until then, treat events as non-functional.
 
 ## Session Handoff
 
+> **Handoffs below are point-in-time.** Each records what was true on its date and
+> is deliberately not updated — earlier ones still say the app had not deployed
+> since January, which stopped being true on 2026-09-01. Read them as history;
+> Current Status at the top of this file is the live view.
+
 ### DEC-010: member PII was committed, and served without authentication
 **2026-09-01 · Fixed going forward; the history is NOT clean.**
 
@@ -346,6 +351,62 @@ Supabase auth hook, which is dashboard configuration.
 
 Related: 18 of 21 member routes had no "no membership" state and rendered against
 a null member. Nine reachable ones now share `NoMembershipState`.
+
+### Session 6 — 2026-09-03 — full docs audit; two auth defects found
+
+Audited all 69 files under `docs/` against the code. Rather than reading 25,000
+lines linearly, every checkable claim was extracted and verified: 107 routes from
+`app/`, the role gates, `types/database.ts`, `package.json` scripts, migration
+filenames, and every relative link and file reference.
+
+**20 docs were wrong. All are now fixed or bannered.** The rule going forward,
+recorded in `docs/README.md`: a doc with no banner is meant to be current — if it
+is not, fix it or banner it in the same change.
+
+**Two defects in the code, not the docs. Neither was fixed** — both are auth
+business logic, which rule 2 puts off-limits without asking:
+
+1. **A password is set at registration that can never be used.** `/register`
+   calls `supabase.auth.signUp` with a password, but the login page has no
+   password field under any setting — it calls only `signInWithOtp` and
+   `signInWithOAuth`, and tells the user "no password to remember".
+   `signInWithPassword` survives only inside `loginWithMembershipNumber()` in
+   `lib/auth/helpers.ts`, which nothing calls.
+2. **`/admin/test-accounts` → "Reset Password" sends mail whose link 404s.** It
+   calls `resetPasswordForEmail` with `redirectTo: /auth/reset-password`. That
+   route does not exist; the only route under `/auth/` is `/auth/callback-handler`.
+
+Related: the portal setting **`enable_traditional_login` does not do what its
+name says.** It reveals one link on the login page ("Existing member without
+portal access? Create a portal account" → `/register`). It adds no password
+field. Two feature guides described it as enabling password login.
+
+**What the audit found, by class:**
+
+- **`ONBOARDING.md` named the production database as dev** — the doc a new
+  developer reads first, granting them access to live member data on day one.
+  Same class as the `CLAUDE.md` error fixed in `3768f8e`.
+- **Four testing guides instructed testers to sign in with passwords**, which
+  would have blocked them at step one, and contradicted `ROLES-GUIDE.md`.
+- **Five setup docs pointed at `gapvsdrzavjaublwkqfm`** as the project to
+  configure — that is production since the split.
+- **`architecture/architecture.md` is a foundation-era document** presented as
+  current architecture: "Not included: Stripe integration code, email templates,
+  QR generation" (all built), 18 tables (now 30), three auth methods (two do not
+  exist). Bannered rather than rewritten.
+- **Migration filenames in seven docs were invalidated by our own release** —
+  `71f6811` swapped the two test-account prefixes so the constraint runs before
+  the seed. One was inside a runnable `supabase db push` command.
+- **Ten variables documented across six setup docs are read by nothing**:
+  `NEXTAUTH_SECRET`, `JWT_SECRET`, `OPENROUTER_*`, `SMTP_*`, `SESSION_*`,
+  `NEXT_PUBLIC_ENABLE_*`, `DATABASE_URL`, two Stripe price IDs.
+- **`docs/README.md` was missing 12 docs**, including the three that
+  `ONBOARDING.md` tells a new developer to read.
+
+**A roadmap item was itself wrong and has been struck.** Tier 3 said to sweep
+"~26 `portal.hsnef.org` occurrences presented as current". Of 30, **29 are
+correct** — they are the verified Resend sending domain. Actioning that item
+would have broken email.
 
 ### Session 5 — 2026-09-03 — the launch blocker cleared; four docs reconciled
 

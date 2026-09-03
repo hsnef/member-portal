@@ -103,7 +103,7 @@ git push -u origin feature/theme-system
 - ✅ Uploads your commits to **GitHub**
 - ✅ Others can see your branch
 - ✅ Vercel can see the branch
-- ❌ Still **NOT deployed** to server yet
+- ✅ **Deployed.** Both `dev.member.hsnef.org` and `member.hsnef.org` are live (production came up 2026-09-02).
 
 **After push:**
 - Code is on GitHub (backup, visible to team)

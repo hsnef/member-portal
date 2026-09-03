@@ -1,5 +1,12 @@
 # Terms Acceptance - Error Escape Hatch
 
+> **Partly proposal — check the code before relying on it.**
+> Its "Create an `/admin/terms-bypasses` page" section is a proposal; that route does not exist.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 ## Overview
 
 The error escape hatch provides a safety mechanism when users encounter technical difficulties accepting terms. After **3 failed attempts**, users can bypass the requirement temporarily while:

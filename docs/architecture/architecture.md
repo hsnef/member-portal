@@ -1,5 +1,22 @@
 # HSNEF Membership Portal - Architecture Document
 
+> **Historical — describes the FOUNDATION, not the app as built.**
+> Written before the features existed. It still says "Not included: UI implementation, Stripe integration code, email templates, QR generation" — all four are built and in production. Its table count (18) is now 30, and its "three authentication methods" (email/password, Google, membership number) are wrong on two of three: sign-in is magic link or Google, and `loginWithMembershipNumber()` is dead code.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
+> ### ⚠️ Some variables below do not exist
+>
+> Verified against the code 2026-09-03 — **nothing in this codebase reads**
+> `NEXTAUTH_SECRET`, `OPENROUTER_API_KEY`, `NEXT_PUBLIC_MAIN_SITE_URL`, `STRIPE_ANNUAL_MEMBERSHIP_PRICE_ID` or `STRIPE_LIFETIME_MEMBERSHIP_PRICE_ID`.
+> They were planned or copied in and never wired up. Do not provision keys or
+> set values for them; you will be configuring nothing.
+>
+> The canonical list of variables the code *actually* reads is
+> [`.env.local.example`](../../.env.local.example).
+
 ## Foundation Overview
 
 This document describes the architectural foundation built for the HSNEF Membership Portal. The foundation includes the complete database schema, authentication framework, type safety, and all core infrastructure needed for building the application features.

@@ -1,5 +1,12 @@
 # Member Audit Log - User Experience Summary
 
+> **Historical — describes intended UX, including a screen that was never built.**
+> It documents a member-facing audit log at `/member/audit-log`. **That route does not exist.** The audit log is staff-facing only, at `/admin/members/[id]/audit-log`.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 ## Overview
 
 This document summarizes the user experience for **Office Staff**, **Office Manager**, and **Members** when interacting with the Member Audit Log system.
