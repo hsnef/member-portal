@@ -4,12 +4,14 @@
 
 ## START HERE — the active runbook
 
-> **Most urgent item as of 2026-09-02:** `dev.member.hsnef.org` is publicly
-> reachable (deliberately — testers need it) **and still points at the production
-> database**, because all environments share one Supabase project. Anyone testing
-> on the dev URL is writing to live member records. **Phase 5 of the runbook —
-> creating a separate dev Supabase project — is now the highest-value work left.**
-
+> **Resolved 2026-09-02.** The dev URL previously pointed at the production
+> database. `dev-mp` (`bcujsesgrzijyisvmnwm`) now exists with the full schema, and
+> Preview is pointed at it — verified from the shipped JS on both hosts. Dev and
+> production are genuinely separate.
+>
+> **Next: Phase 2 (Cloudflare).** `member.hsnef.org` still returns 308 and never
+> reaches Vercel, so production is built and healthy but unreachable. And Phase 3
+> — production still has none of the events columns.
 
 **[`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md)** is a
 step-by-step walk-through of the current infrastructure work: consolidating the two

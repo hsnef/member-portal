@@ -18,7 +18,7 @@ GitHub main  ──► Vercel PRODUCTION  ──► Supabase  gapvsdrzavjaublwkq
 - [ ] Phase 2 — fix `member.hsnef.org` (it is DOWN)
 - [ ] Phase 3 — apply the events migration
 - [ ] Phase 4 — clean the test data
-- [~] Phase 5 — create the dev Supabase project — **schema built 2026-09-02; only 5.3 left**
+- [x] Phase 5 — create the dev Supabase project — **DONE 2026-09-02, environments verified separate**
 - [x] Phase 6 — merge the PR — **DONE 2026-09-02**
 
 ---
@@ -328,7 +328,34 @@ They were renumbered on 2026-09-02 — `member_audit_log` to `20260108000010` an
 preserved (`test_accounts` still runs before `update_constraints_for_test_accounts`,
 and `member_audit_log` still runs before `fix_audit_trigger_permissions`).
 
-### 5.3 — Point Preview at the new project
+### 5.3 — Point Preview at the new project — DONE 2026-09-02
+
+Verified from the shipped JavaScript, not from the settings page:
+
+```
+dev.member.hsnef.org  ->  bcujsesgrzijyisvmnwm.supabase.co   (dev-mp)
+production            ->  gapvsdrzavjaublwkqfm.supabase.co   (prod-mp)
+```
+
+**The public dev URL no longer touches live member data.**
+
+> **A trap that cost a build.** The first attempt failed with
+> `@supabase/ssr: Your project's URL and API key are required`. The cause was a
+> single mis-ticked box: `NEXT_PUBLIC_SUPABASE_ANON_KEY` had been saved with
+> target **`development` only**, not `preview`. The URL and service-role key were
+> right, so Preview had two of three values and the build died at prerender.
+>
+> If a preview build ever fails that way again, list the targets rather than
+> reading the dashboard — a missing tick is invisible at a glance:
+>
+> ```bash
+> curl -s "https://api.vercel.com/v10/projects/<projectId>/env?teamId=<teamId>" >   -H "Authorization: Bearer $VERCEL_TOKEN" > | python -c "import json,sys;[print(e['key'],sorted(e.get('target') or [])) for e in json.load(sys.stdin)['envs']]"
+> ```
+>
+> Note also that `dev` and `redesign/design-system` both build, so a failure on
+> one is not a failure on the other — check the ref before reading a log.
+
+### 5.3 (original instructions, for reference)
 
 Vercel → project `member` → **Settings → Environment Variables**. For
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and
