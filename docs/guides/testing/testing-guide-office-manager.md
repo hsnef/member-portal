@@ -4,8 +4,7 @@
 >
 > Registration sets a password, but the login page has no password field under
 > any setting. Sign in with **"Email me a sign-in link"** or Google. The
-> "Reset Password" button on `/admin/test-accounts` sends mail whose link 404s
-> (`/auth/reset-password` does not exist). Verified 2026-09-03.
+> Staff can email a sign-in link to any test account from `/admin/test-accounts`.
 
 This guide is for testing the portal as an Office Manager.
 
@@ -442,7 +441,7 @@ All test accounts:
 1. Navigate to Admin > Test Accounts (or /admin/test-accounts)
 2. View all 5 test accounts
 3. Check registration status for each
-4. "Reset Password" exists but its emailed link 404s — see TC-ADM-08
+4. Use "Send sign-in link" to get into the account
 
 **Expected Results:**
 - All test accounts listed:

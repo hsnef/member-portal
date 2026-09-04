@@ -352,6 +352,51 @@ Supabase auth hook, which is dashboard configuration.
 Related: 18 of 21 member routes had no "no membership" state and rendered against
 a null member. Nine reachable ones now share `NoMembershipState`.
 
+### Session 7 — 2026-09-03 — magic-link-only; both auth defects fixed
+
+Decision taken (Sujit): **the portal is magic-link-only.** Both defects from the
+Session 6 audit are fixed.
+
+**What the investigation changed about the fix.** The first plan was to strip the
+password field from `/register`. Reading the flow made that wrong twice over:
+
+- `signUp` needs a password, so removing the field meant moving to OTP signup —
+  which returns no user until the link is clicked, and `/register` needed
+  `user.id` synchronously to link the member record.
+- Then the better answer appeared: **none of that work was needed.** Both jobs
+  `/register` did already happen on an ordinary magic-link sign-in.
+  `lib/auth/AuthContext.tsx` calls `/api/auth/link-member`, which matches on
+  email and bypasses RLS; `TermsAcceptanceModal`, rendered by `PortalShell`,
+  records `first_login` acceptance. The password path was pure redundancy.
+
+So `/register` is now a page that explains how to get in — sign in if you are a
+member, `/join` if you are not — and calls no auth API at all. It was also the
+only page still carrying hardcoded hex in `className`, so it moved onto tokens.
+
+`/admin/test-accounts` "Reset password" became **"Send sign-in link"**. It used
+to call `resetPasswordForEmail` with `redirectTo: /auth/reset-password`, a route
+that does not exist. Rather than delete the button, it now sends the thing that
+actually signs someone in.
+
+**A guard test rather than a note.** `app/auth-redirects.test.ts` fails if any
+`redirectTo`/`emailRedirectTo` in `app/` points at a route that does not exist,
+and if `signInWithPassword` reappears. Verified by reintroducing the original bug
+and watching it fail with the file and path named. It reads source, so it needs
+no jsdom. Two of its checks first failed against their own explanatory comments —
+it now strips comments before matching.
+
+**Corrected from Session 6:** that entry said `/auth/callback-handler` was the
+only route under `/auth/`. Wrong — `/auth/callback` exists as a route handler,
+and a `page.tsx`-only route scan missed it. `/auth/reset-password` is genuinely
+absent, so the defect stood.
+
+**Still open, newly recorded:** hardcoded hex in `className` in 8 files, which
+rule 3 forbids and the "port complete" note did not account for. Recorded in
+`docs/PRIORITY-ROADMAP.md` Tier 1.5 with the command to find them.
+
+Type errors fell 137 → 132, entirely from deleting the register page's password
+code (it had exactly 5). No parse abort — checked, per DEC-005.
+
 ### Session 6 — 2026-09-03 — full docs audit; two auth defects found
 
 Audited all 69 files under `docs/` against the code. Rather than reading 25,000
@@ -374,7 +419,10 @@ business logic, which rule 2 puts off-limits without asking:
    `lib/auth/helpers.ts`, which nothing calls.
 2. **`/admin/test-accounts` → "Reset Password" sends mail whose link 404s.** It
    calls `resetPasswordForEmail` with `redirectTo: /auth/reset-password`. That
-   route does not exist; the only route under `/auth/` is `/auth/callback-handler`.
+   route does not exist. (An earlier draft of this entry said `/auth/callback-handler`
+   was the only route under `/auth/`. That was wrong — `/auth/callback` exists as a
+   route handler, and a `page.tsx`-only route scan had missed it. `/auth/reset-password`
+   is genuinely absent, so the defect stands.)
 
 Related: the portal setting **`enable_traditional_login` does not do what its
 name says.** It reveals one link on the login page ("Existing member without

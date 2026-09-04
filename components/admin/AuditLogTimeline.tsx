@@ -208,7 +208,7 @@ export function AuditLogTimeline({ auditLogs, showMemberName = false, onExport }
                 {log.changed_fields && Object.keys(log.changed_fields).length > 0 && (
                   <button
                     onClick={() => setExpandedLog(expandedLog === log.id ? null : log.id)}
-                    className="ml-4 text-sm text-saffron hover:text-[#FF8800] font-medium"
+                    className="ml-4 text-sm text-saffron hover:text-saffron-hover font-medium"
                   >
                     {expandedLog === log.id ? 'Less' : 'Details'}
                   </button>

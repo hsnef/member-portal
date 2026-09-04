@@ -247,7 +247,7 @@ export default function JoinPage() {
             </div>
             <Link
               href="/login"
-              className="text-sm text-saffron hover:text-[#FF8800] font-medium"
+              className="text-sm text-saffron hover:text-saffron-hover font-medium"
             >
               Already a member? Sign in
             </Link>
@@ -777,7 +777,7 @@ export default function JoinPage() {
             Questions?{' '}
             <a
               href="mailto:info@hsnef.org"
-              className="text-saffron hover:text-[#FF8800] font-medium"
+              className="text-saffron hover:text-saffron-hover font-medium"
             >
               Contact us at info@hsnef.org
             </a>

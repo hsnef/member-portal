@@ -20,9 +20,8 @@ Open your browser and go to: **https://dev.member.hsnef.org**
 > (Supabase `signInWithOtp`) and **Sign in with Google** (`signInWithOAuth`).
 > It says so on the page: *"Sign in with your email — no password to remember."*
 >
-> Registration at `/register` still asks you to set a password, and still stores
-> one — but **nothing on the login page can use it**, and there is no
-> "Forgot password" link or `/forgot-password` route. Any test case below that
+> Registration no longer sets a password (changed 2026-09-03); `/register` is now a
+> page explaining how to sign in. There is no "Forgot password" link either. Any test case below that
 > asks you to sign in with a password cannot pass, and is marked N/A.
 >
 > Verified against the code 2026-09-03: `signInWithPassword` appears only inside
