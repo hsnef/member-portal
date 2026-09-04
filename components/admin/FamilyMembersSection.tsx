@@ -199,7 +199,7 @@ export function FamilyMembersSection({ memberId, familyMembers, onRefresh }: Fam
                         <span className="text-gray-500">Email:</span>
                         <a
                           href={`mailto:${familyMember.email}`}
-                          className="ml-2 text-saffron hover:text-[#FF8800]"
+                          className="ml-2 text-saffron hover:text-saffron-hover"
                         >
                           {familyMember.email}
                         </a>

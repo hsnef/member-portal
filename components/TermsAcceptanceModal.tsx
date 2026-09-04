@@ -299,7 +299,7 @@ export default function TermsAcceptanceModal({ onAccepted }: TermsAcceptanceModa
                 <button
                   onClick={handleAccept}
                   disabled={!termsAccepted || accepting || bypassing}
-                  className="px-6 py-3 bg-kumkum text-white rounded-md font-semibold hover:from-[#FF8800] hover:to-[#700000] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
+                  className="px-6 py-3 bg-kumkum text-white rounded-md font-semibold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
                 >
                   {accepting ? (
                     <span className="flex items-center gap-2">

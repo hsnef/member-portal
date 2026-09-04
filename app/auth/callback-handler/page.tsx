@@ -197,7 +197,7 @@ function CallbackHandler() {
             <p className="text-red-600 mb-4">{error}</p>
             <a
               href="/login"
-              className="inline-block px-4 py-2 bg-saffron text-white rounded-md hover:bg-[#FF8800] transition-colors"
+              className="inline-block px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover transition-colors"
             >
               Return to Login
             </a>
