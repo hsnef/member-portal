@@ -191,11 +191,20 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
      Settings now. It has **zero callers**, so nothing is broken today, and `tsc`
      already flags it (`TS2339`). Delete it, or reimplement it against
      `getMembershipPricing()`. Leaving it is the option that eventually bites.
-- **Add `.github/workflows/ci.yml`.** `/govkit-doctor` reports this as the one missing guardrail.
-  govkit deliberately does not scaffold it — a wrong CI workflow is worse than none. It must run the
-  same checks as `release-gate.config.json`, and each job must be **named to match that file's
-  `ciJob` value** so the gate and CI describe the same thing. The existing `deploy.yml` is a deploy
-  workflow, not a checks workflow, and does not satisfy this.
+- ~~**Add `.github/workflows/ci.yml`.**~~ ✅ **Done 2026-09-03.** Two jobs, `Build` and
+  `Tests`, named to match the `ciJob` values in `release-gate.config.json` so CI and the
+  local gate describe the same checks. Runs on push and PR to `main` and `dev`, with
+  `concurrency` set so repeated pushes cancel the previous run rather than burning
+  Actions minutes.
+
+  **The build needs four placeholder env values in CI** — verified by hiding
+  `.env.local` and watching it fail. `lib/stripe/config.ts` throws at import without
+  `STRIPE_SECRET_KEY`, which kills the build while collecting page data for
+  `/api/stripe/create-payment-intent`. The values are fake and must stay fake; nothing
+  reaches a real service during a build.
+
+  Lint and Type check stay out. Both fail on pre-existing problems, and a job that is red
+  on day one gets ignored — which is worse than not having it. Add them when they pass.
 - **Clear the lint backlog** (mostly `@typescript-eslint/no-explicit-any`), then enable `Lint` in
   the release gate.
 - **Raise `scripts/source-doc-map.json` severities from `warn` to `gate`**, schema first, as each
