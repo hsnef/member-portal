@@ -360,11 +360,10 @@ Sujit is handing the repo to a second developer, so this session was about makin
 the project safe to pick up cold.
 
 **A real misconfiguration, found by writing the doc.** `.env.local` on Sujit's
-machine had
+machine had `NEXT_PUBLIC_SUPABASE_URL` pointing at the **production** project,
+`gapvsdrzavjaublwkqfm`, rather than dev.
 
-    NEXT_PUBLIC_SUPABASE_URL=https://gapvsdrzavjaublwkqfm.supabase.co
-
-which is **production**. Local development therefore pointed at live member data,
+Local development therefore pointed at live member data,
 with `SUPABASE_SERVICE_ROLE_KEY` bypassing every RLS policy. Almost certainly set
 before the 2026-09-02 split, when that ref genuinely was the shared project, and
 never updated afterwards. Flagged to Sujit to fix; not edited here, since the
@@ -392,6 +391,13 @@ were reproduced to confirm the guard fires.
 
 **Also corrected in this file:** it still claimed 48 tests (now 71) and listed
 `ci.yml` as missing, an hour after it merged.
+
+**CI earned its keep on its second day.** This entry originally quoted the bad
+config as a literal `NEXT_PUBLIC_SUPABASE_URL=...` line, which the new guard
+correctly flagged — a copyable assignment naming production is dangerous even
+inside a story about it being dangerous. It was added *after* the local test run
+and never re-tested, so it went out green and CI caught it. The guard was right
+and the prose was reworded. Run `npm test` after the last edit, not before it.
 
 ### Session 7 — 2026-09-03 — magic-link-only; both auth defects fixed
 
