@@ -6,8 +6,8 @@
 > **Sign in with Google**. It says so on the page: *"Sign in with your email — no
 > password to remember."*
 >
-> Registration at `/register` still asks you to set a password and stores one,
-> but **nothing on the login page can use it**. Any step below that asks you to
+> Registration no longer sets a password at all (changed 2026-09-03) -- `/register`
+> is now a page explaining how to sign in. Any step below that asks you to
 > sign in with a password cannot pass, and is marked N/A.
 >
 > Verified against the code 2026-09-03.

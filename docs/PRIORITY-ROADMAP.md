@@ -109,6 +109,30 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
   Greenland Road building. Members will recognise that. **Replace before production.**
 - Next.js dev overlay reported "1 Issue" on `/login`; not yet diagnosed.
 
+### Tier 1.5 — found by the 2026-09-03 docs audit
+
+- ~~**Two auth defects.**~~ ✅ **Fixed 2026-09-03**, magic-link-only by decision.
+  `/register` no longer calls `signUp` with a password nothing could use — it is now a
+  page explaining how to get in. `/admin/test-accounts` "Reset password" became
+  "Send sign-in link"; it used to email a link to `/auth/reset-password`, which does not
+  exist. `app/auth-redirects.test.ts` guards both, and fails if any `redirectTo` in
+  `app/` points at a route that is not there.
+
+- ~~**Hardcoded hex colours in `className`.**~~ ✅ **Fixed 2026-09-03.** All 12 across
+  8 files replaced with tokens: `hover:text-[#FF8800]` / `hover:bg-[#FF8800]` →
+  `saffron-hover`, and the four `hover:from-[#FF8800] hover:to-[#700000]` →
+  `hover:brightness-110`, copying `Button.tsx`'s own `sacred` variant rather than adding
+  a `kumkum-hover` token.
+
+  **Four of the twelve were dead CSS.** `from-`/`to-` are gradient utilities and sat on
+  solid `bg-kumkum` buttons with no `bg-gradient-*` class, so nothing consumed them —
+  those buttons had no hover state at all, including "I accept" on the terms modal.
+  Fixing them added hover feedback that had never worked.
+
+  `utils/design-tokens.test.ts` guards it: no arbitrary hex in `app/` or `components/`,
+  the two legacy brand colours stay at zero, and no gradient stop without a gradient.
+  Verified by reintroducing one of the original lines and watching both checks fail.
+
 ### Tier 2 — next (high-value, start-ready)
 
 - ~~**Regenerate `types/database.ts` from Supabase.**~~ **Largely done** — `9f9fb37`

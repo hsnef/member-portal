@@ -16,7 +16,7 @@ This document explains how authentication works in the HSNEF Membership Portal a
 >
 > **Email/password sign-in does not exist.** `signInWithPassword` survives only
 > inside `loginWithMembershipNumber()` in `lib/auth/helpers.ts`, which nothing
-> calls. Registration still sets a password, but no login path can use it.
+> calls. Registration no longer sets a password (changed 2026-09-03).
 > Read the password sections below as background on why magic links were chosen,
 > not as a description of an available option.
 

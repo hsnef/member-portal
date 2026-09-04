@@ -44,7 +44,7 @@ export default function TermsPage() {
           </p>
           <Link
             href="/"
-            className="inline-block px-6 py-3 bg-kumkum text-white rounded-md hover:from-[#FF8800] hover:to-[#700000] transition-all"
+            className="inline-block px-6 py-3 bg-kumkum text-white rounded-md hover:brightness-110 transition-all"
           >
             Return to Home
           </Link>

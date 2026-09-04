@@ -412,7 +412,7 @@ export default function PendingRegistrationsPage() {
                         )}
                         <button
                           onClick={() => setSelectedRegistration(registration)}
-                          className="text-saffron hover:text-[#FF8800]"
+                          className="text-saffron hover:text-saffron-hover"
                         >
                           View Details
                         </button>
@@ -556,7 +556,7 @@ export default function PendingRegistrationsPage() {
                         setMembershipId(getNextMembershipId(selectedRegistration.requested_level))
                         setShowApprovalModal(true)
                       }}
-                      className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-[#FF8800]"
+                      className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
                     >
                       Approve Application
                     </button>

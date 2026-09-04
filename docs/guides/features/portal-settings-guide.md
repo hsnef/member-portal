@@ -11,12 +11,14 @@
 > *"Existing member without portal access? **Create a portal account**"* — a link
 > to `/register`.
 >
-> `/register` does call `supabase.auth.signUp` with a password, so an account
-> gets one. **Nothing can then use it to sign in.** Read "traditional login"
-> below as "the registration link is visible", not "password login works".
+> `/register` no longer creates accounts at all (changed 2026-09-03) — it is a
+> page explaining that signing in *is* the way in, with a link to `/join` for
+> people who are not members yet. So the flag's only remaining effect is whether
+> that pointer appears on the login page.
 >
-> The setting is misleadingly named; renaming it is a code change and has not
-> been made.
+> Read "traditional login" below as "the registration link is visible", not
+> "password login works". The setting is misleadingly named; renaming it touches
+> the portal-settings table and has not been done.
 
 ## Overview
 

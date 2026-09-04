@@ -3,7 +3,7 @@
 > ### ⚠️ Sign-in is magic link or Google — there is no password login
 >
 > The login page offers only **"Email me a sign-in link"** and **Sign in with
-> Google**. Registration stores a password but nothing can use it to sign in.
+> Google**. Registration no longer sets a password at all (changed 2026-09-03).
 > Verified against the code 2026-09-03.
 
 This document provides testing instructions for each user role in the HSNEF Member Portal.
