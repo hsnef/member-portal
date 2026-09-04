@@ -1,5 +1,12 @@
 # Member Audit Log - Implementation Plan
 
+> **Historical — an implementation PLAN, not a description of what exists.**
+> Several components it names were never created under those paths (`GlobalAuditLogView.tsx`, `MemberAuditLogTimeline.tsx`, `AuditLogFilters.tsx`, `ChangeMembershipIdModal.tsx`, `app/member/audit-log/page.tsx`). What shipped is `components/admin/AuditLogTimeline.tsx` and `/admin/members/[id]/audit-log`.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 ## Overview
 
 This document outlines the step-by-step implementation plan for the Member Audit Log system based on approved decisions.

@@ -1,5 +1,12 @@
 # Test Accounts Membership ID Design Discussion
 
+> **Historical — a design discussion, not a description of current behaviour.**
+> Records the reasoning behind the test-account ID scheme at the time it was chosen.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../../PRIORITY-ROADMAP.md).
+
 ## Current Constraint Analysis
 
 ### Existing Constraints:

@@ -8,6 +8,18 @@ This document explains how authentication works in the HSNEF Membership Portal a
 
 ## 🔐 Three Ways to Sign In
 
+> ### ⚠️ Correction: there are TWO sign-in methods, not three
+>
+> Verified against the code 2026-09-03. The login page calls only
+> `signInWithOtp` (magic link) and `signInWithOAuth` (Google), and tells the user
+> *"Sign in with your email — no password to remember."*
+>
+> **Email/password sign-in does not exist.** `signInWithPassword` survives only
+> inside `loginWithMembershipNumber()` in `lib/auth/helpers.ts`, which nothing
+> calls. Registration still sets a password, but no login path can use it.
+> Read the password sections below as background on why magic links were chosen,
+> not as a description of an available option.
+
 The portal offers three secure authentication methods:
 
 1. **Google Sign-In** (OAuth)

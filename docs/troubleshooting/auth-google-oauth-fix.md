@@ -1,5 +1,12 @@
 # Google OAuth & Hydration Error Fixes
 
+> **Historical — a record of fixes already applied.**
+> These issues were diagnosed and fixed. Kept for the reasoning, not as a to-do.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 ## Issues Fixed
 
 ### 1. Hydration Mismatch Error

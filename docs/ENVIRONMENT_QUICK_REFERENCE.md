@@ -1,5 +1,18 @@
 # Environment Quick Reference
 
+> ### ⚠️ Some variables below do not exist
+>
+> Verified against the code 2026-09-03 — **nothing in this codebase reads**
+> `NEXTAUTH_SECRET` or `JWT_SECRET`.
+> They were planned or copied in and never wired up. Do not provision keys or
+> set values for them; you will be configuring nothing.
+>
+> The canonical list of variables the code *actually* reads is
+> [`.env.local.example`](../.env.local.example).
+
+> **The canonical variable list is [`.env.local.example`](../.env.local.example)**,
+> which is checked against the code. Where this file disagrees with it, it wins.
+
 Quick reference guide for your three environments.
 
 ---
@@ -49,22 +62,40 @@ https://member.hsnef.org/auth/callback
 |----------|-----------|-----|------------|
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | `https://dev.member.hsnef.org` | `https://member.hsnef.org` |
 | `NODE_ENV` | `development` | `development` | `production` |
-| `NEXTAUTH_SECRET` | (local/dev secret) | (dev secret) | **(different!)** |
-| `JWT_SECRET` | (local/dev secret) | (dev secret) | **(different!)** |
 | `QR_TOKEN_SECRET` | (local/dev secret) | (dev secret) | **(different!)** |
+| `ZELLE_TOKEN_SECRET` | (local/dev secret) | (dev secret) | **(different!)** |
+| `CRON_SECRET` | (not needed) | (dev secret) | **(different!)** |
 | `STRIPE_WEBHOOK_SECRET` | (from Stripe CLI) | (dev webhook) | **(prod webhook)** |
+
+### Supabase — DIFFERENT per environment since 2026-09-02
+
+> ⚠️ **This section used to say these were the same everywhere. They are not.**
+> The environments were split on 2026-09-02 (DEC-006). Local and dev share the
+> dev project; production has its own.
+
+| Variable | Local & Dev | Production |
+|----------|-------------|------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://bcujsesgrzijyisvmnwm.supabase.co` (`dev-mp`) | `https://gapvsdrzavjaublwkqfm.supabase.co` (`prod-mp`) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (dev anon key) | (prod anon key) |
+| `SUPABASE_SERVICE_ROLE_KEY` | (dev service role key) | (prod service role key) |
+
+**`gapvsdrzavjaublwkqfm` is PRODUCTION.** It was the single shared project before
+the split and kept its ref, so anything written before 2026-09-02 — including the
+Google OAuth callback URL above — shows it as "dev". Point local work at
+`bcujsesgrzijyisvmnwm`.
 
 ### Same Across All Environments
 
 | Variable | Value |
 |----------|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://gapvsdrzavjaublwkqfm.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (your anon key) |
-| `SUPABASE_SERVICE_ROLE_KEY` | (your service role key) |
 | `RESEND_API_KEY` | (your Resend key) |
 | `EMAIL_FROM` | `noreply@portal.hsnef.org` |
 | `EMAIL_FROM_NAME` | `HSNEF Membership Portal` |
 | `EMAIL_REPLY_TO` | `member-portal@hsnef.org` |
+
+> `EMAIL_FROM` stays on `portal.hsnef.org` deliberately — that domain carries the
+> `resend._domainkey` record and is the verified sending domain. `member.hsnef.org`
+> serves the app but is not verified in Resend. Changing it breaks email.
 
 ---
 

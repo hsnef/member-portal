@@ -1,5 +1,12 @@
 # Database Migration Instructions
 
+> **Historical — these migrations are already applied.**
+> A one-off instruction sheet from when the migrations were new. Both databases are migrated; running these again is not needed. Note the filenames here are also out of date.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../../PRIORITY-ROADMAP.md).
+
 ## Running Migrations
 
 To apply the latest database migrations, you need to execute the SQL files in your Supabase dashboard.

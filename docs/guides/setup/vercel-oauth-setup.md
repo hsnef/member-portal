@@ -1,5 +1,24 @@
 # Vercel Deployment OAuth Configuration Guide
 
+> ### ⚠️ Dev and production are separate databases since 2026-09-02
+>
+> This document predates the split (DEC-006) and was written when every
+> environment shared one Supabase project. **Wherever it names
+> `gapvsdrzavjaublwkqfm`, that is now PRODUCTION**, not dev:
+>
+> | | Project | Ref |
+> |---|---|---|
+> | Local & Dev | `dev-mp` | `bcujsesgrzijyisvmnwm` |
+> | Production | `prod-mp` | `gapvsdrzavjaublwkqfm` |
+>
+> Read every instruction below as "for whichever environment you are configuring",
+> and note that anything set up once now needs setting up **twice** — the Google
+> OAuth callback in particular exists per Supabase project, so both
+> `https://bcujsesgrzijyisvmnwm.supabase.co/auth/v1/callback` and
+> `https://gapvsdrzavjaublwkqfm.supabase.co/auth/v1/callback` must be registered.
+>
+> The canonical variable list is [`.env.local.example`](../../../.env.local.example).
+
 This guide explains how to configure Google OAuth and Supabase for your Vercel deployment.
 
 ## Issue

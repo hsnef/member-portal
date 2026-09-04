@@ -1,5 +1,31 @@
 # ⚡ Immediate Actions - Get Dev Environment Working
 
+> **Historical — a one-off checklist that has been completed.**
+> Written to get the dev environment working at a moment when it was not. Both environments deploy and resolve their own database now.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
+> ### ⚠️ Dev and production are separate databases since 2026-09-02
+>
+> This document predates the split (DEC-006) and was written when every
+> environment shared one Supabase project. **Wherever it names
+> `gapvsdrzavjaublwkqfm`, that is now PRODUCTION**, not dev:
+>
+> | | Project | Ref |
+> |---|---|---|
+> | Local & Dev | `dev-mp` | `bcujsesgrzijyisvmnwm` |
+> | Production | `prod-mp` | `gapvsdrzavjaublwkqfm` |
+>
+> Read every instruction below as "for whichever environment you are configuring",
+> and note that anything set up once now needs setting up **twice** — the Google
+> OAuth callback in particular exists per Supabase project, so both
+> `https://bcujsesgrzijyisvmnwm.supabase.co/auth/v1/callback` and
+> `https://gapvsdrzavjaublwkqfm.supabase.co/auth/v1/callback` must be registered.
+>
+> The canonical variable list is [`.env.local.example`](../../.env.local.example).
+
 Quick checklist to fix OAuth redirects on your dev Vercel deployment.
 
 ---

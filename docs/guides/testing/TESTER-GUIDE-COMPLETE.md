@@ -1,5 +1,17 @@
 # HSNEF Member Portal - Complete Tester Guide
 
+> ### ⚠️ Sign-in is magic link or Google — there is no password login
+>
+> The login page offers exactly two options: **"Email me a sign-in link"** and
+> **Sign in with Google**. It says so on the page: *"Sign in with your email — no
+> password to remember."*
+>
+> Registration at `/register` still asks you to set a password and stores one,
+> but **nothing on the login page can use it**. Any step below that asks you to
+> sign in with a password cannot pass, and is marked N/A.
+>
+> Verified against the code 2026-09-03.
+
 **Version:** 1.0
 **Last Updated:** January 2026
 **Portal URL:** https://dev.member.hsnef.org
@@ -32,7 +44,8 @@ Before testers can begin, a real Admin must set up the test admin account.
 
 1. Open browser and navigate to: `https://dev.member.hsnef.org/register`
 2. Enter email: `dev-mp+testadmin@hsnef.org`
-3. Create a password (recommended: `TestPassword123!`)
+3. Set a password when asked (`TestPassword123!` is fine) — **note it is never
+   used to sign in**; registration stores one but the login page cannot use it
 4. Complete registration
 
 ### Step 2: Real Admin Assigns Test Admin Role
@@ -78,12 +91,11 @@ Test accounts are pre-configured in the database and are automatically excluded 
 - **Data Isolation**: Test users only see test-created events; production users never see test data
 - **Clean Data Option**: Test data can be cleaned without affecting member records
 
-### Recommended Password
+### About passwords
 
-Use the same password for all test accounts for convenience:
-```
-TestPassword123!
-```
+Registration asks for one, so use `TestPassword123!` everywhere for convenience.
+**You will never sign in with it.** Sign-in is magic link or Google — see the
+note at the top of this guide.
 
 ---
 
@@ -95,7 +107,7 @@ Each test account must be registered before use:
 
 1. Navigate to: `https://dev.member.hsnef.org/register`
 2. Enter the test account email (e.g., `dev-mp+testlifetime@hsnef.org`)
-3. Create password: `TestPassword123!`
+3. Set password: `TestPassword123!` (stored, but never used to sign in)
 4. Click **Create Account**
 5. The system automatically links the auth account to the existing test member record
 
@@ -136,12 +148,12 @@ For complete testing, register accounts in this order:
 | PUB-01 | View Home Page | Navigate to portal URL | Landing page displays with temple info and login options |
 | PUB-02 | Google OAuth Login | Click "Sign in with Google" → Complete auth | Redirected to dashboard or limited access page |
 | PUB-03 | Magic Link Login | Enter email → Click "Send Magic Link" → Check email → Click link | Logged in and redirected to dashboard |
-| PUB-04 | Password Login | Enter email and password → Click "Sign In" | Logged in (if traditional login enabled) |
+| PUB-04 | ~~Password Login~~ | **N/A — no password login exists.** The login page offers only magic link and Google | — |
 | PUB-05 | Submit Personal Application | Go to /join → Fill form → Submit | Success message displayed |
 | PUB-06 | Submit Business Application | Go to /join → Select Business → Fill form → Submit | Success message displayed |
 | PUB-07 | View Terms of Use | Navigate to /terms | Terms content displays with version |
 | PUB-08 | Access Protected Page | Try to access /member without login | Redirected to login page |
-| PUB-09 | Password Reset | Click "Forgot Password" → Enter email | Reset email sent |
+| PUB-09 | ~~Password Reset~~ | **N/A** — there is no "Forgot Password" link and no `/forgot-password` route | — |
 
 #### Membership Application Fields
 
@@ -383,7 +395,7 @@ For payment testing, use these Stripe test card numbers:
 | Issue | Cause | Solution |
 |-------|-------|----------|
 | "No member found with this email" | Member record doesn't exist | Use /join to apply, or have admin create member |
-| "Email already registered" | Auth account exists | Use login or password reset |
+| "Email already registered" | Auth account exists | Sign in with a magic link instead |
 | Test account shows "Not Registered" | Auth account not created | Register at /register with test email |
 | Can't access admin features | Missing role | Test Admin must assign role |
 | Can't assign role to member | Member not registered | Member must register first |
@@ -397,7 +409,7 @@ For payment testing, use these Stripe test card numbers:
 - Solution: Member must register at /register
 
 **"Invalid credentials"**
-- Wrong email or password
+- Wrong email (there is no password to get wrong)
 - Solution: Use password reset or try magic link
 
 **"Terms must be accepted"**
@@ -452,7 +464,7 @@ Test on mobile devices for:
 ║  Annual:     dev-mp+testannual@hsnef.org       (99994000)     ║
 ║  Community:  dev-mp+testcommunity@hsnef.org    (99995000)     ║
 ╠═══════════════════════════════════════════════════════════════╣
-║  Password:   TestPassword123!                                 ║
+║  Password:   TestPassword123! (unused - sign in by magic link)║
 ║  Management: /admin/test-accounts                             ║
 ║  Clean Data: Click "Clean Test Data" button                   ║
 ╚═══════════════════════════════════════════════════════════════╝

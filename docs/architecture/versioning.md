@@ -41,6 +41,15 @@ The script:
 
 ## Generated File
 
+> **`lib/constants/version.generated.ts` is gitignored and is NOT committed**
+> (changed 2026-09-03). It is a build stamp, so a tracked copy meant every local
+> build dirtied the working tree. It is created by `npm install` (via `prepare`),
+> and rewritten by `npm run dev`, `npm run build` and `npm run generate-version`.
+>
+> `lib/constants/version.ts` imports it, so it must exist before `npx tsc --noEmit`
+> will pass. On a fresh clone `npm install` handles that; if you ever see
+> `TS2307: Cannot find module './version.generated'`, run `npm run generate-version`.
+
 The generated file (`lib/constants/version.generated.ts`) contains:
 - `APP_VERSION` - Full version string (e.g., "1.0.8")
 - `MAJOR_VERSION` - Major version number
@@ -77,7 +86,8 @@ If git is not available (e.g., in CI/CD or when git is not installed):
 ### TypeScript errors
 1. Make sure `tsx` is installed: `npm install tsx --save-dev`
 2. Run `npm run generate-version` to create the initial file
-3. Check that the generated file exists in `lib/constants/`
+3. Check that the generated file exists in `lib/constants/` — it is gitignored,
+   so a fresh clone will not have it until `npm install` or that command runs
 
 ### Version shows as 1.0.0
 - This is the fallback version when git is not available

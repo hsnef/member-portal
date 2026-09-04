@@ -1,12 +1,28 @@
 # Environment Variables Reference
 
-This document lists all required environment variables for the HSNEF Membership Portal.
+> ### ⚠️ Some variables below do not exist
+>
+> Verified against the code 2026-09-03 — **nothing in this codebase reads**
+> `OPENROUTER_API_KEY`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` or `SMTP_PASSWORD`.
+> They were planned or copied in and never wired up. Do not provision keys or
+> set values for them; you will be configuring nothing.
+>
+> The canonical list of variables the code *actually* reads is
+> [`.env.local.example`](../../../.env.local.example).
+
+> **The canonical list is [`.env.local.example`](../../../.env.local.example)**, which is
+> checked against the code. This document is the narrative version; where the two
+> disagree, the example file wins. Start with `cp .env.local.example .env.local`.
 
 ## Required Variables
 
 ### Supabase Configuration
 
-All environments use the same Supabase dev project.
+⚠️ **Not any more.** Dev and production were split on 2026-09-02 (DEC-006).
+Local and dev use `dev-mp` (`bcujsesgrzijyisvmnwm`); production uses `prod-mp`
+(`gapvsdrzavjaublwkqfm`). That second ref reads as "dev" in anything written
+before the split because it was the shared project and kept its ID — it is
+PRODUCTION. Point local work at `bcujsesgrzijyisvmnwm`.
 
 | Variable | Description | Example | Required |
 |----------|-------------|---------|----------|
@@ -87,7 +103,7 @@ If using SMTP instead of Resend:
 
 | Variable | Description | Example | Required |
 |----------|-------------|---------|----------|
-| `OPENROUTER_API_KEY` | OpenRouter API key for chatbot | `sk-or-v1-...` | No |
+| ~~`OPENROUTER_API_KEY`~~ | **Not used.** No chatbot exists and nothing reads this variable. Do not provision a key for it. | — | — |
 
 ## Environment-Specific Configuration
 

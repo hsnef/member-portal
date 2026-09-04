@@ -24,8 +24,8 @@
 1. **Revoke the two tokens** issued to Claude on 2026-09-02 (a Vercel token and a
    Supabase PAT) and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local`. Still
    outstanding as of 2026-09-03.
-2. **Install a test framework** (Tier 2) — needs Sujit's `vitest` approval. The repo is
-   in production with zero tests.
+2. ~~**Install a test framework**~~ ✅ **Done 2026-09-03** — vitest, 48 tests, and the
+   `Tests` check enabled in the release gate. Extend it; see Tier 2.
 3. **Add `.github/workflows/ci.yml`** (Tier 2) — `/govkit-doctor`'s one missing guardrail.
 
 ## Current Priority Tiers (as of 2026-09-03)
@@ -89,17 +89,19 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
   Partly done 2026-09-03 — this file, `CLAUDE.md`, `docs/PROJECT-HUB.md` and the two
   runbooks were reconciled. The rest of `docs/` has not been swept.
   Any design element, colour, route, screenshot or component name referenced in documentation
-  must match what the code now does. Remaining known drift: the ~26 `portal.hsnef.org`
-  references, and the role-gate tables that disagree with the code (DEC-004).
+  must match what the code now does. **A full audit ran 2026-09-03** — every doc under `docs/`
+  was checked against the code, wrong ones were fixed, and everything out of date now carries a
+  banner explaining why it is not a good reference. See the Session 6 handoff in
+  `docs/PROJECT-HUB.md` for what was found.
   **Already fixed:** `#FF9933` is gone from `lib/constants/temple.ts` (it is `#c75b12`
   now) and survives only in `lib/themes/themes/built-in/default.ts`, which IS the legacy
   palette by definition — verified 2026-09-03. `CLAUDE.md` rule 9 now describes the
   `docs/status/**` move correctly.
 
 **Blocked on Sujit:**
-- `tailwind-merge` dependency approval. The kit's `cn()` needs it (17 components, 44 call sites);
-  without it a caller's `className` override can silently lose to the component's own default.
-  `utils/cn.ts` is a plain join with a note explaining the one-line swap.
+- ~~`tailwind-merge` dependency approval.~~ ✅ **Approved and done 2026-09-03.** `utils/cn.ts`
+  is backed by `twMerge`, with 12 tests. Verified no visual change on the public routes by
+  diffing rendered class attributes before and after; authenticated pages were not checked.
 - **Real temple opening hours** — not in `lib/constants/temple.ts`. The login hero and the shell's
   office card both want them and currently show the office phone instead. Inventing hours on a
   sign-in page was not acceptable.
@@ -129,9 +131,42 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
 
   Doing it will surface more. Treat that as the point, not a setback. Afterwards, move `Type check`
   out of `_disabledChecks` in `release-gate.config.json` so it can never regress silently again.
-- **Install a test framework.** There is none, and no test files. `CLAUDE.md`'s tests-with-features
-  policy cannot be honoured until this exists. Start with the money/permission paths: Stripe
-  webhooks, Zelle confirmation, role gating.
+- ~~**Install a test framework.**~~ ✅ **Done 2026-09-03.** vitest, node environment, no
+  jsdom — everything covered so far is a pure function. `npm test` runs it; `Unit &
+  Integration` is now a live check in `release-gate.config.json`, so the gate reports
+  test counts instead of only "the build compiled". **48 tests over three modules:**
+  `lib/qr-token.ts` (pass forgery, tampering, expiry), `lib/zelle/index.ts` (the
+  auto-confirm threshold, token forgery, amount tampering) and `utils/format.ts` (money
+  rounding, the UTC off-by-one-day trap).
+
+  **Extend it here, in rough order of what would hurt most if wrong:**
+  - **Stripe webhooks** — signature verification and idempotency. Untouched so far
+    because `lib/stripe/config.ts` throws at import time without `STRIPE_SECRET_KEY`,
+    so it needs env stubbing or a small refactor to be reachable from a test.
+  - **Role gating** — `lib/auth/helpers.ts` is all Supabase-backed, so it needs a
+    client fake. That fake is the piece of infrastructure to build next, and most of
+    the remaining untested surface sits behind it.
+  - **`lib/zelle/server.ts`** — the confirmation path, also Supabase-backed.
+  - Component tests need jsdom + `@testing-library/react` added at that point,
+    deliberately, rather than carried now for nothing.
+
+- **Two defects the first tests surfaced.** Neither was fixed in the same change:
+  fixing them alters payment business logic, which `CLAUDE.md` rule 2 puts off-limits
+  without asking. Both are real; both need a decision.
+
+  1. **`verifyZelleToken` does not expire a token with a malformed `expiresAt`.**
+     `lib/zelle/index.ts` compares `new Date(decoded.expiresAt) < new Date()`. If the
+     field is not a parseable date the comparison is `NaN < now`, which is `false`, so
+     the payload expiry check silently passes and only the 48-hour JWT `exp` still
+     caps the token. Pinned as a `KNOWN WEAKNESS` test in `lib/zelle/index.test.ts` so
+     the behaviour is visible; that test is the one to invert when it is fixed.
+     The token still has to be validly signed, so this is not a forgery route.
+  2. **`calculateMembershipFee` would throw if anything called it.**
+     `lib/stripe/payments.ts:70` reads `PAYMENT_CONFIG.membershipFees[level]`, but
+     `config.ts` deliberately removed `membershipFees` — fees come from Portal
+     Settings now. It has **zero callers**, so nothing is broken today, and `tsc`
+     already flags it (`TS2339`). Delete it, or reimplement it against
+     `getMembershipPricing()`. Leaving it is the option that eventually bites.
 - **Add `.github/workflows/ci.yml`.** `/govkit-doctor` reports this as the one missing guardrail.
   govkit deliberately does not scaffold it — a wrong CI workflow is worse than none. It must run the
   same checks as `release-gate.config.json`, and each job must be **named to match that file's
@@ -158,8 +193,12 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
 - Add `loading.tsx` / `error.tsx` / `not-found.tsx` per section — there are none anywhere in `app/`.
 - Replace the 69 hand-rolled loading spinners. Left deliberately: the loading state should match
   each page's final layout, so they go during that page's redesign, not before.
-- Sweep `portal.hsnef.org` out of `docs/` (~26 occurrences presented as current). Risk: someone
-  configures a Stripe webhook or OAuth callback against the wrong host.
+- ~~Sweep `portal.hsnef.org` out of `docs/`.~~ **This item was wrong — do not action it.**
+  Checked 2026-09-03: of 30 occurrences, **29 are correct** and must stay. They are the Resend
+  sending domain (`EMAIL_FROM=noreply@portal.hsnef.org`), which is verified in Resend while
+  `member.hsnef.org` is not. Sweeping them would break email sending. The single stale one is in
+  `docs/status/implementation-status.md`, which is bannered historical. See the resolved
+  `EMAIL_FROM` note above.
 - `app/admin/settings/page.tsx` has a `roles` field on `settingsCategories` that is never used —
   Office Staff see cards they cannot open. Filter them, or use `PermissionNote`.
 - `/admin/settings/appearance` uses a fourth role-gate pattern (inline `useEffect` + `router.push`)
@@ -233,5 +272,6 @@ verify locally — copy dev's `QR_TOKEN_SECRET` from Vercel if you need that.
 
 | Date | Session | Changes |
 |------|---------|---------|
+| 2026-09-03 | 6 | vitest installed and the first 48 tests added over the QR pass, the Zelle money path and the shared formatter. `Tests` enabled in the release gate. Two defects recorded above, neither fixed: the Zelle malformed-`expiresAt` hole and the dead `calculateMembershipFee`. |
 | 2026-09-03 | 5 | Reconciled against the repo after `docs:sync-check` flagged this file stale. Tier 0 emptied (all three items closed 09-01/09-02). Cloudflare Phase 2 recorded as done — production is live. `userData` bug and stage 8 marked done. Every hardcoded type-error count replaced with the command. Environments table gained the Supabase refs, with a warning that `gapvsdrzavjaublwkqfm` is PRODUCTION. |
 | 2026-08-31 | 1 | Roadmap scaffolded by govkit; migrated from `tasks/NEXT_PRIORITIES.md`. |

@@ -1,5 +1,12 @@
 # Member Audit Log System - Proposal
 
+> **Proposal — a design document, not a description of what exists.**
+> Parts of it were built and parts were not. Check the code before relying on any detail here.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 ## Overview
 
 This document proposes a comprehensive audit logging system for member creation and changes, specifically tracking:

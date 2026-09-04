@@ -1,5 +1,12 @@
 # Test Accounts Migration Instructions
 
+> **Historical — these migrations are already applied, and the filenames changed.**
+> The prefixes were swapped so the constraint update (`...000004`) runs before the seed (`...000005`), which is the opposite of the order described below.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../../PRIORITY-ROADMAP.md).
+
 ## Important: Run Migrations in Order
 
 You must run **Migration 5** BEFORE **Migration 4** because Migration 4 (test accounts) requires the updated constraints from Migration 5.

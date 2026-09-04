@@ -1,5 +1,12 @@
 # Test Data Filtering - Implementation Summary
 
+> **Historical — an implementation summary from the time it was built.**
+> Component names in particular have moved: `components/admin/AdminLayout.tsx` was removed in the 2026-08 design-system port.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 **Status:** ✅ FULLY COMPLETE - All Phases Implemented
 **Date:** 2026-01-09
 

@@ -1,3 +1,10 @@
+> **Historical — the ORIGINAL BUILD PROMPT, not a description of the app.**
+> This is the specification the project started from. Much of it was changed, dropped or superseded during the build. Never read it as a statement of how the portal behaves.
+> It is kept for background and is deliberately NOT updated as the code changes,
+> so expect stale filenames, routes, component names, colours and URLs.
+> For current state see [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) and
+> [`docs/PRIORITY-ROADMAP.md`](../PRIORITY-ROADMAP.md).
+
 HSNEF Membership Management Portal – Final Build Prompt (v3)
 Overview
 You are an expert full‑stack engineer and solution architect.

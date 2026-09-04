@@ -1,5 +1,11 @@
 # HSNEF Member Portal - Testing Guide by Role
 
+> ### ⚠️ Sign-in is magic link or Google — there is no password login
+>
+> The login page offers only **"Email me a sign-in link"** and **Sign in with
+> Google**. Registration stores a password but nothing can use it to sign in.
+> Verified against the code 2026-09-03.
+
 This document provides testing instructions for each user role in the HSNEF Member Portal.
 
 **Portal URL:** https://dev.member.hsnef.org
@@ -24,7 +30,8 @@ Before testers can begin, a real Admin must set up the test admin account.
 ### Step 1: Register the Test Admin Account
 1. Navigate to `https://dev.member.hsnef.org/register`
 2. Register using email: `dev-mp+testadmin@hsnef.org`
-3. Create a password (e.g., "TestPassword123!")
+3. Set a password when asked (e.g. "TestPassword123!") — stored, but never
+   used to sign in
 
 ### Step 2: Real Admin Assigns Test Admin Role
 1. Login with your **real Admin account** (not the test account)
