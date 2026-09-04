@@ -1,0 +1,86 @@
+name: CI
+
+# Runs the project's checks on every push and pull request.
+#
+# The job names below are NOT arbitrary. They match the `ciJob` values in
+# release-gate.config.json, so that `npm run release-gate` (the local stand-in
+# used when Actions minutes run out) and this workflow describe the same checks
+# by the same names. If you add a check to one, add it to the other.
+#
+#   release-gate.config.json          this file
+#   --------------------------------  -----------------
+#   ciJob: "Build"                    job name: Build
+#   ciJob: "Tests"                    job name: Tests
+#
+# Lint and Type check are deliberately absent. Both currently fail on
+# pre-existing problems, and a job that is red on day one for reasons unrelated
+# to the change being checked gets ignored, which is worse than not having it.
+# They sit in `_disabledChecks` in release-gate.config.json with the same
+# reasoning. Add them here when they pass.
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+# A new push to the same branch cancels the previous run, so a series of quick
+# pushes does not burn the monthly Actions minutes several times over.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  Tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # `npm ci` installs exactly what package-lock.json specifies. It also runs
+      # the `prepare` script, which generates lib/constants/version.generated.ts
+      # -- that file is gitignored, and lib/constants/version.ts imports it, so
+      # without this step nothing that touches it would compile.
+      - run: npm ci
+
+      - run: npm test
+
+  Build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # These are placeholders, not secrets, and they are meant to be fake.
+      #
+      # The build only needs them to exist. lib/stripe/config.ts throws at import
+      # time when STRIPE_SECRET_KEY is missing, which fails the build while
+      # collecting page data for /api/stripe/create-payment-intent. The Supabase
+      # values are read with a non-null assertion in lib/supabase/client.ts.
+      #
+      # Nothing here connects to a real service during a build, so no real key is
+      # needed and none should ever be put here. If a future check does need to
+      # reach a real service, use GitHub repository secrets instead.
+      - run: npm run build
+        env:
+          STRIPE_SECRET_KEY: sk_test_placeholder_ci_build_only
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role-key
