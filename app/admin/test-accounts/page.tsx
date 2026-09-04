@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { AdminListView } from '@/components/admin/AdminListView'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { KeyRoundIcon, FlaskConicalIcon } from 'lucide-react'
+import { MailIcon, FlaskConicalIcon } from 'lucide-react'
 import type { Column } from '@/components/ui/DataTable'
 
 interface TestAccount {
@@ -24,7 +24,7 @@ export default function TestAccountsPage() {
   const supabase = createClient()
   const [testAccounts, setTestAccounts] = useState<TestAccount[]>([])
   const [loading, setLoading] = useState(true)
-  const [resettingPassword, setResettingPassword] = useState<string | null>(null)
+  const [sendingLink, setSendingLink] = useState<string | null>(null)
 
   useEffect(() => {
     fetchTestAccounts()
@@ -89,26 +89,38 @@ export default function TestAccountsPage() {
     }
   }
 
-  const handleResetPassword = async (email: string, accountId: string) => {
-    if (!confirm(`Reset password for ${email}?\n\nA password reset email will be sent.`)) {
+  /**
+   * Sends a magic sign-in link.
+   *
+   * This used to call `resetPasswordForEmail` with a `redirectTo` of
+   * `/auth/reset-password` -- a route that does not exist, so the emailed link
+   * 404'd and no password could be set. It would not have helped either: the
+   * login page has no password field. The portal is magic-link-only, so this
+   * button now sends the thing that actually signs someone in.
+   */
+  const handleSendSignInLink = async (email: string, accountId: string) => {
+    if (!confirm(`Email a sign-in link to ${email}?`)) {
       return
     }
 
     try {
-      setResettingPassword(accountId)
+      setSendingLink(accountId)
 
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       })
 
       if (error) throw error
 
-      alert(`Password reset email sent to ${email}`)
+      alert(`Sign-in link sent to ${email}`)
     } catch (error: any) {
-      console.error('Error resetting password:', error)
-      alert(`Failed to reset password: ${error.message}`)
+      console.error('Error sending sign-in link:', error)
+      alert(`Failed to send sign-in link: ${error.message}`)
     } finally {
-      setResettingPassword(null)
+      setSendingLink(null)
     }
   }
 
@@ -296,11 +308,11 @@ export default function TestAccountsPage() {
         <Button
           size="sm"
           variant="secondary"
-          icon={KeyRoundIcon}
-          loading={resettingPassword === a.id}
-          onClick={() => handleResetPassword(a.primary_email, a.id)}
+          icon={MailIcon}
+          loading={sendingLink === a.id}
+          onClick={() => handleSendSignInLink(a.primary_email, a.id)}
         >
-          Reset password
+          Send sign-in link
         </Button>
       ),
     },

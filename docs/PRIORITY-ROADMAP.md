@@ -109,6 +109,30 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
   Greenland Road building. Members will recognise that. **Replace before production.**
 - Next.js dev overlay reported "1 Issue" on `/login`; not yet diagnosed.
 
+### Tier 1.5 — found by the 2026-09-03 docs audit
+
+- ~~**Two auth defects.**~~ ✅ **Fixed 2026-09-03**, magic-link-only by decision.
+  `/register` no longer calls `signUp` with a password nothing could use — it is now a
+  page explaining how to get in. `/admin/test-accounts` "Reset password" became
+  "Send sign-in link"; it used to email a link to `/auth/reset-password`, which does not
+  exist. `app/auth-redirects.test.ts` guards both, and fails if any `redirectTo` in
+  `app/` points at a route that is not there.
+
+- **Hardcoded hex colours in `className`, in 8 files.** `CLAUDE.md` rule 3 forbids these,
+  and the design-system port was recorded as complete, so this is real drift —
+  `[#FF8800]` and `[#700000]`, in:
+  `app/join`, `app/unauthorized`, `app/terms`, `app/admin/pending-registrations`,
+  `app/auth/callback-handler`, `components/TermsAcceptanceModal.tsx`,
+  `components/admin/FamilyMembersSection.tsx`, `components/admin/AuditLogTimeline.tsx`.
+  The two colours the rule names by hand — `#FF9933` and `#E68A2E` — really are at zero.
+  `app/register/page.tsx` was rewritten onto tokens as part of the auth fix; the rest were
+  left alone, since restyling them is a UI change that deserves its own pass.
+  Do not quote a count from here — run the command.
+  Find them with:
+  ```bash
+  grep -rn "\[#[0-9A-Fa-f]\{6\}\]" app components --include=*.tsx
+  ```
+
 ### Tier 2 — next (high-value, start-ready)
 
 - ~~**Regenerate `types/database.ts` from Supabase.**~~ **Largely done** — `9f9fb37`

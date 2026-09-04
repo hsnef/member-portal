@@ -3,7 +3,7 @@
 > ### ⚠️ Sign-in is magic link or Google — there is no password login
 >
 > The login page offers only **"Email me a sign-in link"** and **Sign in with
-> Google**. Registration stores a password but nothing can use it to sign in.
+> Google**. Registration no longer sets a password at all (changed 2026-09-03).
 > Steps below that rely on a password are marked N/A or as known bugs.
 > Verified against the code 2026-09-03.
 
@@ -217,7 +217,7 @@ never used to sign in — see the note at the top.
 
 ---
 
-### TC-ADM-08: Reset Test Account Password — ⚠️ KNOWN BUG, expected to fail
+### TC-ADM-08: Send a sign-in link to a test account
 
 **Steps:**
 1. On Test Accounts page
@@ -227,9 +227,8 @@ never used to sign in — see the note at the top.
 
 **Expected Results — this is where it breaks:**
 - ✅ Password reset email IS sent (the button calls `resetPasswordForEmail`)
-- ❌ **The link in that email 404s.** It points at `/auth/reset-password`, and
-  that route does not exist — the only route under `/auth/` is
-  `/auth/callback-handler`. Verified 2026-09-03.
+- ❌ **The link in that email 404s.** It points at `/auth/reset-password`,
+  which does not exist. Verified 2026-09-03.
 - ❌ No new password can be set, and it would not help if it could, since the
   login page has no password field.
 
