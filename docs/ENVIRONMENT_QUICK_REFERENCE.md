@@ -13,6 +13,10 @@
 > **The canonical variable list is [`.env.local.example`](../.env.local.example)**,
 > which is checked against the code. Where this file disagrees with it, it wins.
 
+> ⚠️ **Which Supabase project is which: [`docs/SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md).**
+> `gapvsdrzavjaublwkqfm` is PRODUCTION. Anything calling it "dev" predates the
+> 2026-09-02 split and is wrong.
+
 Quick reference guide for your three environments.
 
 ---
