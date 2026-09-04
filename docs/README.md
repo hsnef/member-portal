@@ -10,6 +10,7 @@ This directory contains all project documentation organized by category. Use thi
 | [`PROJECT-HUB.md`](PROJECT-HUB.md) | **Current state.** Architecture, the decisions log (DEC-001..DEC-011), session handoffs. `/sdlc status` reads this. |
 | [`PRIORITY-ROADMAP.md`](PRIORITY-ROADMAP.md) | **What to work on next**, in tiers. |
 | [`../CLAUDE.md`](../CLAUDE.md) | Working rules, the design system, and the route/role gates. |
+| [`SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md) | **Which Supabase project is which.** Read before touching a database. `gapvsdrzavjaublwkqfm` is PRODUCTION. |
 | [`../.env.local.example`](../.env.local.example) | **The canonical environment-variable list**, checked against the code. |
 | [`ROLES-GUIDE.md`](ROLES-GUIDE.md) | What each of the four roles can actually do. |
 | [`ACCESS-AND-ROLES.md`](ACCESS-AND-ROLES.md) | How access works mechanically — roles vs membership. |

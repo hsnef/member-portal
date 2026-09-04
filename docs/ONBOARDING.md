@@ -6,6 +6,10 @@ to it** — see the warning at the bottom.
 
 ## 1. Access to grant
 
+> ⚠️ **Which Supabase project is which: [`docs/SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md).**
+> `gapvsdrzavjaublwkqfm` is PRODUCTION. Anything calling it "dev" predates the
+> 2026-09-02 split and is wrong.
+
 Each of these is an invitation you send from a dashboard. None involves sending
 anyone a password.
 
