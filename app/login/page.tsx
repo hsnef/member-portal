@@ -159,7 +159,10 @@ function LoginForm() {
       if (!gate.allowed) {
         setMessage({
           type: 'error',
-          text: `We do not have a membership on file for ${email}. If you are a member, the temple office can add your address — contact ${TEMPLE_CONFIG.contact.email}.`,
+          text:
+            gate.reason === 'secondary'
+              ? `${email} is listed as a household's second contact. Sign in with the membership's main email address, or ask the temple office to change which address is the main one — contact ${TEMPLE_CONFIG.contact.email}.`
+              : `We do not have a membership on file for ${email}. If you are a member, the temple office can add your address — contact ${TEMPLE_CONFIG.contact.email}.`,
         })
         setLoading(false)
         return

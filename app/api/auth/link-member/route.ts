@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/client'
+import { exactIlike, normaliseEmail } from '@/lib/auth/memberEmail'
 
 /**
  * API endpoint to auto-link an authenticated user to their member record(s)
@@ -28,7 +29,10 @@ export async function POST(request: Request) {
       )
     }
 
-    console.log('[link-member] Attempting to link user:', user.id, 'email:', userEmail)
+    // Same rule as /api/auth/check-member-email: primary address, any case.
+    const emailPattern = exactIlike(normaliseEmail(userEmail))
+
+    console.log('[link-member] Attempting to link user:', user.id)
 
     // Use service client to bypass RLS
     const serviceClient = createServiceClient()
@@ -46,7 +50,7 @@ export async function POST(request: Request) {
       const { data: additionalUnlinked } = await serviceClient
         .from('members')
         .select('id, membership_id, primary_email, first_name, last_name, member_class, current_level')
-        .eq('primary_email', userEmail)
+        .ilike('primary_email', emailPattern)
         .is('auth_user_id', null)
 
       if (additionalUnlinked && additionalUnlinked.length > 0) {
@@ -84,11 +88,11 @@ export async function POST(request: Request) {
     const { data: unlinkedMembers, error: lookupError } = await serviceClient
       .from('members')
       .select('id, membership_id, primary_email, first_name, last_name, member_class, current_level')
-      .eq('primary_email', userEmail)
+      .ilike('primary_email', emailPattern)
       .is('auth_user_id', null)
 
     if (lookupError || !unlinkedMembers || unlinkedMembers.length === 0) {
-      console.log('[link-member] No unlinked member found for email:', userEmail, lookupError?.message)
+      console.log('[link-member] No unlinked member found for user:', user.id, lookupError?.message)
       return NextResponse.json(
         { error: 'No member record found for this email', details: lookupError?.message },
         { status: 404 }
