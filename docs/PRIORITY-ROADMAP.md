@@ -19,6 +19,16 @@
 >   shared project and kept its ID, so anything written before 2026-09-02 shows it as dev.
 > - **Events migration (Phase 3) is applied to production.**
 
+> ## 🚀 Go-live is tracked in the [Go-live milestone](https://github.com/hsnef/member-portal/milestone/1)
+>
+> Planned 2026-10-08. **No fixed date — launch when the milestone is closed.**
+> Day-one scope: online card payments, bookings & requests, events, the membership
+> experience, user management, RBAC for office vs members, and demo users on dev.
+> Zelle is **not** in day-one scope. Four phases, one label each
+> (`go-live: phase 0`…`3`): unblock → area review on dev per role → hardening →
+> production readiness. Defects found during review get `launch-blocker` or not.
+> The issues hold the checklists; this file holds the order and the why.
+
 **The next three things, in order:**
 
 1. **Make sign-in email work** (Tier 1, found 2026-10-08) — custom SMTP on both
@@ -314,7 +324,7 @@ verify locally — copy dev's `QR_TOKEN_SECRET` from Vercel if you need that.
 
 | Date | Session | Changes |
 |------|---------|---------|
-| 2026-10-08 | 9 | Sign-in email findings added to Tier 1 and START HERE; root cause was paused projects; dev-mp auth URLs fixed. Token revocation deferred by Sujit. Stale CI item removed from START HERE. |
+| 2026-10-08 | 9 | Go-live milestone created (#18–#38) with day-one scope. Sign-in email findings added to Tier 1 and START HERE; root cause was paused projects; dev-mp auth URLs fixed. Token revocation deferred by Sujit. Stale CI item removed from START HERE. |
 | 2026-09-03 | 6 | vitest installed and the first 48 tests added over the QR pass, the Zelle money path and the shared formatter. `Tests` enabled in the release gate. Two defects recorded above, neither fixed: the Zelle malformed-`expiresAt` hole and the dead `calculateMembershipFee`. |
 | 2026-09-03 | 5 | Reconciled against the repo after `docs:sync-check` flagged this file stale. Tier 0 emptied (all three items closed 09-01/09-02). Cloudflare Phase 2 recorded as done — production is live. `userData` bug and stage 8 marked done. Every hardcoded type-error count replaced with the command. Environments table gained the Supabase refs, with a warning that `gapvsdrzavjaublwkqfm` is PRODUCTION. |
 | 2026-08-31 | 1 | Roadmap scaffolded by govkit; migrated from `tasks/NEXT_PRIORITIES.md`. |
