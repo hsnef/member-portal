@@ -22,8 +22,8 @@
 **The next three things, in order:**
 
 1. **Make sign-in email work** (Tier 1, found 2026-10-08) — custom SMTP on both
-   Supabase projects, dev-mp's Site URL and redirect allow-list, and the
-   `check-member-email` failure on Vercel. Session 9 in `docs/PROJECT-HUB.md`.
+   Supabase projects, and stop `prod-mp` pausing on the Free tier. Session 9 in
+   `docs/PROJECT-HUB.md`.
 2. **Revoke the two tokens** issued to Claude on 2026-09-02 (a Vercel token and a
    Supabase PAT) and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local`.
    Still outstanding 2026-10-08; Sujit accepted the risk and deferred it.
@@ -70,11 +70,10 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
 
 - **Sign-in email is not production-ready (found 2026-10-08).** Neither Supabase
   project has custom SMTP; the built-in mailer allows 2 emails/hour and is not for
-  real users. dev-mp's Site URL is `http://localhost:3000` with an empty redirect
-  allow-list, so dev magic links land on localhost. `/api/auth/check-member-email`
-  returns `check-failed` on both deployed sites — likely a missing
-  `SUPABASE_SERVICE_ROLE_KEY` in Vercel, which would also break
-  `/api/auth/link-member`. All three are dashboard configuration, not code.
+  real users. Both projects had also **paused** on the Free tier, which blocks all
+  sign-in until someone unpauses them — a keep-alive or paid tier for `prod-mp`
+  stops that recurring. dev-mp's auth URLs were fixed 2026-10-08. Dashboard
+  configuration, not code.
 
 - ~~**Fix the `userData` bug in the two remaining admin files.**~~ ✅ **Done** — verified
   2026-09-03: `grep -rn userData app/admin/bookings/` returns nothing. Fixed during
@@ -315,7 +314,7 @@ verify locally — copy dev's `QR_TOKEN_SECRET` from Vercel if you need that.
 
 | Date | Session | Changes |
 |------|---------|---------|
-| 2026-10-08 | 9 | Sign-in email findings added to Tier 1 and START HERE. Token revocation deferred by Sujit. Stale CI item removed from START HERE. |
+| 2026-10-08 | 9 | Sign-in email findings added to Tier 1 and START HERE; root cause was paused projects; dev-mp auth URLs fixed. Token revocation deferred by Sujit. Stale CI item removed from START HERE. |
 | 2026-09-03 | 6 | vitest installed and the first 48 tests added over the QR pass, the Zelle money path and the shared formatter. `Tests` enabled in the release gate. Two defects recorded above, neither fixed: the Zelle malformed-`expiresAt` hole and the dead `calculateMembershipFee`. |
 | 2026-09-03 | 5 | Reconciled against the repo after `docs:sync-check` flagged this file stale. Tier 0 emptied (all three items closed 09-01/09-02). Cloudflare Phase 2 recorded as done — production is live. `userData` bug and stage 8 marked done. Every hardcoded type-error count replaced with the command. Environments table gained the Supabase refs, with a warning that `gapvsdrzavjaublwkqfm` is PRODUCTION. |
 | 2026-08-31 | 1 | Roadmap scaffolded by govkit; migrated from `tasks/NEXT_PRIORITIES.md`. |

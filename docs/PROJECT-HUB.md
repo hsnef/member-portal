@@ -38,7 +38,7 @@ Supabase's built-in mailer.**
 ### Start here next session
 
 1. **Fix sign-in email first** — read the **Session 9** handoff. Custom SMTP on both
-   Supabase projects, and dev-mp's Site URL / redirect allow-list.
+   Supabase projects, and stop `prod-mp` pausing. dev-mp's auth URLs are done.
 2. **The infrastructure work is done.**
    [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) phases 1, 2,
    3, 5 and 6 are all ticked; only Phase 4 (test-data cleanup) remains and it is
@@ -54,7 +54,7 @@ Supabase's built-in mailer.**
 
 | | |
 |---|---|
-| **Sign-in email** | No custom SMTP on either Supabase project; the built-in mailer allows 2 emails/hour and is not meant for real users. dev-mp's Site URL is `http://localhost:3000` with an empty redirect allow-list. `check-member-email` returns `check-failed` on both deployed sites. See Session 9 |
+| **Sign-in email** | No custom SMTP on either Supabase project; the built-in mailer allows 2 emails/hour and is not meant for real users. Both projects had also paused on the Free tier, which blocks all sign-in. See Session 9 |
 | **Tokens to revoke** | A Vercel token and a Supabase PAT were issued to Claude on 2026-09-02. **Revoke both**, and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local` — still present 2026-10-08; risk accepted by Sujit for now |
 | **Test coverage is thin** | Tests cover the QR pass, the Zelle money path, the shared formatter, `cn()`, plus two guard suites — `app/auth-redirects.test.ts` (no auth redirect may point at a missing route) and `utils/design-tokens.test.ts` (no raw hex in `className`). Everything touching Supabase, Stripe and the API routes is still untested; that needs a Supabase client fake |
 | **Contrast** | White on `#c75b12` is 4.26:1, below WCAG AA's 4.5. `#b8530e` gives 4.90. One line in `app/globals.css`; a brand decision |
@@ -360,15 +360,32 @@ a null member. Nine reachable ones now share `NoMembershipState`.
 
 ### Session 9 — 2026-10-08 — release of #14/#15; why sign-in fails
 
-Sujit reported he could not sign in. Nothing was changed in Supabase or Vercel;
-these are findings, read-only.
+Sujit reported he could not sign in to `dev.member.hsnef.org`. **Root cause: both
+Supabase projects had been paused** (Free-tier inactivity). Sujit unpaused them; that
+is also why `check-member-email` returned `check-failed` — its lookup had no
+database to reach. Re-tested after unpausing: dev returns a real answer.
+
+**dev-mp fixed the same day** (Sujit ran the commands; production untouched):
+- Site URL set to `https://dev.member.hsnef.org`; allow-list set to
+  `https://dev.member.hsnef.org/**,http://localhost:3000/**`.
+- A confirmed auth account for `gsujit@gmail.com`, with `Member` + `Admin` in
+  `user_roles`. Without a role, `AuthContext` signs out an account with no
+  membership and lands it on `/login?reason=no-membership` — which looks like a
+  failed sign-in but means the link worked. dev-mp still has **no member records**,
+  so `/member` shows `NoMembershipState`.
+- `user_roles.role` is the Postgres enum `user_role`: inserting text needs a
+  `::user_role` cast, or the insert fails.
+- `.env.local` had `NEXT_PUBLIC_SUPABASE_URL=ttps://…` (leading `h` lost), so
+  local dev could not reach Supabase at all. Fixed.
+
+The auth settings as found, before the fix:
 
 **Supabase auth config, read via the Management API:**
 
 | | dev-mp (`bcujsesgrzijyisvmnwm`) | prod-mp (`gapvsdrzavjaublwkqfm`) |
 |---|---|---|
-| Site URL | `http://localhost:3000` | `https://member.hsnef.org` |
-| Redirect allow-list | **empty** | localhost, dev and prod hosts |
+| Site URL | `http://localhost:3000` (fixed) | `https://member.hsnef.org` |
+| Redirect allow-list | **empty** (fixed) | localhost, dev and prod hosts |
 | Custom SMTP | **none** | **none** |
 | Email rate limit | 2/hour | 2/hour |
 | Google provider | off | on |
@@ -378,16 +395,11 @@ these are findings, read-only.
   portal cannot work for members on it. The fix is SMTP via Resend, using the
   already-verified `portal.hsnef.org` sending domain (see the `EMAIL_FROM` note
   in the roadmap).
-- **dev-mp was never given auth URLs** after the 2026-09-02 split. With an empty
-  allow-list, the `emailRedirectTo` from `dev.member.hsnef.org` is rejected and
-  the link falls back to the Site URL, `localhost:3000`.
-- **`/api/auth/check-member-email` returns `{"reason":"check-failed"}` on both
-  deployed sites**, for any address. It fails open, so it is not what blocks
-  sign-in — but it means its server-side lookup throws in Vercel. The likeliest
-  cause is `SUPABASE_SERVICE_ROLE_KEY` missing from the Vercel env
-  (`createServiceClient` throws without it); not verified, as no Vercel CLI
-  access was available. If so, `/api/auth/link-member` fails too, and a member
-  who signs in is never linked to their member record.
+- **dev-mp was never given auth URLs** after the 2026-09-02 split, so dev magic
+  links fell back to `localhost:3000`. Fixed, above.
+- **Pausing will recur.** Free-tier projects pause after a week without activity,
+  and a paused production project means nobody can sign in. Worth a keep-alive or
+  a paid tier for `prod-mp`.
 
 **Released:** `dev → main` for #14 (CI workflow) and #15 (Supabase refs docs).
 
