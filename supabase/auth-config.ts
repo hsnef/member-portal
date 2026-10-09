@@ -75,7 +75,16 @@ export const SHARED_AUTH_SETTINGS = {
   mailer_templates_magic_link_content: signInEmail('Sign in', 'Use the button below to sign in to the member portal.'),
   mailer_subjects_confirmation: `Your ${TEMPLE_CONFIG.shortName} sign-in link`,
   mailer_templates_confirmation_content: signInEmail('Welcome', 'Use the button below to sign in to the member portal for the first time.'),
+  // Google sign-in, on in both projects with ONE Google OAuth client. Its
+  // Authorized redirect URIs must list each project's
+  // https://<ref>.supabase.co/auth/v1/callback. The client ID is public; the
+  // secret is supplied at apply time (GOOGLE_OAUTH_SECRET_ENV).
+  external_google_enabled: true,
+  external_google_client_id: '846882916738-1kt27oa6pk39v664si3jdbsfpjmq1g3c.apps.googleusercontent.com',
 } as const
+
+/** Env var holding the Google OAuth client secret, read only when applying. */
+export const GOOGLE_OAUTH_SECRET_ENV = 'GOOGLE_OAUTH_CLIENT_SECRET'
 
 /**
  * Custom SMTP through Resend, on the verified `portal.hsnef.org` domain (NOT

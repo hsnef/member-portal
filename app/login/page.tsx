@@ -81,9 +81,11 @@ function LoginForm() {
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
+          // Let someone pick which Google account, without re-approving the
+          // app every time. No offline access: the portal never calls Google
+          // APIs, it only needs the verified email address.
           queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
+            prompt: 'select_account',
           },
         },
       })

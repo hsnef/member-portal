@@ -39,3 +39,16 @@ describe('auth settings as code', () => {
     expect(JSON.stringify(desiredAuthSettings('prod', { includeSmtp: true }))).not.toMatch(/smtp_pass/)
   })
 })
+
+describe('Google sign-in', () => {
+  it('is on in both projects, with the same client', () => {
+    const dev = desiredAuthSettings('dev', { includeSmtp: false })
+    const prod = desiredAuthSettings('prod', { includeSmtp: false })
+    expect(dev.external_google_enabled).toBe(true)
+    expect(dev.external_google_client_id).toBe(prod.external_google_client_id)
+  })
+
+  it('never stores the client secret', () => {
+    expect(JSON.stringify(desiredAuthSettings('dev', { includeSmtp: true }))).not.toMatch(/google_secret/)
+  })
+})
