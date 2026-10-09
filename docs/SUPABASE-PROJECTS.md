@@ -99,6 +99,26 @@ Production access is a separate, deliberate grant.
 
 `.env.local` is gitignored and must stay that way. Never commit a key.
 
+## Auth settings are code, not dashboard clicks
+
+Site URL, redirect allow-list, sign-in email templates and SMTP live in
+[`supabase/auth-config.ts`](../supabase/auth-config.ts) for **both** projects. The two may
+differ only in site address and allow-list; `supabase/auth-config.test.ts` fails if anything
+else diverges. Do not change these in the dashboard — the next apply will undo it.
+
+```bash
+npm run supabase:auth-config -- --env dev                 # show differences (read-only)
+npm run supabase:auth-config -- --env dev --apply         # apply to dev
+npm run supabase:auth-config -- --env prod --apply --confirm-production   # prod: approval required
+```
+
+Set `RESEND_SMTP_KEY_DEV` / `RESEND_SMTP_KEY_PROD` in `.env.local` to include custom SMTP
+(Resend, `noreply@portal.hsnef.org`); without it SMTP is left untouched.
+
+**Why the email template matters:** the link is `/auth/callback?token_hash=…`, verified by the
+server, so a member can request a link on one device and open it on another. Supabase's
+default template uses a code that only works in the browser that asked.
+
 ---
 
 ## Related
