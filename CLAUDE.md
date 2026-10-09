@@ -224,6 +224,10 @@ feature/* (optional)  →  dev  →  main
 | `dev` | Preview | `dev-mp` (`bcujsesgrzijyisvmnwm`) | https://dev.member.hsnef.org |
 | `main` | Production | `prod-mp` (`gapvsdrzavjaublwkqfm`) | https://member.hsnef.org |
 
+⚠️ **Which project is which is documented once, in
+[`docs/SUPABASE-PROJECTS.md`](docs/SUPABASE-PROJECTS.md). If anything disagrees with that
+file, that thing is wrong.**
+
 ⚠️ **`gapvsdrzavjaublwkqfm` is PRODUCTION.** It was the shared project before the split
 (2026-09-02) and it kept its ref, so older notes show it under `dev` — they are wrong. Dev is
 `bcujsesgrzijyisvmnwm`. Check which ref your `.env.local` carries before you write anything.

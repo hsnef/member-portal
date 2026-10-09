@@ -2,19 +2,24 @@
 
 > The single source of truth for architecture decisions, current state, and session-to-session context. `/sdlc status` reads this file. Keep it current — a stale hub poisons the next session's context.
 
-_Last checked 2026-09-03._
+_Last checked 2026-10-08._
 
 ## Current Status
 
 **The portal is live at https://member.hsnef.org, on the new design system, with dev
 and production on separate databases. The DNS blocker cleared on 2026-09-02. There is
-no infrastructure blocker left — the open items are quality and hygiene, not launch.**
+no infrastructure blocker left — but **sign-in email is not production-ready** (see
+Session 9): neither Supabase project has custom SMTP, so magic links go through
+Supabase's built-in mailer.**
 
 - **Production** — `main` → Vercel production → Supabase `prod-mp`
   (`gapvsdrzavjaublwkqfm`). PR #4 merged 2026-09-02 (110 commits on `main`, a real
   merge commit). The build is READY and serves the design system; verified from the
   shipped CSS.
 - **Dev** — `dev` → Vercel preview → Supabase `dev-mp` (`bcujsesgrzijyisvmnwm`).
+  ⚠️ **Which project is which: [`SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md).**
+  `gapvsdrzavjaublwkqfm` is PRODUCTION, and reads as "dev" in anything written before
+  2026-09-02.
   Verified from the shipped JS that each host resolves its own database. The public
   dev URL no longer touches live member data.
 - **`member.hsnef.org` is UP.** Fixed 2026-09-02 by the person with Cloudflare access,
@@ -23,8 +28,8 @@ no infrastructure blocker left — the open items are quality and hygiene, not l
   Vercel anycast (`64.29.17.1` / `216.198.79.1`), returning `200` with `Server: Vercel`,
   and its stylesheet carries the design-system tokens. Re-check any time with
   `curl -sI https://member.hsnef.org | head -3`.
-- **Health:** build clean (86/86 pages) · tests **48, all passing** (vitest, added
-  2026-09-03) · lint
+- **Health:** build clean (86/86 pages) · tests: run `npm test` (vitest), do not trust a number written here ·
+  **CI runs Build and Tests on every push and PR** (`.github/workflows/ci.yml`) · lint
   failing (pre-existing) · types: run `npx tsc --noEmit`, do not trust a number
   written here.
 - **Vercel** is now ONE project, `member`. The old empty project is retired as
@@ -32,14 +37,15 @@ no infrastructure blocker left — the open items are quality and hygiene, not l
 
 ### Start here next session
 
-1. **The infrastructure work is done.**
+1. **Fix sign-in email first** — read the **Session 9** handoff. Custom SMTP on both
+   Supabase projects, and dev-mp's Site URL / redirect allow-list.
+2. **The infrastructure work is done.**
    [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) phases 1, 2,
    3, 5 and 6 are all ticked; only Phase 4 (test-data cleanup) remains and it is
    optional. Do not restart that runbook — read its ticks first.
-2. **Revoke the two tokens** issued to Claude on 2026-09-02 (Vercel + Supabase PAT) and
-   delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local`. Still outstanding as of
-   2026-09-03; the line is still in the file.
-3. Read the **Session 5** handoff at the bottom of this file.
+3. **Revoke the two tokens** issued to Claude on 2026-09-02 (Vercel + Supabase PAT) and
+   delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local`. Still outstanding
+   2026-10-08; Sujit has accepted the risk and deferred it.
 4. `git log --oneline -20` on `dev`. If this file and git disagree, trust git and
    fix this file. **Local `main` and local `dev` are both stale** — as of 2026-09-03
    local `main` sat 100+ commits behind `origin/main`. Compare against `origin/*`.
@@ -48,9 +54,9 @@ no infrastructure blocker left — the open items are quality and hygiene, not l
 
 | | |
 |---|---|
-| **Tokens to revoke** | A Vercel token and a Supabase PAT were issued to Claude on 2026-09-02. **Revoke both**, and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local` — still present 2026-09-03. Now the top item |
-| **Test coverage is thin** | vitest landed 2026-09-03 with 48 tests over the QR pass, the Zelle money path and the shared formatter. The `Tests` check is now live in the release gate. Everything touching Supabase, Stripe and the API routes is still untested |
-| **No `ci.yml`** | `/govkit-doctor`'s one missing guardrail. `.github/workflows/` holds only `deploy.yml` and `sdlc-docs.yml`. Jobs must be named to match `release-gate.config.json`'s `ciJob` values |
+| **Sign-in email** | No custom SMTP on either Supabase project; the built-in mailer allows 2 emails/hour and is not meant for real users. dev-mp's Site URL is `http://localhost:3000` with an empty redirect allow-list. `check-member-email` returns `check-failed` on both deployed sites. See Session 9 |
+| **Tokens to revoke** | A Vercel token and a Supabase PAT were issued to Claude on 2026-09-02. **Revoke both**, and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local` — still present 2026-10-08; risk accepted by Sujit for now |
+| **Test coverage is thin** | Tests cover the QR pass, the Zelle money path, the shared formatter, `cn()`, plus two guard suites — `app/auth-redirects.test.ts` (no auth redirect may point at a missing route) and `utils/design-tokens.test.ts` (no raw hex in `className`). Everything touching Supabase, Stripe and the API routes is still untested; that needs a Supabase client fake |
 | **Contrast** | White on `#c75b12` is 4.26:1, below WCAG AA's 4.5. `#b8530e` gives 4.90. One line in `app/globals.css`; a brand decision |
 | **PII in git history** | Rewritten and branches deleted, but GitHub keeps orphaned commits reachable by SHA. Closes when the repo goes private, which is the plan. See DEC-010 |
 | **SPF** | `hsnef.org` publishes three `v=spf1` records; RFC 7208 allows one |
@@ -351,6 +357,87 @@ Supabase auth hook, which is dashboard configuration.
 
 Related: 18 of 21 member routes had no "no membership" state and rendered against
 a null member. Nine reachable ones now share `NoMembershipState`.
+
+### Session 9 — 2026-10-08 — release of #14/#15; why sign-in fails
+
+Sujit reported he could not sign in. Nothing was changed in Supabase or Vercel;
+these are findings, read-only.
+
+**Supabase auth config, read via the Management API:**
+
+| | dev-mp (`bcujsesgrzijyisvmnwm`) | prod-mp (`gapvsdrzavjaublwkqfm`) |
+|---|---|---|
+| Site URL | `http://localhost:3000` | `https://member.hsnef.org` |
+| Redirect allow-list | **empty** | localhost, dev and prod hosts |
+| Custom SMTP | **none** | **none** |
+| Email rate limit | 2/hour | 2/hour |
+| Google provider | off | on |
+
+- **No custom SMTP anywhere.** Supabase's built-in mailer is rate-limited to 2
+  emails/hour per project and is not intended for real users. A magic-link-only
+  portal cannot work for members on it. The fix is SMTP via Resend, using the
+  already-verified `portal.hsnef.org` sending domain (see the `EMAIL_FROM` note
+  in the roadmap).
+- **dev-mp was never given auth URLs** after the 2026-09-02 split. With an empty
+  allow-list, the `emailRedirectTo` from `dev.member.hsnef.org` is rejected and
+  the link falls back to the Site URL, `localhost:3000`.
+- **`/api/auth/check-member-email` returns `{"reason":"check-failed"}` on both
+  deployed sites**, for any address. It fails open, so it is not what blocks
+  sign-in — but it means its server-side lookup throws in Vercel. The likeliest
+  cause is `SUPABASE_SERVICE_ROLE_KEY` missing from the Vercel env
+  (`createServiceClient` throws without it); not verified, as no Vercel CLI
+  access was available. If so, `/api/auth/link-member` fails too, and a member
+  who signs in is never linked to their member record.
+
+**Released:** `dev → main` for #14 (CI workflow) and #15 (Supabase refs docs).
+
+**Also corrected:** Session 8 said `.env.local` pointed at production and was
+flagged to fix. It has been fixed — it points at dev-mp as of 2026-10-08.
+
+### Session 8 — 2026-09-04 — Supabase refs pinned down; a live misconfiguration found
+
+Sujit is handing the repo to a second developer, so this session was about making
+the project safe to pick up cold.
+
+**A real misconfiguration, found by writing the doc.** `.env.local` on Sujit's
+machine had `NEXT_PUBLIC_SUPABASE_URL` pointing at the **production** project,
+`gapvsdrzavjaublwkqfm`, rather than dev.
+
+Local development therefore pointed at live member data,
+with `SUPABASE_SERVICE_ROLE_KEY` bypassing every RLS policy. Almost certainly set
+before the 2026-09-02 split, when that ref genuinely was the shared project, and
+never updated afterwards. Flagged to Sujit to fix; not edited here, since the
+file holds secrets. The deployed environments were checked and are correct — dev
+serves `bcujsesgrzijyisvmnwm`, production serves `gapvsdrzavjaublwkqfm`.
+
+This is the exact failure the whole documentation problem was pointing at, sitting
+on the machine of the person who had just had it explained to them. Worth
+remembering when judging how much "everyone knows that" is worth.
+
+**[`docs/SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md) is now the single source of
+truth** for which project is which. It explains *why* the confusion is structural
+rather than careless — the ref did not move, its meaning did — and carries a
+verified command for reading the live value out of a deployed site. Fourteen files
+mention a ref; the ones people act on now point here rather than restating it.
+
+**A guard test, after a false start.** The first version of
+`utils/supabase-refs.test.ts` flagged any line containing both the production ref
+and the word "dev". That failed on all seven lines that *explain* the trap —
+correct prose, every one. A check that cries wolf gets switched off, so it was
+narrowed to things that cannot be argued with: whether `.env.local.example` points
+at dev, whether any unmarked doc *assigns* the URL to production, and whether a
+file naming the production ref ever says it is production. Both failure shapes
+were reproduced to confirm the guard fires.
+
+**Also corrected in this file:** it still claimed 48 tests (now 71) and listed
+`ci.yml` as missing, an hour after it merged.
+
+**CI earned its keep on its second day.** This entry originally quoted the bad
+config as a literal `NEXT_PUBLIC_SUPABASE_URL=...` line, which the new guard
+correctly flagged — a copyable assignment naming production is dangerous even
+inside a story about it being dangerous. It was added *after* the local test run
+and never re-tested, so it went out green and CI caught it. The guard was right
+and the prose was reworded. Run `npm test` after the last edit, not before it.
 
 ### Session 7 — 2026-09-03 — magic-link-only; both auth defects fixed
 

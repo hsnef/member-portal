@@ -21,14 +21,16 @@
 
 **The next three things, in order:**
 
-1. **Revoke the two tokens** issued to Claude on 2026-09-02 (a Vercel token and a
-   Supabase PAT) and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local`. Still
-   outstanding as of 2026-09-03.
-2. ~~**Install a test framework**~~ ✅ **Done 2026-09-03** — vitest, 48 tests, and the
-   `Tests` check enabled in the release gate. Extend it; see Tier 2.
-3. **Add `.github/workflows/ci.yml`** (Tier 2) — `/govkit-doctor`'s one missing guardrail.
+1. **Make sign-in email work** (Tier 1, found 2026-10-08) — custom SMTP on both
+   Supabase projects, dev-mp's Site URL and redirect allow-list, and the
+   `check-member-email` failure on Vercel. Session 9 in `docs/PROJECT-HUB.md`.
+2. **Revoke the two tokens** issued to Claude on 2026-09-02 (a Vercel token and a
+   Supabase PAT) and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local`.
+   Still outstanding 2026-10-08; Sujit accepted the risk and deferred it.
+3. **Decide the two payment defects** in Tier 2 (Zelle `expiresAt`, dead
+   `calculateMembershipFee`).
 
-## Current Priority Tiers (as of 2026-09-03)
+## Current Priority Tiers (as of 2026-10-08)
 
 ### Tier 0 — EMPTY as of 2026-09-03
 
@@ -65,6 +67,14 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
   open** — see DEC-010, which closes when the repo goes private.
 
 ### Tier 1 — now
+
+- **Sign-in email is not production-ready (found 2026-10-08).** Neither Supabase
+  project has custom SMTP; the built-in mailer allows 2 emails/hour and is not for
+  real users. dev-mp's Site URL is `http://localhost:3000` with an empty redirect
+  allow-list, so dev magic links land on localhost. `/api/auth/check-member-email`
+  returns `check-failed` on both deployed sites — likely a missing
+  `SUPABASE_SERVICE_ROLE_KEY` in Vercel, which would also break
+  `/api/auth/link-member`. All three are dashboard configuration, not code.
 
 - ~~**Fix the `userData` bug in the two remaining admin files.**~~ ✅ **Done** — verified
   2026-09-03: `grep -rn userData app/admin/bookings/` returns nothing. Fixed during
@@ -191,11 +201,20 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
      Settings now. It has **zero callers**, so nothing is broken today, and `tsc`
      already flags it (`TS2339`). Delete it, or reimplement it against
      `getMembershipPricing()`. Leaving it is the option that eventually bites.
-- **Add `.github/workflows/ci.yml`.** `/govkit-doctor` reports this as the one missing guardrail.
-  govkit deliberately does not scaffold it — a wrong CI workflow is worse than none. It must run the
-  same checks as `release-gate.config.json`, and each job must be **named to match that file's
-  `ciJob` value** so the gate and CI describe the same thing. The existing `deploy.yml` is a deploy
-  workflow, not a checks workflow, and does not satisfy this.
+- ~~**Add `.github/workflows/ci.yml`.**~~ ✅ **Done 2026-09-03.** Two jobs, `Build` and
+  `Tests`, named to match the `ciJob` values in `release-gate.config.json` so CI and the
+  local gate describe the same checks. Runs on push and PR to `main` and `dev`, with
+  `concurrency` set so repeated pushes cancel the previous run rather than burning
+  Actions minutes.
+
+  **The build needs four placeholder env values in CI** — verified by hiding
+  `.env.local` and watching it fail. `lib/stripe/config.ts` throws at import without
+  `STRIPE_SECRET_KEY`, which kills the build while collecting page data for
+  `/api/stripe/create-payment-intent`. The values are fake and must stay fake; nothing
+  reaches a real service during a build.
+
+  Lint and Type check stay out. Both fail on pre-existing problems, and a job that is red
+  on day one gets ignored — which is worse than not having it. Add them when they pass.
 - **Clear the lint backlog** (mostly `@typescript-eslint/no-explicit-any`), then enable `Lint` in
   the release gate.
 - **Raise `scripts/source-doc-map.json` severities from `warn` to `gate`**, schema first, as each
@@ -296,6 +315,7 @@ verify locally — copy dev's `QR_TOKEN_SECRET` from Vercel if you need that.
 
 | Date | Session | Changes |
 |------|---------|---------|
+| 2026-10-08 | 9 | Sign-in email findings added to Tier 1 and START HERE. Token revocation deferred by Sujit. Stale CI item removed from START HERE. |
 | 2026-09-03 | 6 | vitest installed and the first 48 tests added over the QR pass, the Zelle money path and the shared formatter. `Tests` enabled in the release gate. Two defects recorded above, neither fixed: the Zelle malformed-`expiresAt` hole and the dead `calculateMembershipFee`. |
 | 2026-09-03 | 5 | Reconciled against the repo after `docs:sync-check` flagged this file stale. Tier 0 emptied (all three items closed 09-01/09-02). Cloudflare Phase 2 recorded as done — production is live. `userData` bug and stage 8 marked done. Every hardcoded type-error count replaced with the command. Environments table gained the Supabase refs, with a warning that `gapvsdrzavjaublwkqfm` is PRODUCTION. |
 | 2026-08-31 | 1 | Roadmap scaffolded by govkit; migrated from `tasks/NEXT_PRIORITIES.md`. |
