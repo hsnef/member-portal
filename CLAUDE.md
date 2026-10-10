@@ -180,7 +180,7 @@ a sibling presentational component takes plain props and renders.
 <!-- govkit:start -->
 # HSNEF Member Portal — Engineering Guardrails
 
-_Last checked 2026-09-03._
+_Last checked 2026-10-09._
 
 > Scaffolded by [govkit](https://github.com/techsilon-oss/govkit) `/govkit-init`. This block is delimited by `govkit:start`/`govkit:end` markers so re-running init won't duplicate it. Edit freely — but keep the markers if you want idempotent updates.
 
@@ -209,8 +209,8 @@ feature/* (optional)  →  dev  →  main
 - **Every merge requires explicit per-merge approval.** Green CI is necessary but NOT sufficient; wait for an explicit "merge it" / "ship it".
 - Feature branches are optional for small changes, recommended for larger/riskier work.
   **`redesign/design-system` branched off `dev`** and merges back into `dev` like any other feature branch.
-  As of 2026-09-02 it is **level with `dev`** — the port landed and PR #4 took it to `main`. Treat it as
-  the working branch, not an unmerged spike, and expect `git log` on the two to be identical.
+  It is **the working branch**: work lands there, goes to `dev` by PR (`--base dev`), and
+  `dev → main` is the release PR. Between PRs it runs a few commits ahead of `dev`; that is normal.
 
 **The flow, end to end:**
 
