@@ -29,18 +29,19 @@
 > production readiness. Defects found during review get `launch-blocker` or not.
 > The issues hold the checklists; this file holds the order and the why.
 
-**The next three things, in order:**
+**The next things, in order** (the full step-by-step is in `docs/PROJECT-HUB.md` →
+*Start here next session*):
 
-1. **Make sign-in email work** (Tier 1, found 2026-10-08) — custom SMTP on both
-   Supabase projects, and stop `prod-mp` pausing on the Free tier. Session 9 in
-   `docs/PROJECT-HUB.md`.
-2. **Revoke the two tokens** issued to Claude on 2026-09-02 (a Vercel token and a
-   Supabase PAT) and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local`.
-   Still outstanding 2026-10-08; Sujit accepted the risk and deferred it.
-3. **Decide the two payment defects** in Tier 2 (Zelle `expiresAt`, dead
-   `calculateMembershipFee`).
+1. **Sujit: Resend key → dev SMTP** (#18), then **Google redirect URI + secret → dev**.
+   Then Claude verifies, and Sujit tests a link opened on a second device.
+2. **Registration repairs** (#43, launch-blocker): the `/join` approval toggle, the
+   invitation link, Office Staff can add members.
+3. **Bookings can't be created** (#40, launch-blocker). First decide who generates
+   `booking_number` (recommend a DB trigger).
+4. **Seed rework** (#20), on branch `wip/seed-dev`.
+5. **Release `dev → main`**, then apply prod auth config and the RLS migration, with approval.
 
-## Current Priority Tiers (as of 2026-10-08)
+## Current Priority Tiers (as of 2026-10-09)
 
 ### Tier 0 — EMPTY as of 2026-09-03
 
@@ -82,8 +83,9 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
   project has custom SMTP; the built-in mailer allows 2 emails/hour and is not for
   real users. Both projects had also **paused** on the Free tier, which blocks all
   sign-in until someone unpauses them — a keep-alive or paid tier for `prod-mp`
-  stops that recurring. dev-mp's auth URLs were fixed 2026-10-08. Dashboard
-  configuration, not code.
+  stops that recurring (Sujit's keep-alive, #21). dev-mp's auth URLs were fixed 2026-10-08.
+  **Now code, not dashboard clicks (2026-10-09):** `supabase/auth-config.ts` +
+  `npm run supabase:auth-config`. It is waiting on Sujit's Resend key, #18.
 
 - ~~**Fix the `userData` bug in the two remaining admin files.**~~ ✅ **Done** — verified
   2026-09-03: `grep -rn userData app/admin/bookings/` returns nothing. Fixed during
@@ -324,6 +326,7 @@ verify locally — copy dev's `QR_TOKEN_SECRET` from Vercel if you need that.
 
 | Date | Session | Changes |
 |------|---------|---------|
+| 2026-10-09 | 10 | START HERE replaced with the resume order: Resend/Google steps for Sujit, then #43, #40, #20, release. #43 filed. Sign-in hardening (#41) merged to dev; Google (#42) open. |
 | 2026-10-08 | 9 | Go-live milestone created (#18–#38) with day-one scope. Sign-in email findings added to Tier 1 and START HERE; root cause was paused projects; dev-mp auth URLs fixed. Token revocation deferred by Sujit. Stale CI item removed from START HERE. |
 | 2026-09-03 | 6 | vitest installed and the first 48 tests added over the QR pass, the Zelle money path and the shared formatter. `Tests` enabled in the release gate. Two defects recorded above, neither fixed: the Zelle malformed-`expiresAt` hole and the dead `calculateMembershipFee`. |
 | 2026-09-03 | 5 | Reconciled against the repo after `docs:sync-check` flagged this file stale. Tier 0 emptied (all three items closed 09-01/09-02). Cloudflare Phase 2 recorded as done — production is live. `userData` bug and stage 8 marked done. Every hardcoded type-error count replaced with the command. Environments table gained the Supabase refs, with a warning that `gapvsdrzavjaublwkqfm` is PRODUCTION. |

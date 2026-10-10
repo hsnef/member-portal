@@ -2,7 +2,7 @@
 
 > The single source of truth for architecture decisions, current state, and session-to-session context. `/sdlc status` reads this file. Keep it current — a stale hub poisons the next session's context.
 
-_Last checked 2026-10-08._
+_Last checked 2026-10-09._
 
 ## Current Status
 
@@ -37,24 +37,71 @@ Supabase's built-in mailer.**
 
 ### Start here next session
 
-1. **Fix sign-in email first** — read the **Session 9** handoff. Custom SMTP on both
-   Supabase projects, and stop `prod-mp` pausing. dev-mp's auth URLs are done.
-2. **The infrastructure work is done.**
-   [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) phases 1, 2,
-   3, 5 and 6 are all ticked; only Phase 4 (test-data cleanup) remains and it is
-   optional. Do not restart that runbook — read its ticks first.
-3. **Revoke the two tokens** issued to Claude on 2026-09-02 (Vercel + Supabase PAT) and
-   delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local`. Still outstanding
-   2026-10-08; Sujit has accepted the risk and deferred it.
-4. `git log --oneline -20` on `dev`. If this file and git disagree, trust git and
-   fix this file. **Local `main` and local `dev` are both stale** — as of 2026-09-03
-   local `main` sat 100+ commits behind `origin/main`. Compare against `origin/*`.
+**Paused 2026-10-09 (Session 10) mid-way through go-live phase 0/1.** Work this list
+top to bottom. Items marked **Sujit** are his to do (Claude cannot: they need his
+accounts or keys); offer to walk him through them. Everything else is Claude's.
+
+**0. Housekeeping.** Was PR #42 (Google sign-in) merged? `gh pr view 42`. If merged,
+`git pull` on `redesign/design-system`. The seed WIP is parked on branch
+`wip/seed-dev`, not on the working branch.
+
+**A. Sujit: Resend key for dev SMTP (#18), about 5 minutes.**
+1. resend.com → **Domains**: confirm `portal.hsnef.org` is **Verified** (the only usable domain).
+2. **API Keys → Create API Key**: name `supabase-auth-dev`, permission **Sending
+   access**, domain `portal.hsnef.org`. Copy the `re_…` key; it is shown once.
+3. Add `RESEND_SMTP_KEY_DEV=re_…` to the bottom of `.env.local` (no quotes). It is gitignored.
+4. Preview: `! npm run supabase:auth-config -- --env dev`. Apply:
+   `! npm run supabase:auth-config -- --env dev --apply`. Claude then re-runs the
+   preview to confirm 0 differences.
+5. Test: request a link at https://dev.member.hsnef.org/login on the computer, then
+   open the email **on the phone**. Expect sender `HSNEF <noreply@portal.hsnef.org>`,
+   subject "Your HSNEF sign-in link", and signed in on the phone.
+
+**B. Sujit: Google sign-in on dev, about 5 minutes.**
+1. console.cloud.google.com → APIs & Services → Credentials → OAuth client
+   `846882916738-1kt27oa6…` → Authorized redirect URIs → **add**
+   `https://bcujsesgrzijyisvmnwm.supabase.co/auth/v1/callback` (keep the prod one). Save.
+2. Same page → Client secrets → **Add secret**. Adding one does not invalidate the
+   old secret. Put it in `.env.local` as `GOOGLE_OAUTH_CLIENT_SECRET=…`.
+3. Re-run the preview, then `--apply`, for dev, as in A4.
+4. OAuth consent screen: publishing status must be **In production**, not Testing,
+   or members cannot use Google.
+
+**C. Claude: registration repairs (#43, launch-blocker).** `/join` honours the
+`require_member_approval` toggle via a new server route; `/join` stops writing columns
+that do not exist; the invitation email links to `/login`; the `members` INSERT RLS
+gains `Office Staff` (migration on dev first, prod with approval). Rule:
+**fix existing workflows, do not redesign; one flow on dev and prod.**
+
+**D. Claude: bookings can't be created (#40, launch-blocker).** Needs one decision
+from Sujit first: who generates `booking_number`. Recommend a DB trigger, matching
+`membership_id`, `request_number` and `receipt_number`.
+
+**E. Claude: seed rework (#20)** on `wip/seed-dev`, per the comment on #20: no demo
+sign-in accounts, demo rows marked `legacy_id` `DEMO-…`, testers onboard through the real
+app. Dev only: the script refuses any other target (`assertDevTarget`).
+
+**F. Release and production (approval gate).** `dev → main` PR. Then, with Sujit's
+explicit go-ahead: a second Resend key `supabase-auth-prod` → `RESEND_SMTP_KEY_PROD`,
+`npm run supabase:auth-config -- --env prod --apply --confirm-production`, and the #43
+RLS migration on prod-mp. Production is kept launch-ready but **not launched** until
+the board and testers are comfortable.
+
+**Then** the phase 1 area reviews (#22–#28) on dev, per role.
+
+**Standing facts:**
+- [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) is done; do not restart it.
+- Token revocation (Vercel + Supabase PAT from 2026-09-02) is deferred: Sujit accepted
+  the risk. `SUPABASE_ACCESS_TOKEN` in `.env.local` is what the auth-config script uses.
+- The classifier blocks Claude from Supabase Management PATCH calls and production
+  reads. Sujit runs those with `!` (Git Bash syntax). Read-only GETs work for Claude.
+- Compare against `origin/*`; local `main` and `dev` are stale.
 
 ### Still open, in rough priority order
 
 | | |
 |---|---|
-| **Sign-in email** | No custom SMTP on either Supabase project; the built-in mailer allows 2 emails/hour and is not meant for real users. Both projects had also paused on the Free tier, which blocks all sign-in. See Session 9 |
+| **Sign-in email** | No custom SMTP on either Supabase project yet. The settings are now code (`supabase/auth-config.ts`) and waiting on a Resend key from Sujit; see Start here A. Keep-alive for pausing is Sujit's (#21) |
 | **Tokens to revoke** | A Vercel token and a Supabase PAT were issued to Claude on 2026-09-02. **Revoke both**, and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local` — still present 2026-10-08; risk accepted by Sujit for now |
 | **Test coverage is thin** | Tests cover the QR pass, the Zelle money path, the shared formatter, `cn()`, plus two guard suites — `app/auth-redirects.test.ts` (no auth redirect may point at a missing route) and `utils/design-tokens.test.ts` (no raw hex in `className`). Everything touching Supabase, Stripe and the API routes is still untested; that needs a Supabase client fake |
 | **Contrast** | White on `#c75b12` is 4.26:1, below WCAG AA's 4.5. `#b8530e` gives 4.90. One line in `app/globals.css`; a brand decision |
@@ -357,6 +404,39 @@ Supabase auth hook, which is dashboard configuration.
 
 Related: 18 of 21 member routes had no "no membership" state and rendered against
 a null member. Nine reachable ones now share `NoMembershipState`.
+
+### Session 10 — 2026-10-09 — sign-in made production-grade; registration repairs scoped
+
+**Merged to dev:** #41, sign-in hardening:
+- Email links carry `token_hash` and are verified by the server in `/auth/callback`,
+  so a link works **on any device**. The old PKCE code only worked in the browser that
+  asked for it.
+- Fixed a reflected XSS in the callback hand-off page (the redirect had been pasted
+  into a JS string).
+- Redirects go through `lib/auth/redirect.ts` (same-site paths only).
+- Member-email matching ignores case (`lib/auth/memberEmail.ts`). A household's
+  secondary email gets a clear message: one login per household (`members.auth_user_id`).
+- Supabase auth settings are now **code**, for both projects:
+  `supabase/auth-config.ts` + `npm run supabase:auth-config`. The two projects may
+  differ only in site URL and allow-list, and a test enforces that. See
+  [`SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md).
+
+**Open:** #42, Google sign-in on both projects, without the forced consent prompt
+(CI green).
+
+**Decisions (Sujit):**
+- No stop-gaps and no one-time login hacks. The same login flow on dev and prod;
+  the email you sign in with decides what you see.
+- Office registration and approval workflows stay. Repair them, don't redesign them.
+- `/join` approval is a toggle the office controls (`require_member_approval`).
+- Office Staff can add members.
+- Google on for both projects.
+- Seed data is dev-only and is what testers and the board will use.
+- Zelle is not day-one.
+
+**Filed:** #40 (bookings can't be created) and #43 (registration repairs), both launch-blockers.
+
+**Parked:** seed WIP on branch `wip/seed-dev`. The `scripts/dev-signin.ts` stop-gap was deleted, never committed.
 
 ### Session 9 — 2026-10-08 — release of #14/#15; why sign-in fails
 
