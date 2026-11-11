@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
+import { makeAuthListener } from './authListener'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import type { UserRole, Member } from '@/types/database'
@@ -203,21 +204,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false)
       })
 
-    // Listen for auth changes
+    // Listen for auth changes. The callback must stay synchronous: awaiting a
+    // Supabase call inside it deadlocks on the auth lock (see authListener.ts).
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        await fetchMemberAndRoles(session.user.id, session.user.email)
-      } else {
-        setMember(null)
-        setMembers([])
-        setActiveMemberId(null)
-        setRoles([])
-      }
-      setLoading(false)
-    })
+    } = supabase.auth.onAuthStateChange(
+      makeAuthListener<User>({
+        setUser,
+        load: (u) => fetchMemberAndRoles(u.id, u.email),
+        clear: () => {
+          setMember(null)
+          setMembers([])
+          setActiveMemberId(null)
+          setRoles([])
+        },
+        setLoading,
+      })
+    )
 
     return () => subscription.unsubscribe()
     // eslint-disable-next-line react-hooks/exhaustive-deps
