@@ -86,7 +86,7 @@ const SETTINGS_CARDS: SettingsCard[] = [
     href: '/admin/members/import',
     icon: UploadIcon,
     tone: 'saffron',
-    roles: ['Admin', 'Office Manager', 'Office Staff'],
+    roles: ['Admin', 'Office Manager'],
   },
   {
     title: 'Import history',
@@ -94,7 +94,7 @@ const SETTINGS_CARDS: SettingsCard[] = [
     href: '/admin/members/import-history',
     icon: HistoryIcon,
     tone: 'sandal',
-    roles: ['Admin', 'Office Manager', 'Office Staff'],
+    roles: ['Admin', 'Office Manager'],
   },
   {
     title: 'Service catalog',

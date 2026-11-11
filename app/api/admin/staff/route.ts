@@ -17,19 +17,26 @@ import { isStaffRole, wouldRemoveLastAdmin } from '@/lib/admin/staffRules'
  *          non-test Admin.
  */
 
-async function requireAdmin() {
+type AdminCheck =
+  | { ok: false; response: NextResponse }
+  | { ok: true; service: ReturnType<typeof createServiceClient> }
+
+async function requireAdmin(): Promise<AdminCheck> {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { error: NextResponse.json({ error: 'Not signed in' }, { status: 401 }) }
+  if (!user) return { ok: false, response: NextResponse.json({ error: 'Not signed in' }, { status: 401 }) }
 
   const service = createServiceClient()
   const { data: roles } = await service.from('user_roles').select('role').eq('user_id', user.id)
   if (!roles?.some((r: { role: string }) => r.role === 'Admin')) {
-    return { error: NextResponse.json({ error: 'Only an Admin can manage staff roles' }, { status: 403 }) }
+    return {
+      ok: false,
+      response: NextResponse.json({ error: 'Only an Admin can manage staff roles' }, { status: 403 }),
+    }
   }
-  return { user, service }
+  return { ok: true, service }
 }
 
 type Service = ReturnType<typeof createServiceClient>
@@ -80,7 +87,7 @@ async function listStaff(service: Service) {
 
 export async function GET() {
   const auth = await requireAdmin()
-  if ('error' in auth) return auth.error
+  if (!auth.ok) return auth.response
   try {
     return NextResponse.json({ staff: await listStaff(auth.service) })
   } catch (error) {
@@ -91,7 +98,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const auth = await requireAdmin()
-  if ('error' in auth) return auth.error
+  if (!auth.ok) return auth.response
 
   const body = await request.json().catch(() => null)
   const email = normaliseEmail(body?.email)
@@ -120,7 +127,7 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   const auth = await requireAdmin()
-  if ('error' in auth) return auth.error
+  if (!auth.ok) return auth.response
 
   const body = await request.json().catch(() => null)
   const userId = typeof body?.userId === 'string' ? body.userId : ''

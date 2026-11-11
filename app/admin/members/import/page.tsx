@@ -2,16 +2,17 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
 import Papa from 'papaparse'
 import { createClient } from '@/lib/supabase/client'
 import { parseAddress, parsePhone, isValidEmail, parseDate } from '@/lib/utils/addressParser'
+import { parseMailingAddress, isRowEmpty } from '@/lib/utils/memberImportValidation'
 import {
-  validateMemberNumberFormat,
-  isMemberNumberUnique,
-  generateMemberNumber,
-  parseMailingAddress,
-  isRowEmpty,
-} from '@/lib/utils/memberImportValidation'
+  legacyMemberNumber,
+  parseMemberClass,
+  parseMemberLevel,
+  parseNakshatra,
+} from '@/lib/import/memberRowRules'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Alert } from '@/components/ui/Alert'
@@ -89,7 +90,8 @@ interface ParsedMember {
   // Original data
   original: CSVRow
   // Member data
-  membership_id: string // Member_Number (auto-generated if blank)
+  /** The file's Member_Number, kept as legacy_id. Every member gets a new number. */
+  legacy_id: string | null
   member_class: 'Personal' | 'Business'
   current_level: 'Community' | 'Annual' | 'Lifetime'
   business_name?: string
@@ -122,7 +124,6 @@ interface ParsedMember {
   // Validation
   isValid: boolean
   errors: string[]
-  memberNumberGenerated: boolean
 }
 
 export default function ImportMembersPage() {
@@ -166,7 +167,6 @@ export default function ImportMembersPage() {
 
   const parseCSVRow = (row: CSVRow): ParsedMember => {
     const errors: string[] = []
-    let memberNumberGenerated = false
 
     // 1. VALIDATE REQUIRED FIELDS (only First_Name and Last_Name are required)
     const firstName = row.Member_First_Name?.trim() || ''
@@ -179,36 +179,27 @@ export default function ImportMembersPage() {
       errors.push('Member_Last_Name is required')
     }
 
-    // 2. PARSE MEMBER CLASS (default to Personal)
-    let memberClass: 'Personal' | 'Business' = 'Personal'
-    const classStr = row.Member_Class?.trim().toLowerCase() || 'personal'
-    if (classStr.includes('business')) {
-      memberClass = 'Business'
+    // 2. MEMBER CLASS: blank means Personal; anything unrecognised is refused.
+    const parsedClass = parseMemberClass(row.Member_Class)
+    if (!parsedClass) {
+      errors.push(`Member_Class "${row.Member_Class}" is not one we accept (Personal or Business)`)
     }
+    const memberClass: 'Personal' | 'Business' = parsedClass ?? 'Personal'
 
-    // 3. PARSE MEMBER TYPE/LEVEL (default to Community)
-    let memberLevel: 'Community' | 'Annual' | 'Lifetime' = 'Community'
-    const typeStr = row.Member_Type?.trim().toLowerCase() || 'community'
-    if (typeStr.includes('lifetime')) {
-      memberLevel = 'Lifetime'
-    } else if (typeStr.includes('annual')) {
-      memberLevel = 'Annual'
+    // 3. MEMBER TYPE (level): required, one of Community / Annual / Lifetime.
+    const parsedLevel = parseMemberLevel(row.Member_Type)
+    if (!parsedLevel) {
+      errors.push(
+        row.Member_Type?.trim()
+          ? `Member_Type "${row.Member_Type}" must be Community, Annual or Lifetime`
+          : 'Member_Type is required (Community, Annual or Lifetime)'
+      )
     }
+    const memberLevel: 'Community' | 'Annual' | 'Lifetime' = parsedLevel ?? 'Community'
 
-    // 4. VALIDATE/GENERATE MEMBER_NUMBER
-    let memberNumber = row.Member_Number?.trim() || ''
-
-    if (memberNumber) {
-      // Validate existing Member_Number
-      const validation = validateMemberNumberFormat(memberNumber, memberClass, row.Member_Type)
-      if (!validation.isValid) {
-        errors.push(`Member_Number: ${validation.error}`)
-      }
-      // Note: Uniqueness will be checked during import (async operation)
-    } else {
-      // Will be auto-generated during import
-      memberNumberGenerated = true
-    }
+    // 4. MEMBER NUMBER: every imported member gets a new number from the
+    // database (DEC-012). The file's own number is kept as legacy_id.
+    const legacyId = legacyMemberNumber(row.Member_Number)
 
     // 5. PARSE BUSINESS FIELDS
     let businessName = row.Business_Name?.trim() || ''
@@ -254,10 +245,14 @@ export default function ImportMembersPage() {
     const primaryEmail = row.Primary_Member_Email_Address?.trim() || ''
     const primaryPhone1 = parsePhone(row.Primary_Phone_Number_1 || '')
     const primaryPhone2 = parsePhone(row.Primary_Phone_Number_2 || '')
-    const memberNakshatra = row.Member_Nakshatra?.trim() || ''
+    const memberStar = parseNakshatra(row.Member_Nakshatra)
+    if (memberStar === 'invalid') errors.push(`Member_Nakshatra "${row.Member_Nakshatra}" is not a Nakshatra we know`)
+    const memberNakshatra = memberStar && memberStar !== 'invalid' ? memberStar : ''
 
-    // Only validate primary email if provided
-    if (primaryEmail && !isValidEmail(primaryEmail)) {
+    // The primary email is required: it is how the member signs in.
+    if (!primaryEmail) {
+      errors.push('Primary_Member_Email_Address is required')
+    } else if (!isValidEmail(primaryEmail)) {
       errors.push('Invalid Primary_Member_Email_Address format')
     }
 
@@ -277,7 +272,9 @@ export default function ImportMembersPage() {
     const secondaryLastName = row.Secondary_Last_Name?.trim() || ''
     const secondaryEmail = row.Secondary_Email?.trim() || ''
     const secondaryPhone = parsePhone(row.Secondary_Phone_Number || '')
-    const secondaryNakshatra = row.Secondary_Nakshatra?.trim() || ''
+    const secondaryStar = parseNakshatra(row.Secondary_Nakshatra)
+    if (secondaryStar === 'invalid') errors.push(`Secondary_Nakshatra "${row.Secondary_Nakshatra}" is not a Nakshatra we know`)
+    const secondaryNakshatra = secondaryStar && secondaryStar !== 'invalid' ? secondaryStar : ''
 
     // Validate secondary email if provided
     if (secondaryEmail && !isValidEmail(secondaryEmail)) {
@@ -334,13 +331,17 @@ export default function ImportMembersPage() {
         if (child.email && !isValidEmail(child.email)) {
           errors.push(`Invalid Child_${child.order}_Email format`)
         }
+        const childStar = parseNakshatra(child.nakshatra)
+        if (childStar === 'invalid') {
+          errors.push(`Child_${child.order}_Nakshatra "${child.nakshatra}" is not a Nakshatra we know`)
+        }
 
         familyMembers.push({
           relationship: 'Child',
           first_name: child.firstName,
           last_name: child.lastName,
           email: child.email || undefined,
-          nakshatra: child.nakshatra || undefined,
+          nakshatra: childStar && childStar !== 'invalid' ? childStar : undefined,
           child_order: child.order,
         })
       }
@@ -348,7 +349,7 @@ export default function ImportMembersPage() {
 
     const parsed: ParsedMember = {
       original: row,
-      membership_id: memberNumber, // May be empty if auto-generated
+      legacy_id: legacyId,
       member_class: memberClass,
       current_level: memberLevel,
       business_name: businessName || undefined,
@@ -379,7 +380,6 @@ export default function ImportMembersPage() {
       family_members: familyMembers,
       isValid: errors.length === 0,
       errors,
-      memberNumberGenerated,
     }
 
     return parsed
@@ -451,24 +451,6 @@ export default function ImportMembersPage() {
       // Step 2: Import members with batch_id
       for (const member of validMembers) {
         try {
-          // Generate or validate Member_Number
-          let finalMemberNumber = member.membership_id
-
-          if (member.memberNumberGenerated) {
-            // Auto-generate Member_Number
-            finalMemberNumber = await generateMemberNumber(member.member_class, member.current_level)
-          } else if (finalMemberNumber) {
-            // Check uniqueness of provided Member_Number
-            const isUnique = await isMemberNumberUnique(finalMemberNumber)
-            if (!isUnique) {
-              results.failed++
-              results.errors.push(
-                `Row with Member_Number ${finalMemberNumber}: Member_Number already exists in database`
-              )
-              continue // Skip this member
-            }
-          }
-
           // Get primary member's email for display name
           const primaryMember = member.family_members.find((fm) => fm.relationship === 'Primary')
           const displayEmail = primaryMember?.email || 'No email'
@@ -477,7 +459,11 @@ export default function ImportMembersPage() {
           const { data: insertedMember, error: memberError } = await supabase
             .from('members')
             .insert({
-              membership_id: finalMemberNumber || null,
+              // No membership_id: the members trigger assigns the next number
+              // for the level under its lock (DEC-012). The file's number is
+              // kept as the legacy ID.
+              membership_id: null,
+              legacy_id: member.legacy_id,
               member_class: member.member_class,
               current_level: member.current_level,
               // Primary member info
@@ -602,10 +588,12 @@ export default function ImportMembersPage() {
       ),
     },
     {
-      key: 'membership_id',
-      header: 'Membership',
+      key: 'legacy_id',
+      header: 'Membership number',
       cell: (m) => (
-        <span className="tnum text-ink-2">{m.membership_id || 'auto'}</span>
+        <span className="tnum text-ink-2">
+          New number{m.legacy_id ? ` · was ${m.legacy_id}` : ''}
+        </span>
       ),
     },
     {
@@ -637,13 +625,16 @@ export default function ImportMembersPage() {
         )}
       </div>
       <p className="tnum truncate text-[13.5px] text-ink-2">
-        {m.membership_id || 'auto'} \· {m.current_level}
+        New number{m.legacy_id ? ` (was ${m.legacy_id})` : ''} \· {m.current_level}
       </p>
       {!m.isValid && <p className="text-[13px] text-danger">{m.errors.join('; ')}</p>}
     </div>
   )
 
   return (
+    // Narrower than the /admin default: importing (and reverting) whole batches
+    // of members is for Admin and Office Manager (decided 2026-11-11).
+    <ProtectedRoute requiredRoles={['Admin', 'Office Manager']}>
     <div className="space-y-7">
       <PageHeader
         eyebrow="Members"
@@ -714,6 +705,52 @@ export default function ImportMembersPage() {
         </div>
       ) : (
         <>
+          {/* ---- The format we accept ---- */}
+          <Card tone="sunk" spine="saffron" className="pl-7">
+            <CardHeader
+              title="Send us the data in this format"
+              description="Ask the temple team to fill in the template, one row per membership (household), and save it as CSV. Rows that do not fit are not imported; the preview says why, row by row."
+            />
+            <dl className="space-y-3 text-[14px] leading-relaxed text-ink-2">
+              <div>
+                <dt className="font-semibold text-ink">Required on every row</dt>
+                <dd>
+                  Member_First_Name, Member_Last_Name, Primary_Member_Email_Address (how the member
+                  signs in), and Member_Type: Community, Annual or Lifetime.
+                </dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-ink">Membership numbers</dt>
+                <dd>
+                  Every member gets a new membership number. Any number in Member_Number is kept as
+                  the member&apos;s legacy ID, so the old number can still be looked up.
+                </dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-ink">Household</dt>
+                <dd>
+                  The member, an optional spouse or partner (Secondary_…) and up to four children
+                  (Child_1_… to Child_4_…), all under the one membership.
+                </dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-ink">Other accepted values</dt>
+                <dd>
+                  Member_Class: Personal (or blank) or Business; a business needs Business_Name.
+                  Nakshatra columns: one of the 27 Nakshatras, or blank. Member_Since: a date, e.g.
+                  2020-01-31.
+                </dd>
+              </div>
+            </dl>
+            <div className="mt-5">
+              <a href="/member-import-template.csv" download>
+                <Button variant="secondary" icon={DownloadIcon}>
+                  Download the template
+                </Button>
+              </a>
+            </div>
+          </Card>
+
           {/* ---- Upload ---- */}
           <Card>
             <CardHeader
@@ -776,7 +813,7 @@ export default function ImportMembersPage() {
                 columns={previewColumns}
                 rows={parsedMembers}
                 rowKey={(m) =>
-                  [m.membership_id, m.primary_email, m.first_name, m.last_name].join('|')
+                  [m.legacy_id, m.primary_email, m.first_name, m.last_name].join('|')
                 }
                 mobileCard={previewCard}
               />
@@ -802,5 +839,6 @@ export default function ImportMembersPage() {
         </>
       )}
     </div>
+    </ProtectedRoute>
   )
 }
