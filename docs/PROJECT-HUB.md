@@ -6,11 +6,11 @@ _Last checked 2026-11-11._
 
 ## Current Status
 
-**The portal is live at https://member.hsnef.org, on the new design system, with dev
-and production on separate databases. The DNS blocker cleared on 2026-09-02. There is
-no infrastructure blocker left — but **sign-in email is not production-ready** (see
-Session 9): neither Supabase project has custom SMTP, so magic links go through
-Supabase's built-in mailer.**
+**Released to production 2026-11-11 (PR #50). The portal is live at https://member.hsnef.org
+with working registration (approval ON), bookings, reliable sign-in, Resend sign-in email on
+both projects, and Admin-managed staff roles. Both databases are at ground zero: no members;
+the only role is `gsujit@gmail.com` as Admin. Not launched to members yet: the real
+membership import (#34) and the phase 1 reviews come first.**
 
 - **Production** — `main` → Vercel production → Supabase `prod-mp`
   (`gapvsdrzavjaublwkqfm`). PR #4 merged 2026-09-02 (110 commits on `main`, a real
@@ -37,14 +37,10 @@ Supabase's built-in mailer.**
 
 ### Start here next session
 
-**Paused 2026-11-11 (Session 11).** Work this list top to bottom. Items marked
-**Sujit** need his accounts; offer to walk him through them (Claude in Chrome works).
+**Paused 2026-11-11 (Session 11), after the production release.** Work this list top to
+bottom. Items marked **Sujit** need his accounts.
 
-**A. Sujit: merge the PR `redesign/design-system → dev`**, then test on dev:
-`/join` with `gsujit+test-NN@gmail.com` → Office → Pending registrations → approve →
-sign in → book a service as that member, and one as the office. Approval is **ON** on dev.
-
-**B. Sujit: Google sign-in on dev, about 5 minutes.**
+**A. Sujit: Google sign-in on dev, about 5 minutes** (prod already has it).
 1. console.cloud.google.com → APIs & Services → Credentials → OAuth client
    `846882916738-1kt27oa6…` → Authorized redirect URIs → **add**
    `https://bcujsesgrzijyisvmnwm.supabase.co/auth/v1/callback` (keep the prod one). Save.
@@ -53,28 +49,21 @@ sign in → book a service as that member, and one as the office. Approval is **
 3. Preview, then `! npm run supabase:auth-config -- --env dev --apply`.
 4. OAuth consent screen: publishing status must be **In production**, not Testing.
 
-**C. Sujit: Vercel `RESEND_API_KEY` (#19).** Production = Resend key `portal-app-prod`
-only; Preview = `portal-app-dev`. The register is in `.env.local.example`.
+**B. Sujit: Vercel `RESEND_API_KEY` (#19).** Production = Resend key `portal-app-prod`
+only; Preview = `portal-app-dev`. Until then app emails (approval invitations, booking
+confirmations) may not send from the deployed sites. The register is in `.env.local.example`.
 
-**D. Claude: seed rework (#20)** on `wip/seed-dev`, per the comment on #20: no demo
-sign-in accounts, demo rows marked `legacy_id` `DEMO-…`, testers onboard through the real
-app. Dev only: the script refuses any other target (`assertDevTarget`).
+**C. The real membership import (#34).** The temple fills the template (format on the
+import page and in `docs/guides/features/import-instructions-for-staff.md`); an Admin or
+Office Manager imports it on prod. Try it on dev first with a sample file.
 
-**E. Release and production (approval gate).** Checked read-only 2026-11-11: prod-mp has
-the membership-ID function and the same `members` triggers as dev, no booking trigger yet,
-the old INSERT policy, 0 bookings, **8 members** and approval **OFF**. Order matters:
-(1) turn `require_member_approval` **ON on prod before the release deploys**: the new
-`/join` works, and with approval off every applicant becomes a member at once;
-(2) if the 8 members are test rows, clear them (#34) **before** importing the real
-membership, or new numbers continue after the test ones (DEC-012).
-Then `dev → main` PR, and with Sujit's explicit go-ahead, on prod-mp: `RESEND_SMTP_KEY_PROD` (Resend key `supabase-auth-prod`,
-already created) and `npm run supabase:auth-config -- --env prod --apply --confirm-production`;
-migrations `20261111000001` (Office Staff insert, #43), `20261111000002` (booking
-numbers, #40) and `20261111000003` (membership-ID lock, DEC-012); first confirm
-`generate_membership_id` exists on prod-mp (schema parity, #30); set `require_member_approval` ON (Sujit's call: approval at launch).
-Production is kept launch-ready but **not launched** until the board and testers are comfortable.
+**D. Phase 1 area reviews (#22–#28)** on dev, per role. Testers join through `/join`
+(approval ON on dev too) or are added by the office; there is no seed data (#20 closed).
 
-**Then** the phase 1 area reviews (#22–#28) on dev, per role.
+**E. Tidy-ups found 2026-11-11:** terms text names `portal.hsnef.org` as the portal (#35);
+a frozen tab holding the auth lock hangs other tabs, add a timeout (#29); the email footer
+links `portal.hsnef.org`; booking and items are two inserts, not one transaction (#25);
+`/api/members/send-welcome` has no auth check (#29); the footer's "Deployed" date can lag a day.
 
 **Standing facts:**
 - [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) is done; do not restart it.
@@ -391,6 +380,29 @@ Supabase auth hook, which is dashboard configuration.
 
 Related: 18 of 21 member routes had no "no membership" state and rendered against
 a null member. Nine reachable ones now share `NoMembershipState`.
+
+### Session 11, release — 2026-11-11 — production released and reset to ground zero
+
+**Released:** PR #50 (`dev → main`, from #44–#49), deployed and checked on member.hsnef.org:
+Staff roles lists only `gsujit@gmail.com` (Admin, no membership); approval ON; import page
+shows the format card; `/join` shows prices; `/api/join` and `/api/admin/staff` live.
+
+**Production steps (run by Sujit, previewed first, all checked):**
+- Auth config applied to prod-mp: Resend SMTP (`supabase-auth-prod`), HSNEF templates,
+  email limit 2 → 60/h, allow-list narrowed to `https://member.hsnef.org/**`. Re-check: 0 diff.
+- One transaction (rehearsed on dev-mp first): `gsujit@gmail.com` → Admin; migrations
+  `20261111000001`–`…03`; approval ON; the 8 January leftover members deleted (no payments
+  or receipts; 2 terms rows, 18 audit rows) and the 4 roles on their `@hsnef.org` sign-in
+  accounts removed. Those bare accounts are kept: other tables reference them without
+  ON DELETE, and with no role or membership they cannot use the portal.
+
+**Dev reset the same way:** 7 test members, Test Eleven's application, 2 test bookings and
+the `gsujit+test-11` account deleted; #20 (seed data) closed as not needed.
+
+**Found during the dev test and fixed in this release:** a sign-in deadlock (#45), a new
+member being signed out on first sign-in (#46), the approval dialog's random ID and missing
+email, "Invalid Date", the priest being required, and the importer validating a number
+scheme the database rejects (#49).
 
 ### DEC-012: membership numbers are per database, level-encoded, and generated under a lock
 **2026-11-11 · Decided (Sujit).**
