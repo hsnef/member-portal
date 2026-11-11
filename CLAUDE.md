@@ -97,8 +97,13 @@ snapshot, wrong about routes, roles and dead links. See DEC-003.
 type UserRole = 'Member' | 'Office Staff' | 'Office Manager' | 'Admin'
 ```
 
+**Admin is the top role, and every Admin has the same full access** (Sujit's term
+"super user" means Admin; say Admin). Staff roles belong to the sign-in account, not
+to a membership: an Admin need not be a member. Admins give roles by email at
+`/admin/settings/staff-roles`.
+
 Roles are an **array** on the user (`user_roles` table); a user holds several.
-Every staff member also holds `Member`.
+Staff usually also hold `Member`, but need not: roles and memberships are independent.
 
 Three patterns, copy them from `components/auth/RoleGate.tsx`. Do not invent a fourth:
 
@@ -114,19 +119,22 @@ authoritative and was deliberately not tightened during the port -- see DEC-004
 in `docs/PROJECT-HUB.md`.
 
 - Section default, set once in `app/admin/layout.tsx` → `['Office Staff','Office Manager','Admin']`
-- Six routes narrow it further, each keeping its own nested `ProtectedRoute`:
+- Eight routes narrow it further, each keeping its own nested `ProtectedRoute`:
   - `/admin/settings/staff-roles` → `['Admin']`
   - `/admin/login-activity`, `/admin/members/[id]/login-activity`,
     `/admin/test-accounts` → `['Admin','Office Manager']`
+  - `/admin/members/import`, `/admin/members/import-history` →
+    `['Admin','Office Manager']` (narrowed 2026-11-11: importing and reverting
+    whole batches is for Admin and Office Manager)
   - `/admin/portal-settings`, `/admin/zelle/settings` → `['Office Manager','Admin']`
 - `/admin/settings/appearance` uses an inline Admin check (a fourth pattern; see Tier 3)
 - `/verify-qr` sits outside both sections and keeps its own staff gate
-- `/admin/members/new`, `/[id]/edit` and `/import` are **any staff role**, not
+- `/admin/members/new` and `/[id]/edit` are **any staff role**, not
   Manager+Admin as previously documented
 - Everything under `/member` → authenticated, no role check, set once in
   `app/member/layout.tsx`
 
-**Never remove a nested `ProtectedRoute` when restyling a page.** Those six are
+**Never remove a nested `ProtectedRoute` when restyling a page.** Those eight are
 narrower than the section default; dropping one silently widens access.
 
 Never render a dead disabled button for a missing permission — use
@@ -180,7 +188,7 @@ a sibling presentational component takes plain props and renders.
 <!-- govkit:start -->
 # HSNEF Member Portal — Engineering Guardrails
 
-_Last checked 2026-09-03._
+_Last checked 2026-11-11._
 
 > Scaffolded by [govkit](https://github.com/techsilon-oss/govkit) `/govkit-init`. This block is delimited by `govkit:start`/`govkit:end` markers so re-running init won't duplicate it. Edit freely — but keep the markers if you want idempotent updates.
 
@@ -209,8 +217,8 @@ feature/* (optional)  →  dev  →  main
 - **Every merge requires explicit per-merge approval.** Green CI is necessary but NOT sufficient; wait for an explicit "merge it" / "ship it".
 - Feature branches are optional for small changes, recommended for larger/riskier work.
   **`redesign/design-system` branched off `dev`** and merges back into `dev` like any other feature branch.
-  As of 2026-09-02 it is **level with `dev`** — the port landed and PR #4 took it to `main`. Treat it as
-  the working branch, not an unmerged spike, and expect `git log` on the two to be identical.
+  It is **the working branch**: work lands there, goes to `dev` by PR (`--base dev`), and
+  `dev → main` is the release PR. Between PRs it runs a few commits ahead of `dev`; that is normal.
 
 **The flow, end to end:**
 

@@ -11,6 +11,7 @@ import {
   type WizardCartItem,
 } from '@/components/member/BookingWizardView'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { cartTotal, toBookingItemRows, toBookingRow } from '@/lib/bookings/bookingRows'
 import { formatPhoneNumber } from '@/lib/utils/formatters'
 import { NoMembershipState } from '@/components/member/NoMembershipState'
 
@@ -117,15 +118,11 @@ export default function NewBookingPage() {
       alert('Please enter the service location address')
       return
     }
-    if (!selectedPurohitId) {
-      alert('Please select a priest')
-      return
-    }
-
     const service = services.find(s => s.id === selectedServiceId)
-    const purohit = purohits.find(p => p.id === selectedPurohitId)
+    // The priest is optional ("No preference"): the office assigns one.
+    const purohit = selectedPurohitId ? purohits.find(p => p.id === selectedPurohitId) : undefined
 
-    if (!service || !purohit) return
+    if (!service) return
 
     // Check if service is temple-only but external location selected
     if (service.is_temple_only && locationType === 'External') {
@@ -143,8 +140,8 @@ export default function NewBookingPage() {
       service_time: serviceTime,
       location_type: locationType,
       location_address: locationType === 'External' ? locationAddress : 'HSNEF Temple',
-      purohit_id: purohit.id,
-      purohit_name: purohit.name,
+      purohit_id: purohit?.id ?? '',
+      purohit_name: purohit?.name ?? '',
       notes: itemNotes,
       price: price
     }
@@ -166,7 +163,7 @@ export default function NewBookingPage() {
   }
 
   const getTotalAmount = () => {
-    return cart.reduce((sum, item) => sum + item.price, 0)
+    return cartTotal(cart)
   }
 
   const handleSubmitBooking = async () => {
@@ -183,39 +180,33 @@ export default function NewBookingPage() {
     try {
       setSubmitting(true)
 
-      // Create booking
+      // Rows are shaped in lib/bookings/bookingRows.ts; the database assigns
+      // booking_number (BK-YYYY-NNNNN).
       const { data: bookingData, error: bookingError } = await supabase
         .from('service_bookings')
-        .insert({
-          member_id: member?.id || null,
-          requester_name: requesterName.trim(),
-          requester_phone: requesterPhone.trim(),
-          requester_email: requesterEmail.trim(),
-          total_amount: getTotalAmount(),
-          status: 'Pending Approval',
-          additional_notes: additionalNotes.trim() || null,
-        })
+        .insert(
+          toBookingRow(
+            {
+              memberId: member?.id || null,
+              membershipId: member?.membership_id || null,
+              requesterName,
+              requesterPhone,
+              requesterEmail,
+              notes: additionalNotes,
+              status: 'Pending Approval',
+              createdBy: member?.auth_user_id || null,
+            },
+            cart
+          ) as never
+        )
         .select()
         .single()
 
       if (bookingError) throw bookingError
 
-      // Create booking items
-      const items = cart.map(item => ({
-        booking_id: bookingData.id,
-        service_id: item.service_id,
-        purohit_id: item.purohit_id,
-        service_date: item.service_date,
-        service_time: item.service_time,
-        location_type: item.location_type,
-        location_address: item.location_address,
-        notes: item.notes || null,
-        price: item.price,
-      }))
-
       const { error: itemsError } = await supabase
         .from('service_booking_items')
-        .insert(items)
+        .insert(toBookingItemRows((bookingData as { id: string }).id, cart) as never)
 
       if (itemsError) throw itemsError
 
@@ -225,7 +216,7 @@ export default function NewBookingPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            bookingId: bookingData.id,
+            bookingId: (bookingData as { id: string }).id,
             status: 'submitted',
           }),
         })
@@ -283,7 +274,7 @@ export default function NewBookingPage() {
       requesterName={requesterName}
       onRequesterNameChange={setRequesterName}
       requesterPhone={requesterPhone}
-      onRequesterPhoneChange={setRequesterPhone}
+      onRequesterPhoneChange={(v) => setRequesterPhone(formatPhoneNumber(v))}
       requesterEmail={requesterEmail}
       onRequesterEmailChange={setRequesterEmail}
       additionalNotes={additionalNotes}

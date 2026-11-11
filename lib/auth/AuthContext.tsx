@@ -1,6 +1,8 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { makeAuthListener } from './authListener'
+import { singleFlight } from './singleFlight'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import type { UserRole, Member } from '@/types/database'
@@ -37,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Fetch member(s) and roles for the authenticated user
   // Supports multiple memberships per email
-  const fetchMemberAndRoles = async (userId: string, userEmail?: string) => {
+  const loadMemberAndRoles = async (userId: string, userEmail?: string) => {
     try {
       // Fetch ALL members linked to this auth_user_id
       let membersResult = await supabase
@@ -170,6 +172,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // One load per user at a time: getSession() and the auth listener both fire
+  // on sign-in, and two parallel loads raced each other at link-member, which
+  // signed a new member out (lib/auth/singleFlight.ts). Kept in a ref so every
+  // render shares the same in-flight map.
+  const fetchRef = useRef<ReturnType<typeof singleFlight<[string, string | undefined]>> | null>(null)
+  if (!fetchRef.current) {
+    fetchRef.current = singleFlight((userId: string) => userId, (userId: string, userEmail?: string) =>
+      loadMemberAndRoles(userId, userEmail)
+    )
+  }
+  const fetchMemberAndRoles = (userId: string, userEmail?: string) => fetchRef.current!(userId, userEmail)
+
   // Initialize auth state
   useEffect(() => {
     // Add final timeout to prevent infinite loading
@@ -203,21 +217,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false)
       })
 
-    // Listen for auth changes
+    // Listen for auth changes. The callback must stay synchronous: awaiting a
+    // Supabase call inside it deadlocks on the auth lock (see authListener.ts).
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        await fetchMemberAndRoles(session.user.id, session.user.email)
-      } else {
-        setMember(null)
-        setMembers([])
-        setActiveMemberId(null)
-        setRoles([])
-      }
-      setLoading(false)
-    })
+    } = supabase.auth.onAuthStateChange(
+      makeAuthListener<User>({
+        setUser,
+        load: (u) => fetchMemberAndRoles(u.id, u.email),
+        clear: () => {
+          setMember(null)
+          setMembers([])
+          setActiveMemberId(null)
+          setRoles([])
+        },
+        setLoading,
+      })
+    )
 
     return () => subscription.unsubscribe()
     // eslint-disable-next-line react-hooks/exhaustive-deps

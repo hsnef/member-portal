@@ -16,11 +16,13 @@
  * wrong account.
  */
 
+import Link from 'next/link'
 import { UserXIcon } from 'lucide-react'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { TEMPLE_CONFIG } from '@/lib/constants/temple'
+import { STAFF_ROLES } from '@/lib/navigation'
 
 interface NoMembershipStateProps {
   /** What the member cannot see, e.g. "no payments to show". Keep it short. */
@@ -28,7 +30,10 @@ interface NoMembershipStateProps {
 }
 
 export function NoMembershipState({ detail }: NoMembershipStateProps) {
-  const { signOut } = useAuth()
+  const { signOut, hasAnyRole } = useAuth()
+  // Staff accounts need not have a membership: they ARE the office. Telling
+  // them to email the office is a dead end, so they get a way to their console.
+  const isStaff = hasAnyRole(STAFF_ROLES)
 
   return (
     <EmptyState
@@ -40,8 +45,13 @@ export function NoMembershipState({ detail }: NoMembershipStateProps) {
       }
       action={
         <div className="flex flex-wrap items-center justify-center gap-3">
+          {isStaff && (
+            <Link href="/admin">
+              <Button>Go to the office console</Button>
+            </Link>
+          )}
           <a href={`mailto:${TEMPLE_CONFIG.contact.email}`}>
-            <Button>Email the office</Button>
+            <Button variant={isStaff ? 'secondary' : undefined}>Email the office</Button>
           </a>
           <Button variant="secondary" onClick={() => signOut()}>
             Sign in as someone else

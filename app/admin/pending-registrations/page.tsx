@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { membershipIdForInsert } from '@/lib/registration/membershipIdChoice'
 import { createClient } from '@/lib/supabase/client'
 
 interface PendingRegistration {
@@ -50,6 +51,11 @@ export default function PendingRegistrationsPage() {
   )
   const [showApprovalModal, setShowApprovalModal] = useState(false)
   const [membershipId, setMembershipId] = useState('')
+  // The ID the database suggested when the dialog opened. If the office keeps
+  // it, the insert leaves membership_id empty so the members trigger assigns
+  // the next number under its lock (migration 20261111000003); a suggestion
+  // taken by someone else in the meantime then cannot collide.
+  const [suggestedId, setSuggestedId] = useState('')
   const [reviewNotes, setReviewNotes] = useState('')
   const [processing, setProcessing] = useState(false)
 
@@ -143,13 +149,20 @@ export default function PendingRegistrationsPage() {
         memberInsertData.business_ein = selectedRegistration.business_ein || null
       }
 
-      const memberResult: { data: { id: string } | null; error: any } = await (supabase
+      const insertRow: Record<string, unknown> = { ...memberInsertData }
+      const chosenId = membershipIdForInsert(membershipId, suggestedId)
+      if (chosenId === undefined) delete insertRow.membership_id
+      else insertRow.membership_id = chosenId
+
+      const memberResult: { data: { id: string; membership_id: string } | null; error: any } = await (supabase
         .from('members')
-        .insert(memberInsertData as any)
+        .insert(insertRow as any)
         .select()
         .single() as any)
       
       const { data: memberData, error: memberError } = memberResult
+      // The number actually stored: the trigger's when the suggestion was kept.
+      const assignedId = memberData?.membership_id ?? membershipId
 
       if (memberError) {
         console.error('Error creating member:', memberError)
@@ -171,7 +184,7 @@ export default function PendingRegistrationsPage() {
           reviewed_at: new Date().toISOString(),
           review_notes: reviewNotes || null,
           created_member_id: memberData?.id || null,
-          assigned_membership_id: membershipId,
+          assigned_membership_id: assignedId,
         })
         .eq('id', selectedRegistration.id)
 
@@ -182,14 +195,33 @@ export default function PendingRegistrationsPage() {
         return
       }
 
+      // Tell the new member they can sign in. The invitation email links to
+      // /login with their address filled in; the first sign-in links the
+      // account to this record. The member exists either way, so a failed
+      // email is reported to the office, not treated as a failed approval.
+      let emailed = false
+      try {
+        const res = await fetch('/api/members/send-invitation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ memberId: memberData?.id }),
+        })
+        emailed = res.ok
+      } catch (emailError) {
+        console.error('Invitation email failed:', emailError)
+      }
+
       alert(
-        `Application approved! Member ${membershipId} created. Send welcome email to ${selectedRegistration.primary_email} with portal registration link.`
+        emailed
+          ? `Application approved. Member ${assignedId} created, and ${selectedRegistration.primary_email} has been emailed a link to sign in.`
+          : `Application approved. Member ${assignedId} created, but the sign-in email could not be sent. Use "Send portal invitation" on the member's record, or tell them to sign in at the portal with ${selectedRegistration.primary_email}.`
       )
 
       // Reset and refresh
       setShowApprovalModal(false)
       setSelectedRegistration(null)
       setMembershipId('')
+      setSuggestedId('')
       setReviewNotes('')
       fetchRegistrations()
     } catch (error) {
@@ -258,14 +290,27 @@ export default function PendingRegistrationsPage() {
     }
   }
 
-  const getNextMembershipId = (level: string) => {
-    // Generate next available membership ID based on level
-    // This is a simple implementation - you may want more sophisticated logic
-    const prefix = level === 'Lifetime' ? '1' : level === 'Annual' ? '2' : '3'
-    const random = Math.floor(Math.random() * 99999)
-      .toString()
-      .padStart(5, '0')
-    return `${prefix}${random}00`
+  // Suggest the next membership ID in sequence for the level, from the same
+  // database function the members trigger uses (generate_membership_id). It
+  // used to be a random number, which could collide and broke the sequence.
+  // The office can still overwrite it. On failure the field is left empty for
+  // the office to fill in.
+  const openApproval = async (registration: PendingRegistration) => {
+    setSelectedRegistration(registration)
+    setMembershipId('')
+    setSuggestedId('')
+    setShowApprovalModal(true)
+    const { data, error } = await (supabase as any).rpc('generate_membership_id', {
+      p_level: registration.requested_level,
+    })
+    if (error) {
+      console.error('Could not suggest a membership ID:', error)
+      return
+    }
+    if (typeof data === 'string') {
+      setMembershipId(data)
+      setSuggestedId(data)
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -387,11 +432,7 @@ export default function PendingRegistrationsPage() {
                         {registration.status === 'Pending' && (
                           <>
                             <button
-                              onClick={() => {
-                                setSelectedRegistration(registration)
-                                setMembershipId(getNextMembershipId(registration.requested_level))
-                                setShowApprovalModal(true)
-                              }}
+                              onClick={() => openApproval(registration)}
                               className="text-green-600 hover:text-green-900"
                             >
                               Approve
@@ -552,10 +593,7 @@ export default function PendingRegistrationsPage() {
                   </button>
                   {selectedRegistration.status === 'Pending' && (
                     <button
-                      onClick={() => {
-                        setMembershipId(getNextMembershipId(selectedRegistration.requested_level))
-                        setShowApprovalModal(true)
-                      }}
+                      onClick={() => openApproval(selectedRegistration)}
                       className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron-hover"
                     >
                       Approve Application
@@ -608,9 +646,11 @@ export default function PendingRegistrationsPage() {
                 <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm text-blue-800">
                   <p className="font-semibold">Next Steps After Approval:</p>
                   <ul className="mt-2 space-y-1 list-disc list-inside">
-                    <li>Member record will be created</li>
-                    <li>Send welcome email to: {selectedRegistration.primary_email}</li>
-                    <li>Include portal registration link: your-domain.com/register</li>
+                    <li>The member record is created with this membership ID</li>
+                    <li>
+                      {selectedRegistration.primary_email} is emailed a link to sign in to the
+                      portal
+                    </li>
                   </ul>
                 </div>
 

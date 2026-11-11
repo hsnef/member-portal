@@ -7,11 +7,8 @@ import {
   getMembershipPricing,
   type MembershipPricing,
 } from '@/lib/utils/portalSettings'
-import {
-  getActiveTerms,
-  recordTermsAcceptanceForMember,
-  type TermsContent,
-} from '@/lib/utils/termsService'
+import { getActiveTerms, type TermsContent } from '@/lib/utils/termsService'
+import { NAKSHATRAS } from '@/lib/constants/nakshatras'
 import TermsCheckbox from '@/components/TermsCheckbox'
 import { formatPhoneNumber, formatEIN, formatZipCode } from '@/lib/utils/formatters'
 
@@ -110,71 +107,58 @@ export default function JoinPage() {
     try {
       setLoading(true)
 
-      // Generate membership ID based on level
-      const prefix = requestedLevel === 'Lifetime' ? '1' : requestedLevel === 'Annual' ? '2' : '3'
-      const randomNum = Math.floor(Math.random() * 100000).toString().padStart(5, '0')
-      const membershipId = `${prefix}${randomNum}00`
-
-      // Create member record directly (self-service auto-accept)
-      const { data: memberData, error: memberError } = await supabase.from('members').insert({
-        membership_id: membershipId,
-        member_class: memberClass,
-        current_level: requestedLevel,
-
-        // Contact person (required for both Personal and Business)
-        first_name: firstName || null,
-        last_name: lastName || null,
-        nakshatra: nakshatra || null,
-        family_gotra: memberClass === 'Personal' ? (familyGotra || null) : null,
-
-        // Spouse (Personal only)
-        secondary_first_name: memberClass === 'Personal' && includeSpouse ? secondaryFirstName : null,
-        secondary_last_name: memberClass === 'Personal' && includeSpouse ? secondaryLastName : null,
-        secondary_nakshatra: memberClass === 'Personal' && includeSpouse ? secondaryNakshatra : null,
-
-        // Business
-        business_name: memberClass === 'Business' ? businessName : null,
-        business_ein: memberClass === 'Business' ? businessEin : null,
-        business_type: memberClass === 'Business' ? businessType : null,
-
-        // Contact
-        primary_email: primaryEmail,
-        primary_phone: primaryPhone || null,
-        secondary_email: secondaryEmail || null,
-        secondary_phone: secondaryPhone || null,
-
-        // Address
-        address_line_1: addressLine1 || null,
-        address_line_2: addressLine2 || null,
-        city: city || null,
-        state: state || null,
-        zip: zip || null,
-
-        // Additional
-        how_did_you_hear: howDidYouHear || null,
+      // The server validates the application and decides, from the office's
+      // "require approval" setting, whether it waits for approval or becomes a
+      // member straight away. See app/api/join/route.ts.
+      const res = await fetch('/api/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          memberClass,
+          requestedLevel,
+          firstName,
+          lastName,
+          nakshatra,
+          familyGotra,
+          includeSpouse,
+          secondaryFirstName,
+          secondaryLastName,
+          secondaryNakshatra,
+          businessName,
+          businessEin,
+          businessType,
+          primaryEmail,
+          primaryPhone,
+          secondaryEmail,
+          secondaryPhone,
+          addressLine1,
+          addressLine2,
+          city,
+          state,
+          zip,
+          howDidYouHear,
+          notes,
+          termsAccepted,
+          termsVersion: activeTerms?.version ?? null,
+          termsContentId: activeTerms?.id ?? null,
+        }),
       })
-      .select()
-      .single()
+      const result = await res.json().catch(() => ({}))
 
-      if (memberError) {
-        console.error('Member creation error:', memberError)
-        setMessage({ type: 'error', text: memberError.message })
-        return
-      }
-
-      // Record terms acceptance
-      if (memberData && activeTerms) {
-        await recordTermsAcceptanceForMember({
-          memberId: memberData.id,
-          termsVersion: activeTerms.version,
-          termsContentId: activeTerms.id,
-          acceptanceMethod: 'registration',
+      if (!res.ok) {
+        setMessage({
+          type: 'error',
+          text: result.error || 'We could not submit your application. Please try again.',
         })
+        return
       }
 
       setMessage({
         type: 'success',
-        text: `Welcome to HSNEF! Your Membership ID is ${membershipId}. You can now login using the "Email Me a Link to Login" option on the login page.`,
+        text:
+          result.status === 'created'
+            ? `Welcome to HSNEF! Your Membership ID is ${result.membershipId}. Sign in on the login page with ${primaryEmail}: we will email you a link.`
+            : `Thank you! Your application has been sent to the temple office. We will email ${primaryEmail} once it is approved.`,
       })
 
       // Reset form
@@ -375,13 +359,19 @@ export default function JoinPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Nakshatra (Birth Star)
                       </label>
-                      <input
-                        type="text"
+                      <select
                         value={nakshatra}
                         onChange={(e) => setNakshatra(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                         disabled={loading}
-                      />
+                      >
+                        <option value="">Not known / prefer not to say</option>
+                        {NAKSHATRAS.map((n) => (
+                          <option key={n} value={n}>
+                            {n}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -446,13 +436,19 @@ export default function JoinPage() {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Nakshatra
                         </label>
-                        <input
-                          type="text"
+                        <select
                           value={secondaryNakshatra}
                           onChange={(e) => setSecondaryNakshatra(e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                           disabled={loading}
-                        />
+                        >
+                          <option value="">Not known / prefer not to say</option>
+                          {NAKSHATRAS.map((n) => (
+                            <option key={n} value={n}>
+                              {n}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                   )}
@@ -543,13 +539,19 @@ export default function JoinPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Nakshatra (Birth Star)
                     </label>
-                    <input
-                      type="text"
+                    <select
                       value={nakshatra}
                       onChange={(e) => setNakshatra(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-saffron-ring focus:border-saffron"
                       disabled={loading}
-                    />
+                    >
+                      <option value="">Not known / prefer not to say</option>
+                      {NAKSHATRAS.map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </div>
@@ -765,7 +767,8 @@ export default function JoinPage() {
                 )}
               </button>
               <p className="mt-4 text-center text-xs text-gray-500">
-                Your membership will be activated immediately.
+                Depending on the temple office&apos;s settings, your membership is activated
+                straight away or after the office reviews it.
               </p>
             </div>
           </form>

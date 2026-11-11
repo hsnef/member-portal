@@ -30,7 +30,8 @@ export interface MemberBooking {
   requester_email: string
   total_amount: number
   status: string
-  additional_notes?: string
+  notes?: string | null
+  booking_number?: string
   created_at: string
   reviewed_by_name?: string
   reviewed_at?: string
@@ -78,7 +79,7 @@ export function BookingsView({
       (b) =>
         b.requester_name?.toLowerCase().includes(q) ||
         b.id.toLowerCase().includes(q) ||
-        (b.additional_notes ?? '').toLowerCase().includes(q)
+        (b.notes ?? '').toLowerCase().includes(q)
     )
   }, [bookings, search])
 
@@ -91,7 +92,7 @@ export function BookingsView({
       cell: (b) => (
         <div className="min-w-0">
           <p className="tnum truncate font-semibold text-ink">
-            #{b.id.slice(0, 8).toUpperCase()}
+            {b.booking_number ?? `#${b.id.slice(0, 8).toUpperCase()}`}
           </p>
           <p className="mt-0.5 truncate text-[13.5px] text-ink-3">{b.requester_name}</p>
         </div>
@@ -155,7 +156,7 @@ export function BookingsView({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="tnum truncate font-semibold text-ink">
-            #{b.id.slice(0, 8).toUpperCase()}
+            {b.booking_number ?? `#${b.id.slice(0, 8).toUpperCase()}`}
           </p>
           <p className="mt-0.5 truncate text-[13.5px] text-ink-3">{b.requester_name}</p>
         </div>

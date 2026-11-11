@@ -24,8 +24,9 @@ interface Booking {
   total_amount: number
   status: string
   created_at: string
+  booking_number?: string
   members?: {
-    membership_number: string
+    membership_id: string
     first_name: string
     last_name: string
   }
@@ -58,7 +59,7 @@ export default function AdminBookingsPage() {
         .select(`
           *,
           members (
-            membership_number,
+            membership_id,
             first_name,
             last_name
           )
@@ -125,7 +126,7 @@ export default function AdminBookingsPage() {
         <div className="min-w-0">
           <p className="truncate font-semibold text-ink">{b.requester_name}</p>
           <p className="tnum mt-0.5 truncate text-[13px] text-ink-3">
-            {b.members?.membership_number ?? `#${b.id.slice(0, 8).toUpperCase()}`}
+            {[b.booking_number, b.members?.membership_id].filter(Boolean).join(' · ') || `#${b.id.slice(0, 8).toUpperCase()}`}
           </p>
         </div>
       ),
@@ -200,7 +201,8 @@ export default function AdminBookingsPage() {
         b.requester_name,
         b.requester_email,
         b.requester_phone,
-        b.members?.membership_number,
+        b.members?.membership_id,
+        b.booking_number,
         b.id,
       ]}
       /* Status is filtered in the QUERY; see fetchBookings. */

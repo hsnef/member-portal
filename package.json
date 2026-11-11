@@ -20,7 +20,8 @@
     "sdlc-docs:gate": "node scripts/sdlc-docs.mjs audit --gate",
     "sdlc-docs:report": "node scripts/sdlc-docs.mjs report",
     "govkit:doctor": "node scripts/govkit-doctor.mjs",
-    "govkit:config": "node scripts/govkit-doctor.mjs config"
+    "govkit:config": "node scripts/govkit-doctor.mjs config",
+    "supabase:auth-config": "tsx --env-file-if-exists=.env.local scripts/supabase-auth-config.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

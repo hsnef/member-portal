@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/client'
+import { exactIlike, normaliseEmail } from '@/lib/auth/memberEmail'
 
 /**
  * Decides whether an email address is allowed to request a sign-in link.
@@ -12,7 +13,7 @@ import { createServiceClient } from '@/lib/supabase/client'
  *
  * Two arms, and both are needed:
  *
- *   1. A member record exists for the address. This is the normal first-time
+ *   1. A member record has this as its primary address. This is the normal first-time
  *      sign-in: the office has created the row, `auth_user_id` is still null,
  *      and the auth account is created by the magic link itself. Gating on the
  *      auth account alone would lock every genuine new member out.
@@ -30,22 +31,21 @@ import { createServiceClient } from '@/lib/supabase/client'
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => null)
-    const raw = typeof body?.email === 'string' ? body.email : ''
-    const email = raw.trim().toLowerCase()
+    const email = normaliseEmail(body?.email)
 
-    if (!email || !email.includes('@')) {
+    if (!email) {
       return NextResponse.json({ allowed: false, reason: 'invalid' }, { status: 400 })
     }
 
     const service = createServiceClient()
 
-    // Arm 1 — a member record on either the primary or the secondary address.
-    // `ilike` rather than `eq` because addresses were entered by hand over
-    // years of imports and their casing is not consistent.
+    // Arm 1 — a member record whose PRIMARY address this is, ignoring case.
+    // Same rule as /api/auth/link-member (lib/auth/memberEmail.ts), so anyone
+    // let through here can actually be linked after signing in.
     const { data: memberMatch } = await service
       .from('members')
       .select('id')
-      .or(`primary_email.ilike.${email},secondary_email.ilike.${email}`)
+      .ilike('primary_email', exactIlike(email))
       .limit(1)
 
     if (memberMatch && memberMatch.length > 0) {
@@ -73,6 +73,19 @@ export async function POST(request: Request) {
 
     if (hasAuthUser) {
       return NextResponse.json({ allowed: true, reason: 'existing-account' })
+    }
+
+    // Known only as a household's secondary contact. Refused, because linking
+    // it would take the household's single login (see lib/auth/memberEmail.ts),
+    // but answered specifically so the login page can say what to do instead.
+    const { data: secondaryMatch } = await service
+      .from('members')
+      .select('id')
+      .ilike('secondary_email', exactIlike(email))
+      .limit(1)
+
+    if (secondaryMatch && secondaryMatch.length > 0) {
+      return NextResponse.json({ allowed: false, reason: 'secondary' })
     }
 
     return NextResponse.json({ allowed: false, reason: 'unknown' })

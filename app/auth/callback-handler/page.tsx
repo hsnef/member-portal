@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { safeRedirectPath } from '@/lib/auth/redirect'
 
 /**
  * Client-side callback handler for magic links and PKCE auth flows
@@ -18,12 +19,9 @@ function CallbackHandler() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const redirect = searchParams.get('redirect') || '/member'
-
-        // Log current URL for debugging
-        console.log('[CallbackHandler] Full URL:', window.location.href)
-        console.log('[CallbackHandler] Hash:', window.location.hash)
-        console.log('[CallbackHandler] Search:', window.location.search)
+        // Same-site paths only (see lib/auth/redirect.ts). Never log the URL
+        // or hash here: they carry the access and refresh tokens.
+        const redirect = safeRedirectPath(searchParams.get('redirect'))
 
         // Check for error in query params first
         const errorFromQuery = searchParams.get('error')

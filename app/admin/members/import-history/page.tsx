@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { createClient } from '@/lib/supabase/client'
 import { AdminListView } from '@/components/admin/AdminListView'
 import { Badge } from '@/components/ui/Badge'
@@ -212,6 +213,9 @@ export default function ImportHistoryPage() {
   )
 
   return (
+    // Reverting a batch deletes its members: Admin and Office Manager only,
+    // like the import itself (decided 2026-11-11).
+    <ProtectedRoute requiredRoles={['Admin', 'Office Manager']}>
     <AdminListView<ImportBatch>
       eyebrow="Members"
       title="Import history"
@@ -238,5 +242,6 @@ export default function ImportHistoryPage() {
         </AppLink>
       }
     />
+    </ProtectedRoute>
   )
 }

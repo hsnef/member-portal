@@ -12,7 +12,9 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/member'
 
-  const [email, setEmail] = useState('')
+  // Invitation and welcome emails link here with `?email=` so the member only
+  // has to press the button (lib/email/templates.ts → portalLoginLink).
+  const [email, setEmail] = useState(() => searchParams.get('email')?.trim() ?? '')
   const [sentToEmail, setSentToEmail] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -81,9 +83,11 @@ function LoginForm() {
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
+          // Let someone pick which Google account, without re-approving the
+          // app every time. No offline access: the portal never calls Google
+          // APIs, it only needs the verified email address.
           queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
+            prompt: 'select_account',
           },
         },
       })
@@ -159,7 +163,10 @@ function LoginForm() {
       if (!gate.allowed) {
         setMessage({
           type: 'error',
-          text: `We do not have a membership on file for ${email}. If you are a member, the temple office can add your address — contact ${TEMPLE_CONFIG.contact.email}.`,
+          text:
+            gate.reason === 'secondary'
+              ? `${email} is listed as a household's second contact. Sign in with the membership's main email address, or ask the temple office to change which address is the main one — contact ${TEMPLE_CONFIG.contact.email}.`
+              : `We do not have a membership on file for ${email}. If you are a member, the temple office can add your address — contact ${TEMPLE_CONFIG.contact.email}.`,
         })
         setLoading(false)
         return

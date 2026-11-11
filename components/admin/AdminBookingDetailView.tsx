@@ -30,9 +30,9 @@ export interface AdminBookingItem {
   service_date: string
   service_time: string
   location_type: string
-  location_address: string
-  notes?: string
-  price: number
+  service_address?: string | null
+  item_notes?: string | null
+  item_amount: number
   services: { name: string; display_name?: string }
   purohits: { name: string }
 }
@@ -45,14 +45,15 @@ export interface AdminBooking {
   requester_email: string
   total_amount: number
   status: string
-  additional_notes?: string
+  notes?: string | null
+  booking_number?: string
   created_at: string
   reviewed_by_name?: string
   reviewed_at?: string
   approval_notes?: string
   rejection_reason?: string
   members?: {
-    membership_number: string
+    membership_id: string
     first_name: string
     last_name: string
     current_level: string
@@ -89,14 +90,15 @@ export function AdminBookingDetailView({
   onApprove,
   onReject,
 }: AdminBookingDetailViewProps) {
-  const reference = booking.id.slice(0, 8).toUpperCase()
+  // BK-YYYY-NNNNN already reads as a reference; only the id fallback gets a '#'.
+  const reference = booking.booking_number ?? `#${booking.id.slice(0, 8).toUpperCase()}`
   const pending = booking.status === 'Pending Approval'
   const items = booking.service_booking_items ?? []
 
   return (
     <div className="space-y-7">
       <RecordHeader
-        crumbs={[{ label: 'Bookings', to: '/admin/bookings' }, { label: `#${reference}` }]}
+        crumbs={[{ label: 'Bookings', to: '/admin/bookings' }, { label: reference }]}
         icon={FlameIcon}
         tone="copper"
         eyebrow="Service booking"
@@ -105,7 +107,7 @@ export function AdminBookingDetailView({
           <div className="flex flex-wrap items-center gap-3">
             <StatusBadge status={booking.status as RequestStatus} />
             <span className="tnum text-[14px] text-ink-3">
-              #{reference} · requested {formatDate(booking.created_at)}
+              {reference} · requested {formatDate(booking.created_at)}
             </span>
           </div>
         }
@@ -157,7 +159,7 @@ export function AdminBookingDetailView({
                       <MapPinIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                       <span>
                         {item.location_type}
-                        {item.location_address ? ` — ${item.location_address}` : ''}
+                        {item.service_address ? ` — ${item.service_address}` : ''}
                       </span>
                     </p>
                     {item.purohits?.name && (
@@ -165,12 +167,12 @@ export function AdminBookingDetailView({
                         Purohit: {item.purohits.name}
                       </p>
                     )}
-                    {item.notes && (
-                      <p className="mt-1 text-[13.5px] leading-snug text-ink-2">{item.notes}</p>
+                    {item.item_notes && (
+                      <p className="mt-1 text-[13.5px] leading-snug text-ink-2">{item.item_notes}</p>
                     )}
                   </div>
                   <span className="tnum shrink-0 font-serif text-[20px] text-ink">
-                    {formatCurrency(item.price)}
+                    {formatCurrency(item.item_amount)}
                   </span>
                 </li>
               ))}
@@ -197,7 +199,7 @@ export function AdminBookingDetailView({
                   ? [
                       {
                         label: 'Membership',
-                        value: booking.members.membership_number,
+                        value: booking.members.membership_id,
                         numeric: true,
                       },
                       { label: 'Level', value: booking.members.current_level },
@@ -214,11 +216,11 @@ export function AdminBookingDetailView({
             )}
           </Card>
 
-          {booking.additional_notes && (
+          {booking.notes && (
             <Card tone="sunk">
               <CardHeader title="Notes from the member" />
               <p className="text-[14.5px] leading-relaxed text-ink-2">
-                {booking.additional_notes}
+                {booking.notes}
               </p>
             </Card>
           )}

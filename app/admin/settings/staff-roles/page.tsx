@@ -2,302 +2,133 @@
 
 import { useEffect, useState } from 'react'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '@/lib/auth/AuthContext'
+import { wouldRemoveLastAdmin } from '@/lib/admin/staffRules'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Alert } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Field, Select } from '@/components/ui/Field'
+import { Field, Input, Select } from '@/components/ui/Field'
 import { IconTile } from '@/components/ui/IconTile'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { MemberPicker } from '@/components/admin/MemberPicker'
 import { ShieldCheckIcon, UserIcon, UserPlusIcon, XIcon } from 'lucide-react'
 
 type UserRole = 'Admin' | 'Office Manager' | 'Office Staff'
 
-interface StaffMember {
+/** One sign-in account holding staff roles. Staff need not be members. */
+interface StaffAccount {
   user_id: string
-  member_id: string
-  membership_id: string
-  first_name: string
-  last_name: string
-  primary_email: string
+  email: string
+  name: string
+  membership_id: string | null
   roles: UserRole[]
   is_test_account: boolean
 }
 
-interface MemberSearchResult {
-  id: string
-  membership_id: string
-  first_name: string
-  last_name: string
-  primary_email: string
-  auth_user_id: string | null
-  is_test_account: boolean
-}
-
 const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
-  'Admin': 'Full system access including settings, role management, and all administrative functions',
+  'Admin': 'Everything, including portal settings and giving or removing staff roles. Every Admin has the same full access.',
   'Office Manager': 'Can manage members, approve bookings, record payments, and access most admin features',
   'Office Staff': 'Can view members, process day-to-day transactions, and handle basic admin tasks',
 }
 
-const ROLE_COLORS: Record<UserRole, string> = {
-  'Admin': 'bg-red-100 text-red-800',
-  'Office Manager': 'bg-purple-100 text-purple-800',
-  'Office Staff': 'bg-blue-100 text-blue-800',
-}
-
 export default function StaffRolesPage() {
-  const supabase = createClient()
-  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
+  const [staffMembers, setStaffMembers] = useState<StaffAccount[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<MemberSearchResult[]>([])
-  const [searching, setSearching] = useState(false)
-  const [selectedMember, setSelectedMember] = useState<MemberSearchResult | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [email, setEmail] = useState('')
   const [selectedRole, setSelectedRole] = useState<UserRole>('Office Staff')
   const [assigning, setAssigning] = useState(false)
+  const [notice, setNotice] = useState<{ tone: 'success' | 'danger'; text: string } | null>(null)
   const [removing, setRemoving] = useState<string | null>(null)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const { user } = useAuth()
+  const currentUserId = user?.id ?? null
 
   useEffect(() => {
     fetchStaffMembers()
-    fetchCurrentUser()
   }, [])
 
-  const fetchCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      setCurrentUserId(user.id)
-    }
-  }
-
+  // Staff are read through /api/admin/staff, which lists sign-in accounts
+  // holding a role, with or without a membership. Reading `members` here
+  // used to hide every staff account that is not also a member.
   const fetchStaffMembers = async () => {
     try {
       setLoading(true)
-
-      // Fetch all users with roles
-      const { data: rolesData, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role')
-
-      if (rolesError) throw rolesError
-
-      if (!rolesData || rolesData.length === 0) {
-        setStaffMembers([])
-        return
-      }
-
-      // Group roles by user_id
-      const rolesMap: Record<string, UserRole[]> = {}
-      rolesData.forEach(({ user_id, role }) => {
-        if (!rolesMap[user_id]) {
-          rolesMap[user_id] = []
-        }
-        rolesMap[user_id].push(role as UserRole)
-      })
-
-      const userIds = Object.keys(rolesMap)
-
-      // Fetch member details for these users
-      const { data: members, error: membersError } = await supabase
-        .from('members')
-        .select('id, membership_id, first_name, last_name, primary_email, auth_user_id, is_test_account')
-        .in('auth_user_id', userIds)
-
-      if (membersError) throw membersError
-
-      const staffList: StaffMember[] = (members || []).map(member => ({
-        user_id: member.auth_user_id!,
-        member_id: member.id,
-        membership_id: member.membership_id,
-        first_name: member.first_name,
-        last_name: member.last_name,
-        primary_email: member.primary_email,
-        roles: rolesMap[member.auth_user_id!] || [],
-        is_test_account: member.is_test_account || false,
-      }))
-
-      // Sort: Admin first, then by name
-      staffList.sort((a, b) => {
-        const aIsAdmin = a.roles.includes('Admin')
-        const bIsAdmin = b.roles.includes('Admin')
-        if (aIsAdmin && !bIsAdmin) return -1
-        if (!aIsAdmin && bIsAdmin) return 1
-        return `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`)
-      })
-
-      setStaffMembers(staffList)
+      setLoadError(null)
+      const res = await fetch('/api/admin/staff')
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(body.error || 'Could not load staff')
+      setStaffMembers(body.staff ?? [])
     } catch (error) {
-      console.error('Error fetching staff members:', error)
-      alert('Failed to load staff members')
+      console.error('Error fetching staff:', error)
+      setLoadError(error instanceof Error ? error.message : 'Could not load staff')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      setSearchResults([])
-      return
-    }
-
-    try {
-      setSearching(true)
-
-      const query = searchQuery.trim().toLowerCase()
-
-      // Search for members by name, email, or membership ID
-      const { data, error } = await supabase
-        .from('members')
-        .select('id, membership_id, first_name, last_name, primary_email, auth_user_id, is_test_account')
-        .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,primary_email.ilike.%${query}%,membership_id.ilike.%${query}%`)
-        .limit(10)
-
-      if (error) throw error
-
-      setSearchResults(data || [])
-    } catch (error) {
-      console.error('Error searching members:', error)
-      alert('Failed to search members')
-    } finally {
-      setSearching(false)
-    }
-  }
-
   const handleAssignRole = async () => {
-    if (!selectedMember) return
-
-    if (!selectedMember.auth_user_id) {
-      alert('This member has not registered yet. They must register first before a role can be assigned.')
-      return
-    }
-
-    // Check if already has this role
-    const existingStaff = staffMembers.find(s => s.user_id === selectedMember.auth_user_id)
-    if (existingStaff?.roles.includes(selectedRole)) {
-      alert(`${selectedMember.first_name} ${selectedMember.last_name} already has the ${selectedRole} role.`)
-      return
-    }
-
+    setNotice(null)
     try {
       setAssigning(true)
-
-      const { error } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: selectedMember.auth_user_id,
-          role: selectedRole,
-        })
-
-      if (error) throw error
-
-      alert(`Successfully assigned ${selectedRole} role to ${selectedMember.first_name} ${selectedMember.last_name}`)
-
-      // Reset and refresh
-      setSelectedMember(null)
-      setSearchQuery('')
-      setSearchResults([])
-      await fetchStaffMembers()
-    } catch (error: any) {
-      console.error('Error assigning role:', error)
-      if (error.code === '23505') {
-        alert('This user already has this role.')
-      } else {
-        alert(`Failed to assign role: ${error.message}`)
+      const res = await fetch('/api/admin/staff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, role: selectedRole }),
+      })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setNotice({ tone: 'danger', text: body.error || 'Could not give the role.' })
+        return
       }
+      setNotice({
+        tone: 'success',
+        text: `${body.email} now has the ${body.role} role. They sign in at the portal with that address; we email them a link.`,
+      })
+      setEmail('')
+      await fetchStaffMembers()
     } finally {
       setAssigning(false)
     }
   }
 
-  const handleRemoveRole = async (userId: string, role: UserRole, memberName: string, isTestAccount: boolean) => {
-    // Safety check for Admin role removal
-    if (role === 'Admin') {
-      // Count non-test Admins
-      const nonTestAdmins = staffMembers.filter(s =>
-        s.roles.includes('Admin') && !s.is_test_account
-      )
-
-      // Check if this is the last non-test Admin
-      if (nonTestAdmins.length === 1 && nonTestAdmins[0].user_id === userId) {
-        alert(
-          'Cannot remove Admin role!\n\n' +
-          'This is the only non-test Admin account. ' +
-          'There must always be at least one non-test Admin to manage the system.\n\n' +
-          'To remove this Admin role, first assign Admin role to another non-test user.'
-        )
-        return
-      }
-
-      // Check if user is trying to remove their own Admin role
-      if (userId === currentUserId) {
-        const otherNonTestAdmins = nonTestAdmins.filter(a => a.user_id !== currentUserId)
-        if (otherNonTestAdmins.length === 0) {
-          alert(
-            'Cannot remove your own Admin role!\n\n' +
-            'You are the only non-test Admin. ' +
-            'Assign Admin role to another non-test user first before removing your own.'
-          )
-          return
-        }
-
-        // Warn about self-removal even if there are other admins
-        if (!confirm(
-          '⚠️ Warning: You are about to remove your own Admin role!\n\n' +
-          'You will lose access to this page and other Admin-only features.\n\n' +
-          'Are you sure you want to continue?'
-        )) {
-          return
-        }
-      }
-    }
-
-    if (!confirm(`Remove ${role} role from ${memberName}?\n\nThis will revoke their ${role} access immediately.`)) {
+  const handleRemoveRole = async (staff: StaffAccount, role: UserRole) => {
+    const who = staff.name || staff.email
+    if (staff.user_id === currentUserId && role === 'Admin') {
+      if (!confirm('You are about to remove your own Admin role. You will lose access to this page. Continue?')) return
+    } else if (!confirm(`Remove the ${role} role from ${who}? Their access changes immediately.`)) {
       return
     }
-
+    setNotice(null)
     try {
-      setRemoving(`${userId}-${role}`)
-
-      const { error } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId)
-        .eq('role', role)
-
-      if (error) throw error
-
-      alert(`Removed ${role} role from ${memberName}`)
+      setRemoving(`${staff.user_id}-${role}`)
+      const res = await fetch('/api/admin/staff', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: staff.user_id, role }),
+      })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setNotice({ tone: 'danger', text: body.error || 'Could not remove the role.' })
+        return
+      }
+      setNotice({ tone: 'success', text: `Removed the ${role} role from ${who}.` })
       await fetchStaffMembers()
-    } catch (error: any) {
-      console.error('Error removing role:', error)
-      alert(`Failed to remove role: ${error.message}`)
     } finally {
       setRemoving(null)
     }
   }
 
-  // Helper to check if remove button should be disabled
-  const isRemoveDisabled = (staff: StaffMember, role: UserRole): boolean => {
-    if (role !== 'Admin') return false
-
-    // Count non-test Admins
-    const nonTestAdmins = staffMembers.filter(s =>
-      s.roles.includes('Admin') && !s.is_test_account
-    )
-
-    // If this is the only non-test Admin, disable the button
-    return nonTestAdmins.length === 1 && nonTestAdmins[0].user_id === staff.user_id && !staff.is_test_account
-  }
+  // The last Admin who is not a test account cannot lose the role: only an
+  // Admin can grant roles. The server enforces the same rule.
+  const isRemoveDisabled = (staff: StaffAccount, role: UserRole): boolean =>
+    wouldRemoveLastAdmin(staffMembers, staff.user_id, role)
 
   // Helper to get tooltip for disabled remove button
-  const getRemoveTooltip = (staff: StaffMember, role: UserRole): string => {
+  const getRemoveTooltip = (staff: StaffAccount, role: UserRole): string => {
     if (isRemoveDisabled(staff, role)) {
-      return 'Cannot remove - this is the only non-test Admin'
+      return 'The only Admin cannot lose the role. Give someone else the Admin role first.'
     }
     return `Remove ${role} role`
   }
@@ -335,67 +166,63 @@ export default function StaffRolesPage() {
             ))}
           </dl>
           <p className="mt-4 text-[13.5px] text-ink-3">
-            Roles are additive and every staff member is also a Member, so they keep their own
-            membership and portal.
+            Roles are additive. Staff need not be members; a staff member who is also a member keeps
+            their own membership and portal.
           </p>
         </Card>
 
         <Card>
           <CardHeader
             title="Give someone a role"
-            description="Find the member first, then choose what they should be able to do."
+            description="Enter the person's email address and choose what they should be able to do."
           />
           <div className="space-y-5">
-            <MemberPicker
-              title="Which member?"
-              description="They need a membership record before they can be given a staff role."
-              searchQuery={searchQuery}
-              onSearchQueryChange={setSearchQuery}
-              onSearch={handleSearch}
-              searching={searching}
-              results={searchResults}
-              selected={selectedMember}
-              onSelect={(m) =>
-                setSelectedMember(searchResults.find((r) => r.id === m.id) ?? null)
-              }
-              onClear={() => setSelectedMember(null)}
-            />
-
-            {selectedMember && (
-              <>
-                {!selectedMember.auth_user_id && (
-                  <Alert tone="warning" title="They have not signed in yet">
-                    A role can only be given to someone with portal access. Send them an
-                    invitation from their member record first.
-                  </Alert>
-                )}
-
-                <Field label="Role">
-                  {({ id }) => (
-                    <Select
-                      id={id}
-                      value={selectedRole}
-                      onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-                    >
-                      {STAFF_ONLY.map((role) => (
-                        <option key={role} value={role}>
-                          {role}
-                        </option>
-                      ))}
-                    </Select>
-                  )}
-                </Field>
-
-                <Button
-                  icon={UserPlusIcon}
-                  loading={assigning}
-                  disabled={!selectedMember.auth_user_id}
-                  onClick={handleAssignRole}
-                >
-                  Give the {selectedRole} role
-                </Button>
-              </>
+            {notice && (
+              <Alert tone={notice.tone} title={notice.tone === 'success' ? 'Done' : 'Not changed'}>
+                {notice.text}
+              </Alert>
             )}
+
+            <Field
+              label="Their email address"
+              hint="The address they will sign in with. They do not need a membership; if they have one, use its main email address."
+            >
+              {({ id }) => (
+                <Input
+                  id={id}
+                  type="email"
+                  autoComplete="off"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.org"
+                />
+              )}
+            </Field>
+
+            <Field label="Role">
+              {({ id }) => (
+                <Select
+                  id={id}
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value as UserRole)}
+                >
+                  {STAFF_ONLY.map((role) => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
+
+            <Button
+              icon={UserPlusIcon}
+              loading={assigning}
+              disabled={!email.trim()}
+              onClick={handleAssignRole}
+            >
+              Give the {selectedRole} role
+            </Button>
           </div>
         </Card>
 
@@ -407,12 +234,21 @@ export default function StaffRolesPage() {
               <Skeleton className="h-20 w-full rounded-2xl" />
               <Skeleton className="h-20 w-full rounded-2xl" />
             </div>
+          ) : loadError ? (
+            <div className="mt-4">
+              <Alert tone="danger" title="Could not load staff">
+                {loadError}.{' '}
+                <button type="button" className="underline" onClick={fetchStaffMembers}>
+                  Try again
+                </button>
+              </Alert>
+            </div>
           ) : staffMembers.length === 0 ? (
             <div className="mt-4">
               <EmptyState
                 icon={ShieldCheckIcon}
                 title="No staff yet"
-                description="Give a member the Office Staff, Office Manager or Admin role and they will appear here."
+                description="Give someone the Office Staff, Office Manager or Admin role and they will appear here."
               />
             </div>
           ) : (
@@ -422,30 +258,27 @@ export default function StaffRolesPage() {
                   <IconTile icon={UserIcon} tone="kumkum" size="md" shape="arch" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-ink">
-                      {[staff.first_name, staff.last_name].filter(Boolean).join(' ')}
+                      {staff.name || staff.email}
                       {staff.is_test_account && (
                         <span className="ml-2">
                           <Badge tone="neutral">Test account</Badge>
                         </span>
                       )}
                     </p>
-                    <p className="truncate text-[13.5px] text-ink-3">{staff.primary_email}</p>
+                    <p className="truncate text-[13.5px] text-ink-3">
+                      {staff.name ? staff.email : 'No membership'}
+                      {staff.membership_id ? ` · ${staff.membership_id}` : ''}
+                    </p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {staff.roles.map((role) => (
                           <span key={role} className="inline-flex items-center gap-1">
                             <Badge tone={roleTone[role] ?? 'neutral'}>{role}</Badge>
                             <button
                               type="button"
-                              aria-label={`Remove the ${role} role from ${staff.first_name}`}
-                              disabled={removing === `${staff.user_id}-${role}`}
-                              onClick={() =>
-                                handleRemoveRole(
-                                  staff.user_id,
-                                  role,
-                                  `${staff.first_name} ${staff.last_name}`,
-                                  staff.is_test_account
-                                )
-                              }
+                              aria-label={`Remove the ${role} role from ${staff.name || staff.email}`}
+                              title={getRemoveTooltip(staff, role)}
+                              disabled={removing === `${staff.user_id}-${role}` || isRemoveDisabled(staff, role)}
+                              onClick={() => handleRemoveRole(staff, role)}
                               className="rounded-lg p-1 text-ink-3 transition-colors hover:bg-danger-soft hover:text-danger disabled:opacity-50"
                             >
                               <XIcon className="h-3.5 w-3.5" aria-hidden="true" />

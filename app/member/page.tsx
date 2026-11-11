@@ -6,16 +6,17 @@ import {
   type MembershipStatus,
 } from '@/components/member/MemberDashboard'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { Button } from '@/components/ui/Button'
-import { UserXIcon } from 'lucide-react'
-import { TEMPLE_CONFIG } from '@/lib/constants/temple'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { useRouter } from 'next/navigation'
+import { NoMembershipState } from '@/components/member/NoMembershipState'
+import { STAFF_ROLES } from '@/lib/navigation'
+import { shouldSendToOfficeConsole } from '@/lib/auth/staffLanding'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import type { Member, FamilyMember, Membership } from '@/types/database'
 
 export default function MemberDashboard() {
-  const { user, member: authMember } = useAuth()
+  const { user, member: authMember, loading: authLoading, hasAnyRole } = useAuth()
+  const router = useRouter()
   const [member, setMember] = useState<Member | null>(null)
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
   const [activeMembership, setActiveMembership] = useState<Membership | null>(null)
@@ -136,6 +137,23 @@ export default function MemberDashboard() {
 
   const status = getMembershipStatus()
 
+  // Staff sign in to the member home like everyone else (the default
+  // redirect is /member). A staff account with no membership has nothing to
+  // see here, so it goes on to the office console instead.
+  const isStaff = hasAnyRole(STAFF_ROLES)
+  useEffect(() => {
+    if (
+      shouldSendToOfficeConsole({
+        authLoading,
+        memberLoading: loading,
+        hasMembership: !!member,
+        isStaff,
+      })
+    ) {
+      router.replace('/admin')
+    }
+  }, [loading, authLoading, member, isStaff, router])
+
   if (loading) {
     return (
       <div className="space-y-6" role="status" aria-live="polite">
@@ -152,18 +170,10 @@ export default function MemberDashboard() {
   }
 
   if (!member) {
-    return (
-      <EmptyState
-        icon={UserXIcon}
-        title="No membership found"
-        description="Your account is not yet linked to a membership. The temple office can link it for you."
-        action={
-          <a href={`mailto:${TEMPLE_CONFIG.contact.email}`}>
-            <Button>Email the office</Button>
-          </a>
-        }
-      />
-    )
+    // A staff account with no membership is sent on to /admin by the effect
+    // above; this is what everyone else sees, and what staff see for the
+    // moment before the redirect.
+    return <NoMembershipState />
   }
 
   return (
