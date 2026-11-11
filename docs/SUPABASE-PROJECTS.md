@@ -115,7 +115,9 @@ npm run supabase:auth-config -- --env prod --apply --confirm-production   # prod
 Set `RESEND_SMTP_KEY_DEV` / `RESEND_SMTP_KEY_PROD` in `.env.local` to include custom SMTP
 (Resend, `noreply@portal.hsnef.org`); without it SMTP is left untouched.
 
-**Google sign-in** is on in both projects with one Google OAuth client. That client's
+**Google sign-in** is on in both projects with one Google OAuth client, in Google Cloud
+project "Membership Portal" (`shaped-inverter-483523-b4`) owned by **dev-mp@hsnef.org**. Its
+consent screen must stay **In production** (Testing blocks everyone not listed). That client's
 *Authorized redirect URIs* must list `https://bcujsesgrzijyisvmnwm.supabase.co/auth/v1/callback`
 and `https://gapvsdrzavjaublwkqfm.supabase.co/auth/v1/callback`. Set
 `GOOGLE_OAUTH_CLIENT_SECRET` the first time Google is turned on for a project; the script will

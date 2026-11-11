@@ -40,14 +40,15 @@ membership import (#34) and the phase 1 reviews come first.**
 **Paused 2026-11-11 (Session 11), after the production release.** Work this list top to
 bottom. Items marked **Sujit** need his accounts.
 
-**A. Sujit: Google sign-in on dev, about 5 minutes** (prod already has it).
-1. console.cloud.google.com → APIs & Services → Credentials → OAuth client
-   `846882916738-1kt27oa6…` → Authorized redirect URIs → **add**
-   `https://bcujsesgrzijyisvmnwm.supabase.co/auth/v1/callback` (keep the prod one). Save.
-2. Same page → Client secrets → **Add secret**. Put it in `.env.local` as
-   `GOOGLE_OAUTH_CLIENT_SECRET=…`.
-3. Preview, then `! npm run supabase:auth-config -- --env dev --apply`.
-4. OAuth consent screen: publishing status must be **In production**, not Testing.
+**A. Google sign-in: done 2026-11-11 (session 12).** The Google OAuth client lives in Google
+Cloud project "Membership Portal" (`shaped-inverter-483523-b4`) under **dev-mp@hsnef.org**,
+not gsujit@gmail.com. Its redirect URIs now list both Supabase callbacks; Branding has the
+privacy link (`https://hsnef.org/privacy`) and terms link (`https://member.hsnef.org/terms`);
+the consent screen was moved from **Testing (0 test users) to In production**. Until then
+Google sign-in had never worked for anyone on prod (Google's counter showed 0 users). Dev has
+Google on with a second client secret (prod keeps the January one, `****7bwh`; do not disable
+it); `supabase:auth-config dev` shows 0 differences. Still to do: one real Google sign-in on
+prod to confirm.
 
 **B. Sujit: Vercel `RESEND_API_KEY` (#19).** Production = Resend key `portal-app-prod`
 only; Preview = `portal-app-dev`. Until then app emails (approval invitations, booking
@@ -72,12 +73,18 @@ links `portal.hsnef.org`; booking and items are two inserts, not one transaction
 - The classifier blocks Claude from Supabase Management PATCH calls and production
   reads. Sujit runs those with `!` (Git Bash syntax). Read-only GETs work for Claude.
 - Compare against `origin/*`; local `main` and `dev` are stale.
+- **Every migration that creates a table in `public` must grant it in the same file**
+  (Supabase stopped auto-granting new tables on 2026-10-30): `grant select … to anon`,
+  `grant select, insert, update, delete … to authenticated, service_role`, as RLS needs.
+  Existing tables keep their grants (dev checked 2026-11-11: 30 of 30). The nine January
+  migrations that create tables have no grants, so rebuilding a fresh database from
+  migrations would need them added.
 
 ### Still open, in rough priority order
 
 | | |
 |---|---|
-| **Sign-in email** | No custom SMTP on either Supabase project yet. The settings are now code (`supabase/auth-config.ts`) and waiting on a Resend key from Sujit; see Start here A. Keep-alive for pausing is Sujit's (#21) |
+| **Supabase pausing** | Keep-alive for pausing is Sujit's (#21). (Sign-in email through Resend SMTP is done on both projects, session 11) |
 | **Tokens to revoke** | A Vercel token and a Supabase PAT were issued to Claude on 2026-09-02. **Revoke both**, and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local` — still present 2026-10-08; risk accepted by Sujit for now |
 | **Test coverage is thin** | Tests cover the QR pass, the Zelle money path, the shared formatter, `cn()`, plus two guard suites — `app/auth-redirects.test.ts` (no auth redirect may point at a missing route) and `utils/design-tokens.test.ts` (no raw hex in `className`). Everything touching Supabase, Stripe and the API routes is still untested; that needs a Supabase client fake |
 | **Contrast** | White on `#c75b12` is 4.26:1, below WCAG AA's 4.5. `#b8530e` gives 4.90. One line in `app/globals.css`; a brand decision |
