@@ -7,8 +7,19 @@ export function formatCurrency(amount: number, withCents = false): string {
   }).format(amount);
 }
 
+/**
+ * A plain date ("2026-12-05") is a calendar day: read it as local midnight, or
+ * a UTC parse would shift it a day west of Greenwich. Anything longer is a
+ * timestamp ("2026-11-11T14:26:19.34+00:00", e.g. created_at) and is parsed
+ * as is. Appending "T00:00:00" to a timestamp made "Invalid Date" on every
+ * page that formatted created_at (found 2026-11-11).
+ */
+function toDate(iso: string): Date {
+  return /^\d{4}-\d{2}-\d{2}$/.test(iso) ? new Date(`${iso}T00:00:00`) : new Date(iso)
+}
+
 export function formatDate(iso: string): string {
-  return new Date(`${iso}T00:00:00`).toLocaleDateString('en-US', {
+  return toDate(iso).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
@@ -16,7 +27,7 @@ export function formatDate(iso: string): string {
 }
 
 export function formatLongDate(iso: string): string {
-  return new Date(`${iso}T00:00:00`).toLocaleDateString('en-US', {
+  return toDate(iso).toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',

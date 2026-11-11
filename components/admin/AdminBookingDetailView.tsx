@@ -90,14 +90,15 @@ export function AdminBookingDetailView({
   onApprove,
   onReject,
 }: AdminBookingDetailViewProps) {
-  const reference = booking.booking_number ?? booking.id.slice(0, 8).toUpperCase()
+  // BK-YYYY-NNNNN already reads as a reference; only the id fallback gets a '#'.
+  const reference = booking.booking_number ?? `#${booking.id.slice(0, 8).toUpperCase()}`
   const pending = booking.status === 'Pending Approval'
   const items = booking.service_booking_items ?? []
 
   return (
     <div className="space-y-7">
       <RecordHeader
-        crumbs={[{ label: 'Bookings', to: '/admin/bookings' }, { label: `#${reference}` }]}
+        crumbs={[{ label: 'Bookings', to: '/admin/bookings' }, { label: reference }]}
         icon={FlameIcon}
         tone="copper"
         eyebrow="Service booking"
@@ -106,7 +107,7 @@ export function AdminBookingDetailView({
           <div className="flex flex-wrap items-center gap-3">
             <StatusBadge status={booking.status as RequestStatus} />
             <span className="tnum text-[14px] text-ink-3">
-              #{reference} · requested {formatDate(booking.created_at)}
+              {reference} · requested {formatDate(booking.created_at)}
             </span>
           </div>
         }

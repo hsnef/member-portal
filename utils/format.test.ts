@@ -88,3 +88,15 @@ describe('daysUntil', () => {
     expect(daysUntil(localDateString(-3))).toBe(-3)
   })
 })
+
+describe('formatDate with timestamps (created_at)', () => {
+  it('formats a Postgres timestamp instead of returning "Invalid Date"', () => {
+    // Midday UTC: the same calendar day in every US time zone.
+    expect(formatDate('2026-11-11T14:26:19.343469+00:00')).toBe('Nov 11, 2026')
+    expect(formatLongDate('2026-11-11T14:26:19.343469+00:00')).toBe('Wednesday, November 11, 2026')
+  })
+
+  it('still reads a plain date as that calendar day', () => {
+    expect(formatDate('2026-12-05')).toBe('Dec 5, 2026')
+  })
+})

@@ -60,7 +60,8 @@ export interface BookingDetailViewProps {
 }
 
 export function BookingDetailView({ booking, onPay }: BookingDetailViewProps) {
-  const reference = booking.booking_number ?? booking.id.slice(0, 8).toUpperCase()
+  // BK-YYYY-NNNNN already reads as a reference; only the id fallback gets a '#'.
+  const reference = booking.booking_number ?? `#${booking.id.slice(0, 8).toUpperCase()}`
   const payable = booking.status === 'Approved'
   const declined = booking.status === 'Rejected' || booking.status === 'Cancelled'
   const items = booking.service_booking_items ?? []
@@ -70,12 +71,12 @@ export function BookingDetailView({ booking, onPay }: BookingDetailViewProps) {
       <RecordHeader
         crumbs={[
           { label: 'My bookings', to: '/member/bookings' },
-          { label: `#${reference}` },
+          { label: reference },
         ]}
         icon={FlameIcon}
         tone="copper"
         eyebrow="Service booking"
-        title={`Booking #${reference}`}
+        title={`Booking ${reference}`}
         meta={
           <div className="flex flex-wrap items-center gap-3">
             <StatusBadge status={booking.status as RequestStatus} />
