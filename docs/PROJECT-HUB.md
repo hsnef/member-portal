@@ -2,7 +2,7 @@
 
 > The single source of truth for architecture decisions, current state, and session-to-session context. `/sdlc status` reads this file. Keep it current — a stale hub poisons the next session's context.
 
-_Last checked 2026-10-09._
+_Last checked 2026-11-11._
 
 ## Current Status
 
@@ -41,8 +41,8 @@ Supabase's built-in mailer.**
 top to bottom. Items marked **Sujit** are his to do (Claude cannot: they need his
 accounts or keys); offer to walk him through them. Everything else is Claude's.
 
-**0. Housekeeping.** Was PR #42 (Google sign-in) merged? `gh pr view 42`. If merged,
-`git pull` on `redesign/design-system`. The seed WIP is parked on branch
+**0. Housekeeping.** Done 2026-11-11: PR #42 (Google sign-in) is merged to `dev`, and
+`redesign/design-system` is fast-forwarded to it. The seed WIP is parked on branch
 `wip/seed-dev`, not on the working branch.
 
 **A. Sujit: Resend key for dev SMTP (#18), about 5 minutes.**
@@ -421,8 +421,8 @@ a null member. Nine reachable ones now share `NoMembershipState`.
   differ only in site URL and allow-list, and a test enforces that. See
   [`SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md).
 
-**Open:** #42, Google sign-in on both projects, without the forced consent prompt
-(CI green).
+**Merged to dev (after the session):** #42, Google sign-in on both projects, without the
+forced consent prompt.
 
 **Decisions (Sujit):**
 - No stop-gaps and no one-time login hacks. The same login flow on dev and prod;
