@@ -91,6 +91,25 @@ export async function POST(request: Request) {
       .ilike('primary_email', emailPattern)
       .is('auth_user_id', null)
 
+    if (!lookupError && (!unlinkedMembers || unlinkedMembers.length === 0)) {
+      // Safe to repeat: a parallel request for this same user may have linked
+      // the record between the two lookups above. That is a success, not a
+      // "no member" -- answering 404 here made AuthContext sign a brand-new
+      // member out (2026-11-11).
+      const { data: nowLinked } = await serviceClient
+        .from('members')
+        .select('id, membership_id, primary_email, first_name, last_name, member_class, current_level')
+        .eq('auth_user_id', user.id)
+      if (nowLinked && nowLinked.length > 0) {
+        return NextResponse.json({
+          success: true,
+          message: 'Already linked',
+          members: nowLinked,
+          count: nowLinked.length,
+        })
+      }
+    }
+
     if (lookupError || !unlinkedMembers || unlinkedMembers.length === 0) {
       console.log('[link-member] No unlinked member found for user:', user.id, lookupError?.message)
       return NextResponse.json(
