@@ -39,8 +39,8 @@
 2. **Sujit: Google redirect URI + client secret → dev** (Start here B in the hub).
 3. **Seed rework** (#20), on branch `wip/seed-dev`.
 4. **Release `dev → main`**, then, with approval, on prod-mp: auth config with
-   `supabase-auth-prod` (#18), migrations `20261111000001` (#43) and `20261111000002`
-   (#40), and decide `require_member_approval` (Sujit: ON at launch).
+   `supabase-auth-prod` (#18), migrations `20261111000001` (#43), `20261111000002`
+   (#40) and `20261111000003` (DEC-012), and decide `require_member_approval` (Sujit: ON at launch).
 
 Done 2026-11-11: dev sign-in email through Resend (#18, dev), #43 and #40 on the
 branch with both migrations applied to dev-mp.

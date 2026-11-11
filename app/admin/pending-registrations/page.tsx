@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { membershipIdForInsert } from '@/lib/registration/membershipIdChoice'
 import { createClient } from '@/lib/supabase/client'
 
 interface PendingRegistration {
@@ -50,6 +51,11 @@ export default function PendingRegistrationsPage() {
   )
   const [showApprovalModal, setShowApprovalModal] = useState(false)
   const [membershipId, setMembershipId] = useState('')
+  // The ID the database suggested when the dialog opened. If the office keeps
+  // it, the insert leaves membership_id empty so the members trigger assigns
+  // the next number under its lock (migration 20261111000003); a suggestion
+  // taken by someone else in the meantime then cannot collide.
+  const [suggestedId, setSuggestedId] = useState('')
   const [reviewNotes, setReviewNotes] = useState('')
   const [processing, setProcessing] = useState(false)
 
@@ -143,13 +149,20 @@ export default function PendingRegistrationsPage() {
         memberInsertData.business_ein = selectedRegistration.business_ein || null
       }
 
-      const memberResult: { data: { id: string } | null; error: any } = await (supabase
+      const insertRow: Record<string, unknown> = { ...memberInsertData }
+      const chosenId = membershipIdForInsert(membershipId, suggestedId)
+      if (chosenId === undefined) delete insertRow.membership_id
+      else insertRow.membership_id = chosenId
+
+      const memberResult: { data: { id: string; membership_id: string } | null; error: any } = await (supabase
         .from('members')
-        .insert(memberInsertData as any)
+        .insert(insertRow as any)
         .select()
         .single() as any)
       
       const { data: memberData, error: memberError } = memberResult
+      // The number actually stored: the trigger's when the suggestion was kept.
+      const assignedId = memberData?.membership_id ?? membershipId
 
       if (memberError) {
         console.error('Error creating member:', memberError)
@@ -171,7 +184,7 @@ export default function PendingRegistrationsPage() {
           reviewed_at: new Date().toISOString(),
           review_notes: reviewNotes || null,
           created_member_id: memberData?.id || null,
-          assigned_membership_id: membershipId,
+          assigned_membership_id: assignedId,
         })
         .eq('id', selectedRegistration.id)
 
@@ -200,14 +213,15 @@ export default function PendingRegistrationsPage() {
 
       alert(
         emailed
-          ? `Application approved. Member ${membershipId} created, and ${selectedRegistration.primary_email} has been emailed a link to sign in.`
-          : `Application approved. Member ${membershipId} created, but the sign-in email could not be sent. Use "Send portal invitation" on the member's record, or tell them to sign in at the portal with ${selectedRegistration.primary_email}.`
+          ? `Application approved. Member ${assignedId} created, and ${selectedRegistration.primary_email} has been emailed a link to sign in.`
+          : `Application approved. Member ${assignedId} created, but the sign-in email could not be sent. Use "Send portal invitation" on the member's record, or tell them to sign in at the portal with ${selectedRegistration.primary_email}.`
       )
 
       // Reset and refresh
       setShowApprovalModal(false)
       setSelectedRegistration(null)
       setMembershipId('')
+      setSuggestedId('')
       setReviewNotes('')
       fetchRegistrations()
     } catch (error) {
@@ -284,6 +298,7 @@ export default function PendingRegistrationsPage() {
   const openApproval = async (registration: PendingRegistration) => {
     setSelectedRegistration(registration)
     setMembershipId('')
+    setSuggestedId('')
     setShowApprovalModal(true)
     const { data, error } = await (supabase as any).rpc('generate_membership_id', {
       p_level: registration.requested_level,
@@ -292,7 +307,10 @@ export default function PendingRegistrationsPage() {
       console.error('Could not suggest a membership ID:', error)
       return
     }
-    if (typeof data === 'string') setMembershipId(data)
+    if (typeof data === 'string') {
+      setMembershipId(data)
+      setSuggestedId(data)
+    }
   }
 
   const getStatusColor = (status: string) => {
