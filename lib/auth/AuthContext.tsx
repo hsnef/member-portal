@@ -1,7 +1,8 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { makeAuthListener } from './authListener'
+import { singleFlight } from './singleFlight'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import type { UserRole, Member } from '@/types/database'
@@ -38,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Fetch member(s) and roles for the authenticated user
   // Supports multiple memberships per email
-  const fetchMemberAndRoles = async (userId: string, userEmail?: string) => {
+  const loadMemberAndRoles = async (userId: string, userEmail?: string) => {
     try {
       // Fetch ALL members linked to this auth_user_id
       let membersResult = await supabase
@@ -170,6 +171,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setRoles([])
     }
   }
+
+  // One load per user at a time: getSession() and the auth listener both fire
+  // on sign-in, and two parallel loads raced each other at link-member, which
+  // signed a new member out (lib/auth/singleFlight.ts). Kept in a ref so every
+  // render shares the same in-flight map.
+  const fetchRef = useRef<ReturnType<typeof singleFlight<[string, string | undefined]>> | null>(null)
+  if (!fetchRef.current) {
+    fetchRef.current = singleFlight((userId: string) => userId, (userId: string, userEmail?: string) =>
+      loadMemberAndRoles(userId, userEmail)
+    )
+  }
+  const fetchMemberAndRoles = (userId: string, userEmail?: string) => fetchRef.current!(userId, userEmail)
 
   // Initialize auth state
   useEffect(() => {
