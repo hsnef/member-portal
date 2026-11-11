@@ -12,8 +12,11 @@ import type { Column } from '@/components/ui/DataTable'
 import type { Member, MembershipLevel } from '@/types/database'
 import { useTestData } from '@/lib/context/TestDataContext'
 import { getTestMemberIds } from '@/lib/utils/testDataFiltering'
+import { useAuth } from '@/lib/auth/AuthContext'
 
 export default function MembersPage() {
+  const { hasAnyRole } = useAuth()
+  const canImport = hasAnyRole(['Admin', 'Office Manager'])
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -170,11 +173,14 @@ export default function MembersPage() {
       noun="member"
       actions={
         <div className="flex flex-wrap gap-2">
-          <AppLink to="/admin/members/import">
-            <Button variant="secondary" icon={UploadIcon}>
-              Import
-            </Button>
-          </AppLink>
+          {/* Import is for Admin and Office Manager (the page is gated too). */}
+          {canImport && (
+            <AppLink to="/admin/members/import">
+              <Button variant="secondary" icon={UploadIcon}>
+                Import
+              </Button>
+            </AppLink>
+          )}
           <AppLink to="/admin/members/new">
             <Button icon={UserPlusIcon}>Add member</Button>
           </AppLink>

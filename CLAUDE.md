@@ -97,8 +97,13 @@ snapshot, wrong about routes, roles and dead links. See DEC-003.
 type UserRole = 'Member' | 'Office Staff' | 'Office Manager' | 'Admin'
 ```
 
+**Admin is the top role, and every Admin has the same full access** (Sujit's term
+"super user" means Admin; say Admin). Staff roles belong to the sign-in account, not
+to a membership: an Admin need not be a member. Admins give roles by email at
+`/admin/settings/staff-roles`.
+
 Roles are an **array** on the user (`user_roles` table); a user holds several.
-Every staff member also holds `Member`.
+Staff usually also hold `Member`, but need not: roles and memberships are independent.
 
 Three patterns, copy them from `components/auth/RoleGate.tsx`. Do not invent a fourth:
 
@@ -114,19 +119,22 @@ authoritative and was deliberately not tightened during the port -- see DEC-004
 in `docs/PROJECT-HUB.md`.
 
 - Section default, set once in `app/admin/layout.tsx` → `['Office Staff','Office Manager','Admin']`
-- Six routes narrow it further, each keeping its own nested `ProtectedRoute`:
+- Eight routes narrow it further, each keeping its own nested `ProtectedRoute`:
   - `/admin/settings/staff-roles` → `['Admin']`
   - `/admin/login-activity`, `/admin/members/[id]/login-activity`,
     `/admin/test-accounts` → `['Admin','Office Manager']`
+  - `/admin/members/import`, `/admin/members/import-history` →
+    `['Admin','Office Manager']` (narrowed 2026-11-11: importing and reverting
+    whole batches is for Admin and Office Manager)
   - `/admin/portal-settings`, `/admin/zelle/settings` → `['Office Manager','Admin']`
 - `/admin/settings/appearance` uses an inline Admin check (a fourth pattern; see Tier 3)
 - `/verify-qr` sits outside both sections and keeps its own staff gate
-- `/admin/members/new`, `/[id]/edit` and `/import` are **any staff role**, not
+- `/admin/members/new` and `/[id]/edit` are **any staff role**, not
   Manager+Admin as previously documented
 - Everything under `/member` → authenticated, no role check, set once in
   `app/member/layout.tsx`
 
-**Never remove a nested `ProtectedRoute` when restyling a page.** Those six are
+**Never remove a nested `ProtectedRoute` when restyling a page.** Those eight are
 narrower than the section default; dropping one silently widens access.
 
 Never render a dead disabled button for a missing permission — use
