@@ -30,9 +30,9 @@ export interface BookingItem {
   service_date: string
   service_time: string
   location_type: string
-  location_address: string
-  notes?: string
-  price: number
+  service_address?: string | null
+  item_notes?: string | null
+  item_amount: number
   services: { name: string; display_name?: string }
   purohits: { name: string }
 }
@@ -44,7 +44,8 @@ export interface BookingDetail {
   requester_email: string
   total_amount: number
   status: string
-  additional_notes?: string
+  notes?: string | null
+  booking_number?: string
   created_at: string
   reviewed_by_name?: string
   reviewed_at?: string
@@ -59,7 +60,7 @@ export interface BookingDetailViewProps {
 }
 
 export function BookingDetailView({ booking, onPay }: BookingDetailViewProps) {
-  const reference = booking.id.slice(0, 8).toUpperCase()
+  const reference = booking.booking_number ?? booking.id.slice(0, 8).toUpperCase()
   const payable = booking.status === 'Approved'
   const declined = booking.status === 'Rejected' || booking.status === 'Cancelled'
   const items = booking.service_booking_items ?? []
@@ -139,7 +140,7 @@ export function BookingDetailView({ booking, onPay }: BookingDetailViewProps) {
                     <MapPinIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     <span>
                       {item.location_type}
-                      {item.location_address ? ` — ${item.location_address}` : ''}
+                      {item.service_address ? ` — ${item.service_address}` : ''}
                     </span>
                   </p>
                   {item.purohits?.name && (
@@ -147,12 +148,12 @@ export function BookingDetailView({ booking, onPay }: BookingDetailViewProps) {
                       Purohit: {item.purohits.name}
                     </p>
                   )}
-                  {item.notes && (
-                    <p className="mt-1 text-[13.5px] leading-snug text-ink-2">{item.notes}</p>
+                  {item.item_notes && (
+                    <p className="mt-1 text-[13.5px] leading-snug text-ink-2">{item.item_notes}</p>
                   )}
                 </div>
                 <span className="tnum shrink-0 font-serif text-[20px] text-ink">
-                  {formatCurrency(item.price)}
+                  {formatCurrency(item.item_amount)}
                 </span>
               </li>
             ))}
@@ -187,13 +188,13 @@ export function BookingDetailView({ booking, onPay }: BookingDetailViewProps) {
           ]}
         />
 
-        {booking.additional_notes && (
+        {booking.notes && (
           <div className="mt-5 rounded-2xl border border-line bg-surface-sunk p-4">
             <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
               Your notes
             </p>
             <p className="mt-2 text-[14.5px] leading-relaxed text-ink-2">
-              {booking.additional_notes}
+              {booking.notes}
             </p>
           </div>
         )}

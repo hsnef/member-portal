@@ -21,9 +21,9 @@ interface BookingItem {
   service_date: string
   service_time: string
   location_type: string
-  location_address: string
-  notes?: string
-  price: number
+  service_address?: string | null
+  item_notes?: string | null
+  item_amount: number
   services: {
     name: string
     display_name?: string
@@ -41,14 +41,15 @@ interface Booking {
   requester_email: string
   total_amount: number
   status: string
-  additional_notes?: string
+  notes?: string | null
+  booking_number?: string
   created_at: string
   reviewed_by_name?: string
   reviewed_at?: string
   approval_notes?: string
   rejection_reason?: string
   members?: {
-    membership_number: string
+    membership_id: string
     first_name: string
     last_name: string
     current_level: string
@@ -86,7 +87,7 @@ export default function AdminBookingDetailPage() {
         .select(`
           *,
           members (
-            membership_number,
+            membership_id,
             first_name,
             last_name,
             current_level

@@ -55,6 +55,19 @@ function emailWrapper(content: string): string {
   `
 }
 
+/**
+ * The portal's sign-in page with the member's address filled in.
+ *
+ * Every "come to the portal" email links here. Sign-in is a magic link or
+ * Google, and the first sign-in links the account to the member record
+ * (`/api/auth/link-member`), so there is nothing to "register" and no
+ * one-time link to expire. (`/register` only explains that.)
+ */
+export function portalLoginLink(email?: string | null): string {
+  const base = `${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}/login`
+  return email ? `${base}?email=${encodeURIComponent(email)}` : base
+}
+
 // Registration invitation email
 export function registrationInvitationEmail(
   member: Member,
@@ -65,24 +78,24 @@ export function registrationInvitationEmail(
   const content = `
     <h2 style="color: #c75b12; margin-top: 0;">Welcome to HSNEF!</h2>
     <p>Dear ${memberName},</p>
-    <p>You have been registered for the HSNEF Membership Portal. Please complete your registration by setting up your account.</p>
+    <p>The temple office has added you to the HSNEF Membership Portal. Sign in with this email address: we will email you a sign-in link, or you can use Google.</p>
     <p style="margin: 30px 0;">
       <a href="${invitationLink}" style="display: inline-block; background-color: #c75b12; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-        Complete Registration
+        Sign in to the portal
       </a>
     </p>
     <p style="color: #666; font-size: 14px;">
       <strong>Your Membership ID:</strong> ${member.membership_id}
     </p>
     <p style="color: #999; font-size: 12px;">
-      This invitation link will expire in 7 days. If you need a new invitation, please contact the temple office.
+      If you have any trouble signing in, please contact the temple office.
     </p>
   `
 
   return {
-    subject: 'Complete Your HSNEF Membership Registration',
+    subject: 'Your HSNEF Membership Portal access',
     html: emailWrapper(content),
-    text: `Welcome to HSNEF!\n\nDear ${memberName},\n\nYou have been registered for the HSNEF Membership Portal. Please complete your registration by visiting:\n\n${invitationLink}\n\nYour Membership ID: ${member.membership_id}\n\nThis invitation link will expire in 7 days.`,
+    text: `Welcome to HSNEF!\n\nDear ${memberName},\n\nThe temple office has added you to the HSNEF Membership Portal. Sign in with this email address at:\n\n${invitationLink}\n\nWe will email you a sign-in link, or you can use Google.\n\nYour Membership ID: ${member.membership_id}`,
   }
 }
 
@@ -504,8 +517,8 @@ export function welcomeEmail(member: Member): { subject: string; html: string; t
     </ul>
 
     <p style="margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display: inline-block; background-color: #c75b12; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-        Go to Dashboard
+      <a href="${portalLoginLink(member.primary_email)}" style="display: inline-block; background-color: #c75b12; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+        Sign in to the portal
       </a>
     </p>
   `
@@ -513,6 +526,6 @@ export function welcomeEmail(member: Member): { subject: string; html: string; t
   return {
     subject: 'Welcome to HSNEF Membership Portal',
     html: emailWrapper(content),
-    text: `Welcome to HSNEF!\n\nDear ${memberName},\n\nThank you for completing your registration. Your HSNEF Membership Portal account is now active!\n\nYour Membership ID: ${member.membership_id}\nMembership Level: ${member.current_level}\n\nVisit your dashboard: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+    text: `Welcome to HSNEF!\n\nDear ${memberName},\n\nThank you for completing your registration. Your HSNEF Membership Portal account is now active!\n\nYour Membership ID: ${member.membership_id}\nMembership Level: ${member.current_level}\n\nSign in to the portal: ${portalLoginLink(member.primary_email)}`,
   }
 }
