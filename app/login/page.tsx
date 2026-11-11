@@ -12,7 +12,9 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/member'
 
-  const [email, setEmail] = useState('')
+  // Invitation and welcome emails link here with `?email=` so the member only
+  // has to press the button (lib/email/templates.ts → portalLoginLink).
+  const [email, setEmail] = useState(() => searchParams.get('email')?.trim() ?? '')
   const [sentToEmail, setSentToEmail] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
