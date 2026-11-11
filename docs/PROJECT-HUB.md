@@ -47,8 +47,8 @@ privacy link (`https://hsnef.org/privacy`) and terms link (`https://member.hsnef
 the consent screen was moved from **Testing (0 test users) to In production**. Until then
 Google sign-in had never worked for anyone on prod (Google's counter showed 0 users). Dev has
 Google on with a second client secret (prod keeps the January one, `****7bwh`; do not disable
-it); `supabase:auth-config dev` shows 0 differences. Still to do: one real Google sign-in on
-prod to confirm.
+it); `supabase:auth-config dev` shows 0 differences. **Confirmed on prod:** Sujit signed in with
+Google as gsujit@gmail.com and landed in the Admin area.
 
 **B. Sujit: Vercel `RESEND_API_KEY` (#19).** Production = Resend key `portal-app-prod`
 only; Preview = `portal-app-dev`. Until then app emails (approval invitations, booking
