@@ -180,7 +180,7 @@ a sibling presentational component takes plain props and renders.
 <!-- govkit:start -->
 # HSNEF Member Portal — Engineering Guardrails
 
-_Last checked 2026-10-09._
+_Last checked 2026-11-11._
 
 > Scaffolded by [govkit](https://github.com/techsilon-oss/govkit) `/govkit-init`. This block is delimited by `govkit:start`/`govkit:end` markers so re-running init won't duplicate it. Edit freely — but keep the markers if you want idempotent updates.
 

@@ -32,16 +32,20 @@
 **The next things, in order** (the full step-by-step is in `docs/PROJECT-HUB.md` →
 *Start here next session*):
 
-1. **Sujit: Resend key → dev SMTP** (#18), then **Google redirect URI + secret → dev**.
-   Then Claude verifies, and Sujit tests a link opened on a second device.
-2. **Registration repairs** (#43, launch-blocker): the `/join` approval toggle, the
-   invitation link, Office Staff can add members.
-3. **Bookings can't be created** (#40, launch-blocker). First decide who generates
-   `booking_number` (recommend a DB trigger).
-4. **Seed rework** (#20), on branch `wip/seed-dev`.
-5. **Release `dev → main`**, then apply prod auth config and the RLS migration, with approval.
+1. **Merge the PR `redesign/design-system → dev`** (Sujit), then test on dev:
+   `/join` with a `gsujit+test-NN@gmail.com` address (approval is ON on dev, so it
+   lands in Office → Pending registrations), approve it, sign in; then make a booking
+   as that member and as the office.
+2. **Sujit: Google redirect URI + client secret → dev** (Start here B in the hub).
+3. **Seed rework** (#20), on branch `wip/seed-dev`.
+4. **Release `dev → main`**, then, with approval, on prod-mp: auth config with
+   `supabase-auth-prod` (#18), migrations `20261111000001` (#43) and `20261111000002`
+   (#40), and decide `require_member_approval` (Sujit: ON at launch).
 
-## Current Priority Tiers (as of 2026-10-09)
+Done 2026-11-11: dev sign-in email through Resend (#18, dev), #43 and #40 on the
+branch with both migrations applied to dev-mp.
+
+## Current Priority Tiers (as of 2026-11-11)
 
 ### Tier 0 — EMPTY as of 2026-09-03
 
@@ -326,6 +330,7 @@ verify locally — copy dev's `QR_TOKEN_SECRET` from Vercel if you need that.
 
 | Date | Session | Changes |
 |------|---------|---------|
+| 2026-11-11 | 11 | START HERE: #18 done for dev, #43 and #40 fixed on the branch (migrations on dev-mp), the PR is next, then Google on dev, seed, release. |
 | 2026-10-09 | 10 | START HERE replaced with the resume order: Resend/Google steps for Sujit, then #43, #40, #20, release. #43 filed. Sign-in hardening (#41) merged to dev; Google (#42) open. |
 | 2026-10-08 | 9 | Go-live milestone created (#18–#38) with day-one scope. Sign-in email findings added to Tier 1 and START HERE; root cause was paused projects; dev-mp auth URLs fixed. Token revocation deferred by Sujit. Stale CI item removed from START HERE. |
 | 2026-09-03 | 6 | vitest installed and the first 48 tests added over the QR pass, the Zelle money path and the shared formatter. `Tests` enabled in the release gate. Two defects recorded above, neither fixed: the Zelle malformed-`expiresAt` hole and the dead `calculateMembershipFee`. |

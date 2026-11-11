@@ -37,55 +37,35 @@ Supabase's built-in mailer.**
 
 ### Start here next session
 
-**Paused 2026-10-09 (Session 10) mid-way through go-live phase 0/1.** Work this list
-top to bottom. Items marked **Sujit** are his to do (Claude cannot: they need his
-accounts or keys); offer to walk him through them. Everything else is Claude's.
+**Paused 2026-11-11 (Session 11).** Work this list top to bottom. Items marked
+**Sujit** need his accounts; offer to walk him through them (Claude in Chrome works).
 
-**0. Housekeeping.** Done 2026-11-11: PR #42 (Google sign-in) is merged to `dev`, and
-`redesign/design-system` is fast-forwarded to it. The seed WIP is parked on branch
-`wip/seed-dev`, not on the working branch.
-
-**A. Sujit: Resend key for dev SMTP (#18), about 5 minutes.**
-1. resend.com → **Domains**: confirm `portal.hsnef.org` is **Verified** (the only usable domain).
-2. **API Keys → Create API Key**: name `supabase-auth-dev`, permission **Sending
-   access**, domain `portal.hsnef.org`. Copy the `re_…` key; it is shown once.
-3. Add `RESEND_SMTP_KEY_DEV=re_…` to the bottom of `.env.local` (no quotes). It is gitignored.
-4. Preview: `! npm run supabase:auth-config -- --env dev`. Apply:
-   `! npm run supabase:auth-config -- --env dev --apply`. Claude then re-runs the
-   preview to confirm 0 differences.
-5. Test: request a link at https://dev.member.hsnef.org/login on the computer, then
-   open the email **on the phone**. Expect sender `HSNEF <noreply@portal.hsnef.org>`,
-   subject "Your HSNEF sign-in link", and signed in on the phone.
+**A. Sujit: merge the PR `redesign/design-system → dev`**, then test on dev:
+`/join` with `gsujit+test-NN@gmail.com` → Office → Pending registrations → approve →
+sign in → book a service as that member, and one as the office. Approval is **ON** on dev.
 
 **B. Sujit: Google sign-in on dev, about 5 minutes.**
 1. console.cloud.google.com → APIs & Services → Credentials → OAuth client
    `846882916738-1kt27oa6…` → Authorized redirect URIs → **add**
    `https://bcujsesgrzijyisvmnwm.supabase.co/auth/v1/callback` (keep the prod one). Save.
-2. Same page → Client secrets → **Add secret**. Adding one does not invalidate the
-   old secret. Put it in `.env.local` as `GOOGLE_OAUTH_CLIENT_SECRET=…`.
-3. Re-run the preview, then `--apply`, for dev, as in A4.
-4. OAuth consent screen: publishing status must be **In production**, not Testing,
-   or members cannot use Google.
+2. Same page → Client secrets → **Add secret**. Put it in `.env.local` as
+   `GOOGLE_OAUTH_CLIENT_SECRET=…`.
+3. Preview, then `! npm run supabase:auth-config -- --env dev --apply`.
+4. OAuth consent screen: publishing status must be **In production**, not Testing.
 
-**C. Claude: registration repairs (#43, launch-blocker).** `/join` honours the
-`require_member_approval` toggle via a new server route; `/join` stops writing columns
-that do not exist; the invitation email links to `/login`; the `members` INSERT RLS
-gains `Office Staff` (migration on dev first, prod with approval). Rule:
-**fix existing workflows, do not redesign; one flow on dev and prod.**
+**C. Sujit: Vercel `RESEND_API_KEY` (#19).** Production = Resend key `portal-app-prod`
+only; Preview = `portal-app-dev`. The register is in `.env.local.example`.
 
-**D. Claude: bookings can't be created (#40, launch-blocker).** Needs one decision
-from Sujit first: who generates `booking_number`. Recommend a DB trigger, matching
-`membership_id`, `request_number` and `receipt_number`.
-
-**E. Claude: seed rework (#20)** on `wip/seed-dev`, per the comment on #20: no demo
+**D. Claude: seed rework (#20)** on `wip/seed-dev`, per the comment on #20: no demo
 sign-in accounts, demo rows marked `legacy_id` `DEMO-…`, testers onboard through the real
 app. Dev only: the script refuses any other target (`assertDevTarget`).
 
-**F. Release and production (approval gate).** `dev → main` PR. Then, with Sujit's
-explicit go-ahead: a second Resend key `supabase-auth-prod` → `RESEND_SMTP_KEY_PROD`,
-`npm run supabase:auth-config -- --env prod --apply --confirm-production`, and the #43
-RLS migration on prod-mp. Production is kept launch-ready but **not launched** until
-the board and testers are comfortable.
+**E. Release and production (approval gate).** `dev → main` PR. Then, with Sujit's
+explicit go-ahead, on prod-mp: `RESEND_SMTP_KEY_PROD` (Resend key `supabase-auth-prod`,
+already created) and `npm run supabase:auth-config -- --env prod --apply --confirm-production`;
+migrations `20261111000001` (Office Staff insert, #43) and `20261111000002` (booking
+numbers, #40); set `require_member_approval` ON (Sujit's call: approval at launch).
+Production is kept launch-ready but **not launched** until the board and testers are comfortable.
 
 **Then** the phase 1 area reviews (#22–#28) on dev, per role.
 
@@ -404,6 +384,28 @@ Supabase auth hook, which is dashboard configuration.
 
 Related: 18 of 21 member routes had no "no membership" state and rendered against
 a null member. Nine reachable ones now share `NoMembershipState`.
+
+### Session 11 — 2026-11-11 — dev sign-in email live; registration and bookings repaired
+
+**Done (on `redesign/design-system`, PR to `dev`):**
+- **#18, dev:** Resend click and open tracking turned OFF for `portal.hsnef.org`
+  (it rewrote sign-in links through Resend). Dev auth config applied; a link requested
+  on the computer signed Sujit in on his phone. Four named Resend keys, registered in
+  `.env.local.example`; the old "Onboarding" key is now `portal-app-dev`.
+- **#43:** `/join` failed for every applicant (browser insert vs the staff-only INSERT
+  policy, plus two non-existent columns). Now `POST /api/join` honours
+  `require_member_approval` (missing setting = ON). Invitation and welcome emails link to
+  `/login?email=`. Office Staff INSERT policy applied to **dev-mp**.
+- **#40:** the DB assigns `BK-YYYY-NNNNN` (advisory lock, SECURITY DEFINER), applied to
+  **dev-mp**. Wider than filed: the office booking area queried `membership_number`
+  (it is `membership_id`) and readers used wrong column names; all fixed.
+- Staff with no membership land on `/admin` instead of "No membership found".
+
+**Decisions (Sujit):** booking numbers by DB trigger, `BK-2026-00001`; approval ON at
+launch, switchable later in Portal Settings; one Resend key per job per environment.
+
+**Found, not fixed:** a booking and its items are two inserts (no transaction); the email
+footer links `portal.hsnef.org`, which is the sending domain, not the portal (for #28).
 
 ### Session 10 — 2026-10-09 — sign-in made production-grade; registration repairs scoped
 
