@@ -118,15 +118,11 @@ export default function NewBookingPage() {
       alert('Please enter the service location address')
       return
     }
-    if (!selectedPurohitId) {
-      alert('Please select a priest')
-      return
-    }
-
     const service = services.find(s => s.id === selectedServiceId)
-    const purohit = purohits.find(p => p.id === selectedPurohitId)
+    // The priest is optional ("No preference"): the office assigns one.
+    const purohit = selectedPurohitId ? purohits.find(p => p.id === selectedPurohitId) : undefined
 
-    if (!service || !purohit) return
+    if (!service) return
 
     // Check if service is temple-only but external location selected
     if (service.is_temple_only && locationType === 'External') {
@@ -144,8 +140,8 @@ export default function NewBookingPage() {
       service_time: serviceTime,
       location_type: locationType,
       location_address: locationType === 'External' ? locationAddress : 'HSNEF Temple',
-      purohit_id: purohit.id,
-      purohit_name: purohit.name,
+      purohit_id: purohit?.id ?? '',
+      purohit_name: purohit?.name ?? '',
       notes: itemNotes,
       price: price
     }
@@ -278,7 +274,7 @@ export default function NewBookingPage() {
       requesterName={requesterName}
       onRequesterNameChange={setRequesterName}
       requesterPhone={requesterPhone}
-      onRequesterPhoneChange={setRequesterPhone}
+      onRequesterPhoneChange={(v) => setRequesterPhone(formatPhoneNumber(v))}
       requesterEmail={requesterEmail}
       onRequesterEmailChange={setRequesterEmail}
       additionalNotes={additionalNotes}

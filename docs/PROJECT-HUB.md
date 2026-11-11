@@ -60,11 +60,18 @@ only; Preview = `portal-app-dev`. The register is in `.env.local.example`.
 sign-in accounts, demo rows marked `legacy_id` `DEMO-…`, testers onboard through the real
 app. Dev only: the script refuses any other target (`assertDevTarget`).
 
-**E. Release and production (approval gate).** `dev → main` PR. Then, with Sujit's
-explicit go-ahead, on prod-mp: `RESEND_SMTP_KEY_PROD` (Resend key `supabase-auth-prod`,
+**E. Release and production (approval gate).** Checked read-only 2026-11-11: prod-mp has
+the membership-ID function and the same `members` triggers as dev, no booking trigger yet,
+the old INSERT policy, 0 bookings, **8 members** and approval **OFF**. Order matters:
+(1) turn `require_member_approval` **ON on prod before the release deploys**: the new
+`/join` works, and with approval off every applicant becomes a member at once;
+(2) if the 8 members are test rows, clear them (#34) **before** importing the real
+membership, or new numbers continue after the test ones (DEC-012).
+Then `dev → main` PR, and with Sujit's explicit go-ahead, on prod-mp: `RESEND_SMTP_KEY_PROD` (Resend key `supabase-auth-prod`,
 already created) and `npm run supabase:auth-config -- --env prod --apply --confirm-production`;
-migrations `20261111000001` (Office Staff insert, #43) and `20261111000002` (booking
-numbers, #40); set `require_member_approval` ON (Sujit's call: approval at launch).
+migrations `20261111000001` (Office Staff insert, #43), `20261111000002` (booking
+numbers, #40) and `20261111000003` (membership-ID lock, DEC-012); first confirm
+`generate_membership_id` exists on prod-mp (schema parity, #30); set `require_member_approval` ON (Sujit's call: approval at launch).
 Production is kept launch-ready but **not launched** until the board and testers are comfortable.
 
 **Then** the phase 1 area reviews (#22–#28) on dev, per role.
@@ -384,6 +391,21 @@ Supabase auth hook, which is dashboard configuration.
 
 Related: 18 of 21 member routes had no "no membership" state and rendered against
 a null member. Nine reachable ones now share `NoMembershipState`.
+
+### DEC-012: membership numbers are per database, level-encoded, and generated under a lock
+**2026-11-11 · Decided (Sujit).**
+- **Per database.** `generate_membership_id` takes the highest number for the
+  level's prefix, plus one, in that project. Dev and prod number independently;
+  nothing copies members from dev to prod. Imported members keep their existing
+  numbers (#34), and new ones continue after the highest.
+- **Level-encoded, kept as is.** The first digit is the level (1 Lifetime,
+  2 Annual, 3 Community), enforced by `chk_membership_id_prefix`, so a member who
+  changes level gets a new number. Considered and **deliberately kept**; do not
+  "fix" it without a new decision.
+- **Locked.** Migration `20261111000003` adds an advisory lock (as for booking
+  numbers), so simultaneous creations take turns. The lock only covers numbers
+  the trigger assigns, so the approve dialog sends no `membership_id` when the
+  office keeps the suggested one (`lib/registration/membershipIdChoice.ts`).
 
 ### Session 11 — 2026-11-11 — dev sign-in email live; registration and bookings repaired
 
