@@ -17,7 +17,7 @@ interface BookingItem {
   }
   service_date: string
   service_time: string
-  price: number
+  item_amount: number
 }
 
 interface Booking {
@@ -79,7 +79,7 @@ function PaymentForm({ booking }: { booking: Booking }) {
       }))}
       lineItems={items.map((item) => ({
         label: item.services.name,
-        amount: Number(item.price),
+        amount: Number(item.item_amount),
       }))}
       total={Number(booking.total_amount)}
       paymentElement={<PaymentElement />}

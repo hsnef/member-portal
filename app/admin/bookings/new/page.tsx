@@ -16,6 +16,7 @@ import { FormSection } from '@/components/admin/AdminFormView'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Field, Select } from '@/components/ui/Field'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { cartTotal, toBookingItemRows, toBookingRow } from '@/lib/bookings/bookingRows'
 import { CheckIcon } from 'lucide-react'
 
 interface Service {
@@ -41,7 +42,7 @@ interface Purohit {
 
 interface Member {
   id: string
-  membership_number: string
+  membership_id: string
   first_name: string
   last_name: string
   primary_email?: string
@@ -120,8 +121,8 @@ export default function StaffNewBookingPage() {
       // Fetch members
       const { data: membersData } = await supabase
         .from('members')
-        .select('id, membership_number, first_name, last_name, primary_email, primary_phone, current_level')
-        .order('membership_number', { ascending: true })
+        .select('id, membership_id, first_name, last_name, primary_email, primary_phone, current_level')
+        .order('membership_id', { ascending: true })
 
       setMembers(membersData || [])
 
@@ -230,7 +231,7 @@ export default function StaffNewBookingPage() {
   }
 
   const getTotalAmount = () => {
-    return cart.reduce((sum, item) => sum + item.price, 0)
+    return cartTotal(cart)
   }
 
   const handleSubmitBooking = async () => {
@@ -247,28 +248,30 @@ export default function StaffNewBookingPage() {
     try {
       setSubmitting(true)
 
-      // Determine initial status
-      let initialStatus = 'Pending Approval'
-      if (markAsPaid) {
-        initialStatus = 'Paid'
-      }
-
       // useAuth already resolves the signed-in staff member. The previous
       // lookup keyed off an undefined value and always failed, so a walk-in
       // booking marked paid recorded a null reviewed_by and no staff name.
       const staffName =
         [staffMember?.first_name, staffMember?.last_name].filter(Boolean).join(' ') || null
 
-      // Create booking
-      const bookingData: any = {
-        member_id: selectedMemberId || null,
-        requester_name: requesterName.trim(),
-        requester_phone: requesterPhone.trim(),
-        requester_email: requesterEmail.trim(),
-        total_amount: getTotalAmount(),
-        status: initialStatus,
-        additional_notes: additionalNotes.trim() || null,
-      }
+      const selected = members.find((m) => m.id === selectedMemberId)
+
+      // Rows are shaped in lib/bookings/bookingRows.ts; the database assigns
+      // booking_number (BK-YYYY-NNNNN).
+      const bookingData: Record<string, unknown> = toBookingRow(
+        {
+          memberId: selectedMemberId || null,
+          membershipId: selected?.membership_id ?? null,
+          requesterName,
+          requesterPhone,
+          requesterEmail,
+          notes: additionalNotes,
+          status: markAsPaid ? 'Paid' : 'Pending Approval',
+          createdBy: user?.id ?? null,
+          isWalkIn: bookingSource !== 'Online',
+        },
+        cart
+      )
 
       // If marking as paid, auto-approve with staff details
       if (markAsPaid) {
@@ -280,28 +283,15 @@ export default function StaffNewBookingPage() {
 
       const { data: createdBooking, error: bookingError } = await supabase
         .from('service_bookings')
-        .insert(bookingData)
+        .insert(bookingData as never)
         .select()
         .single()
 
       if (bookingError) throw bookingError
 
-      // Create booking items
-      const items = cart.map(item => ({
-        booking_id: createdBooking.id,
-        service_id: item.service_id,
-        purohit_id: item.purohit_id,
-        service_date: item.service_date,
-        service_time: item.service_time,
-        location_type: item.location_type,
-        location_address: item.location_address,
-        notes: item.notes || null,
-        price: item.price,
-      }))
-
       const { error: itemsError } = await supabase
         .from('service_booking_items')
-        .insert(items)
+        .insert(toBookingItemRows((createdBooking as { id: string }).id, cart) as never)
 
       if (itemsError) throw itemsError
 
@@ -321,7 +311,7 @@ export default function StaffNewBookingPage() {
 
   const filteredMembers = members.filter(m =>
     memberSearchTerm === '' ||
-    m.membership_number.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
+    m.membership_id.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
     m.first_name.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
     m.last_name.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
     m.primary_email?.toLowerCase().includes(memberSearchTerm.toLowerCase())
@@ -393,7 +383,7 @@ export default function StaffNewBookingPage() {
             memberSearchTerm
               ? filteredMembers.slice(0, 8).map((m) => ({
                   id: m.id,
-                  membership_id: m.membership_number,
+                  membership_id: m.membership_id,
                   first_name: m.first_name,
                   last_name: m.last_name,
                   primary_email: m.primary_email,
@@ -405,7 +395,7 @@ export default function StaffNewBookingPage() {
             selectedMember
               ? {
                   id: selectedMember.id,
-                  membership_id: selectedMember.membership_number,
+                  membership_id: selectedMember.membership_id,
                   first_name: selectedMember.first_name,
                   last_name: selectedMember.last_name,
                   primary_email: selectedMember.primary_email,

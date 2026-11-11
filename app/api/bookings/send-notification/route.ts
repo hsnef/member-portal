@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
         booking_time: firstItem?.service_time,
         purohit_name: undefined, // Would need to join purohits table
         amount: booking.total_amount,
-        notes: booking.additional_notes,
+        notes: booking.notes,
         booking_id: bookingId,
       })
     } else {
