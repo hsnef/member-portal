@@ -60,8 +60,14 @@ only; Preview = `portal-app-dev`. The register is in `.env.local.example`.
 sign-in accounts, demo rows marked `legacy_id` `DEMO-…`, testers onboard through the real
 app. Dev only: the script refuses any other target (`assertDevTarget`).
 
-**E. Release and production (approval gate).** `dev → main` PR. Then, with Sujit's
-explicit go-ahead, on prod-mp: `RESEND_SMTP_KEY_PROD` (Resend key `supabase-auth-prod`,
+**E. Release and production (approval gate).** Checked read-only 2026-11-11: prod-mp has
+the membership-ID function and the same `members` triggers as dev, no booking trigger yet,
+the old INSERT policy, 0 bookings, **8 members** and approval **OFF**. Order matters:
+(1) turn `require_member_approval` **ON on prod before the release deploys**: the new
+`/join` works, and with approval off every applicant becomes a member at once;
+(2) if the 8 members are test rows, clear them (#34) **before** importing the real
+membership, or new numbers continue after the test ones (DEC-012).
+Then `dev → main` PR, and with Sujit's explicit go-ahead, on prod-mp: `RESEND_SMTP_KEY_PROD` (Resend key `supabase-auth-prod`,
 already created) and `npm run supabase:auth-config -- --env prod --apply --confirm-production`;
 migrations `20261111000001` (Office Staff insert, #43), `20261111000002` (booking
 numbers, #40) and `20261111000003` (membership-ID lock, DEC-012); first confirm
