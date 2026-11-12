@@ -50,9 +50,11 @@ Google on with a second client secret (prod keeps the January one, `****7bwh`; d
 it); `supabase:auth-config dev` shows 0 differences. **Confirmed on prod:** Sujit signed in with
 Google as gsujit@gmail.com and landed in the Admin area.
 
-**B. Sujit: Vercel `RESEND_API_KEY` (#19).** Production = Resend key `portal-app-prod`
-only; Preview = `portal-app-dev`. Until then app emails (approval invitations, booking
-confirmations) may not send from the deployed sites. The register is in `.env.local.example`.
+**B. Vercel `RESEND_API_KEY` (#19): set 2026-11-11, test pending.** Production now has
+`portal-app-prod`; Preview + Development have `portal-app-dev` (before, the one variable held
+the dev key for all three). Both sites redeployed. Still to do (Sujit, later): on dev, apply
+via `/join` with a plus-address, approve it, and confirm the invitation arrives and shows
+Delivered in Resend. Then close #19.
 
 **C. The real membership import (#34).** The temple fills the template (format on the
 import page and in `docs/guides/features/import-instructions-for-staff.md`); an Admin or
