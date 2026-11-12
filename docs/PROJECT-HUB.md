@@ -64,10 +64,10 @@ Office Manager imports it on prod. Try it on dev first with a sample file.
 **D. Phase 1 area reviews (#22–#28)** on dev, per role. Testers join through `/join`
 (approval ON on dev too) or are added by the office; there is no seed data (#20 closed).
 
-**E. Tidy-ups found 2026-11-11.** Still open: a frozen tab holding the auth lock hangs other
-tabs, add a timeout (#29); booking and items are two inserts, not one transaction (#25); the
-footer's "Deployed" date can lag a day.
-Done 2026-11-12 on the branch: `send-welcome`, `send-invitation` and
+**E. Tidy-ups found 2026-11-11.** Still open: booking and items are two inserts, not one
+transaction (#25); the footer's "Deployed" date can lag a day.
+Done 2026-11-12 on the branch: the auth lock waits at most 10 s, then takes over from a frozen
+tab (`lib/supabase/authLock.ts`; verified in Chrome with two tabs); `send-welcome`, `send-invitation` and
 `bookings/send-notification` now check sign-in and staff role (#29); the email footer links the
 portal; the terms say `https://member.hsnef.org` (migration `20261112000001`, **applied to dev;
 prod waits for Sujit**, with the release).
