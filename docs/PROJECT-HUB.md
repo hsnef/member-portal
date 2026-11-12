@@ -73,8 +73,8 @@ links `portal.hsnef.org`; booking and items are two inserts, not one transaction
 Do not reorganise `docs/` or write role guides by hand. docs-kit (techsilon-oss) is built
 first, as a standalone tool with no reference to this repo; this repo then adopts it as its
 first trial. Feature records belong to qa-kit, not docs-kit. How-tos stay per subject, with a
-per-role index, now in the docs-kit design (techsilon-oss/docs-kit PR #1, 2026-11-12: Sujit
-merges). The next step is a separate session in the docs-kit repo, building 0.1. govkit was
+per-role index, now in the docs-kit design (techsilon-oss/docs-kit PR #1, merged
+2026-11-12). The next step is a separate session in the docs-kit repo, building 0.1. govkit was
 upgraded here to 0.12.1 on 2026-11-12; production `main` is tagged `v0.1.0` (`npm run release:status`).
 
 **Standing facts:**
