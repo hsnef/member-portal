@@ -64,10 +64,19 @@ Office Manager imports it on prod. Try it on dev first with a sample file.
 **D. Phase 1 area reviews (#22–#28)** on dev, per role. Testers join through `/join`
 (approval ON on dev too) or are added by the office; there is no seed data (#20 closed).
 
-**E. Tidy-ups found 2026-11-11:** terms text names `portal.hsnef.org` as the portal (#35);
-a frozen tab holding the auth lock hangs other tabs, add a timeout (#29); the email footer
-links `portal.hsnef.org`; booking and items are two inserts, not one transaction (#25);
-`/api/members/send-welcome` has no auth check (#29); the footer's "Deployed" date can lag a day.
+**E. Tidy-ups found 2026-11-11.** Still open: booking and items are two inserts, not one
+transaction (#25); the footer's "Deployed" date can lag a day.
+Done 2026-11-12 on the branch: the auth lock waits at most 10 s, then takes over from a frozen
+tab (`lib/supabase/authLock.ts`; verified in Chrome with two tabs); `send-welcome`, `send-invitation` and
+`bookings/send-notification` now check sign-in and staff role (#29); the email footer links the
+portal; the terms say `https://member.hsnef.org` (migration `20261112000001`, **applied to dev;
+prod waits for Sujit**, with the release).
+Also done 2026-11-12: `/debug` removed; not-found, error and global-error pages added;
+`calculateMembershipFee` deleted; saffron darkened to `#b8530e` (WCAG AA) and runtime theme
+switching removed, so dev and production share one palette. Migration `20261112000002` drops
+`theme_definitions` and the `active_theme` setting: **not yet applied anywhere; Sujit runs it
+on dev, then prod with the release** (Claude's apply was blocked by the permission classifier).
+Next: Zelle, built for real use (scope being agreed with Sujit 2026-11-12).
 
 **F. Product docs and role how-tos: waiting on docs-kit 0.1 (decided 2026-11-12, Sujit).**
 Do not reorganise `docs/` or write role guides by hand. docs-kit (techsilon-oss) is built
@@ -99,7 +108,7 @@ upgraded here to 0.12.1 on 2026-11-12; production `main` is tagged `v0.1.0` (`np
 | **Supabase pausing** | Keep-alive for pausing is Sujit's (#21). (Sign-in email through Resend SMTP is done on both projects, session 11) |
 | **Tokens to revoke** | A Vercel token and a Supabase PAT were issued to Claude on 2026-09-02. **Revoke both**, and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local` — still present 2026-10-08; risk accepted by Sujit for now |
 | **Test coverage is thin** | Tests cover the QR pass, the Zelle money path, the shared formatter, `cn()`, plus two guard suites — `app/auth-redirects.test.ts` (no auth redirect may point at a missing route) and `utils/design-tokens.test.ts` (no raw hex in `className`). Everything touching Supabase, Stripe and the API routes is still untested; that needs a Supabase client fake |
-| **Contrast** | White on `#c75b12` is 4.26:1, below WCAG AA's 4.5. `#b8530e` gives 4.90. One line in `app/globals.css`; a brand decision |
+| **Contrast** | ✅ Fixed 2026-11-12: saffron is `#b8530e` (white on it 4.90:1, was 4.26:1 on `#c75b12`) on web, emails and PDFs; theme switching removed so dev and production share one palette. `lib/colour-tokens.test.ts` |
 | **PII in git history** | Rewritten and branches deleted, but GitHub keeps orphaned commits reachable by SHA. Closes when the repo goes private, which is the plan. See DEC-010 |
 | **SPF** | `hsnef.org` publishes three `v=spf1` records; RFC 7208 allows one |
 | **Type errors** | Mostly local `interface` shapes drifted from `types/database.ts`. Real, not urgent |
@@ -157,8 +166,10 @@ Settings → Appearance edits, silently breaking every themed surface.
 **Instead:** `globals.css` carries both token families. The seven semantically overlapping tokens
 (`--canvas`, `--surface`, `--ink`, `--ink-2`, `--saffron`, `--kumkum`, `--line`) are *aliased* to
 their `--theme-*` counterpart. Runtime theming still moves the design system, and un-ported pages
-picked up the new palette for free. `hsnef` is registered as a built-in theme and is the default via
-a single `DEFAULT_THEME_NAME` constant; `default` and `florida-oura` remain selectable.
+picked up the new palette for free.
+**Superseded 2026-11-12:** runtime theming was removed (it let dev and production differ, and the
+dev theme made buttons unreadable). `lib/themes/`, `app/api/themes/`, the Appearance page and the
+`theme_definitions` table are gone; `app/globals.css` is the only palette.
 
 ### DEC-002: Colour-token opacity uses `color-mix()`
 **2026-08-31 · Accepted.** Tailwind 3 cannot compose an alpha onto a colour defined as a bare
@@ -826,7 +837,7 @@ type checker nobody was reading:
 
 **Found but NOT fixed — needs your decision:**
 - **DEC-009: the events feature cannot work.** Read it before touching events.
-- **White on `#c75b12` is 4.26:1, below WCAG AA's 4.5** for normal text. The
+- ~~**White on `#c75b12` is 4.26:1, below WCAG AA's 4.5**~~ **Fixed 2026-11-12** (now `#b8530e`). The
   design kit claimed it passes; it does not. Darkening `--saffron` to about
   `#b8530e` gives 4.90 and is nearly imperceptible. One line in
   `app/globals.css`; it propagates to emails and PDFs too. Brand colour, so

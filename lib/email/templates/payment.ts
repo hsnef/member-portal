@@ -37,8 +37,8 @@ export function getPaymentFailureEmail(data: PaymentFailureEmailData) {
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <!-- Header -->
-      <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #c75b12;">
-        <h1 style="color: #c75b12; margin: 0; font-size: 24px;">${TEMPLE_CONFIG.name}</h1>
+      <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #b8530e;">
+        <h1 style="color: #b8530e; margin: 0; font-size: 24px;">${TEMPLE_CONFIG.name}</h1>
         <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Membership Portal</p>
       </div>
 
@@ -98,7 +98,7 @@ export function getPaymentFailureEmail(data: PaymentFailureEmailData) {
       <!-- CTA Button -->
       <div style="text-align: center; margin: 32px 0;">
         <a href="${data.retryUrl}"
-           style="display: inline-block; background-color: #c75b12; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+           style="display: inline-block; background-color: #b8530e; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
           Try Payment Again
         </a>
       </div>
@@ -118,7 +118,7 @@ export function getPaymentFailureEmail(data: PaymentFailureEmailData) {
         <p style="color: #9b8c7a; font-size: 12px; margin: 0;">
           ${TEMPLE_CONFIG.name}<br>
           ${TEMPLE_CONFIG.address.full}<br>
-          <a href="${TEMPLE_CONFIG.contact.website}" style="color: #c75b12;">${TEMPLE_CONFIG.contact.website}</a>
+          <a href="${TEMPLE_CONFIG.contact.website}" style="color: #b8530e;">${TEMPLE_CONFIG.contact.website}</a>
         </p>
         <p style="color: #9b8c7a; font-size: 11px; margin: 16px 0 0 0;">
           This email was sent from the HSNEF Membership Portal. Please do not reply directly to this email.
@@ -182,8 +182,8 @@ export function getPaymentSuccessEmail(data: PaymentSuccessEmailData) {
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <!-- Header -->
-      <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #c75b12;">
-        <h1 style="color: #c75b12; margin: 0; font-size: 24px;">${TEMPLE_CONFIG.name}</h1>
+      <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #b8530e;">
+        <h1 style="color: #b8530e; margin: 0; font-size: 24px;">${TEMPLE_CONFIG.name}</h1>
         <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Membership Portal</p>
       </div>
 
@@ -230,7 +230,7 @@ export function getPaymentSuccessEmail(data: PaymentSuccessEmailData) {
       <!-- Receipt Button -->
       <div style="text-align: center; margin: 32px 0;">
         <a href="${data.receiptUrl}"
-           style="display: inline-block; background-color: #c75b12; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+           style="display: inline-block; background-color: #b8530e; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
           View Receipt
         </a>
       </div>
@@ -254,7 +254,7 @@ export function getPaymentSuccessEmail(data: PaymentSuccessEmailData) {
           ${TEMPLE_CONFIG.name}<br>
           ${TEMPLE_CONFIG.address.full}<br>
           Tax ID: ${TEMPLE_CONFIG.taxId}<br>
-          <a href="${TEMPLE_CONFIG.contact.website}" style="color: #c75b12;">${TEMPLE_CONFIG.contact.website}</a>
+          <a href="${TEMPLE_CONFIG.contact.website}" style="color: #b8530e;">${TEMPLE_CONFIG.contact.website}</a>
         </p>
       </div>
     </body>

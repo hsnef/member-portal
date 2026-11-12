@@ -30,7 +30,7 @@ import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 export const stripeAppearance = {
   theme: 'flat' as const,
   variables: {
-    colorPrimary: '#c75b12',
+    colorPrimary: '#b8530e',
     colorBackground: '#ffffff',
     colorText: '#2b2018',
     colorDanger: '#b23a2e',

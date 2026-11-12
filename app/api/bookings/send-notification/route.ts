@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/email/mailer'
 import { bookingConfirmationEmail } from '@/lib/email/templates'
+import { isStaff } from '@/lib/auth/helpers'
+
+/** Statuses a member may send for their own booking; all others need staff. */
+const MEMBER_STATUSES = ['submitted', 'Pending Approval']
 
 // Email templates for different booking statuses
 function getBookingSubmittedEmail(memberName: string, booking: any, items: any[]) {
@@ -19,8 +23,8 @@ function getBookingSubmittedEmail(memberName: string, booking: any, items: any[]
     subject: `Booking Submitted - Pending Approval`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #c75b12;">
-          <h1 style="color: #c75b12; margin: 0;">HSNEF</h1>
+        <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #b8530e;">
+          <h1 style="color: #b8530e; margin: 0;">HSNEF</h1>
           <p style="color: #666; margin: 5px 0 0 0;">Membership Portal</p>
         </div>
 
@@ -29,7 +33,7 @@ function getBookingSubmittedEmail(memberName: string, booking: any, items: any[]
           <p>Dear ${memberName},</p>
           <p>Your service booking has been submitted and is pending approval by our staff.</p>
 
-          <div style="background-color: #fdefe2; border-left: 4px solid #c75b12; padding: 15px; margin: 20px 0;">
+          <div style="background-color: #fdefe2; border-left: 4px solid #b8530e; padding: 15px; margin: 20px 0;">
             <p style="margin: 0; font-weight: bold;">Booking Reference: ${booking.id.slice(0, 8).toUpperCase()}</p>
             <p style="margin: 10px 0 0 0;">Total Amount: $${booking.total_amount.toFixed(2)}</p>
           </div>
@@ -64,8 +68,8 @@ function getBookingApprovedEmail(memberName: string, booking: any, items: any[],
     subject: `Booking Approved - Payment Required`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #c75b12;">
-          <h1 style="color: #c75b12; margin: 0;">HSNEF</h1>
+        <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #b8530e;">
+          <h1 style="color: #b8530e; margin: 0;">HSNEF</h1>
           <p style="color: #666; margin: 5px 0 0 0;">Membership Portal</p>
         </div>
 
@@ -77,14 +81,14 @@ function getBookingApprovedEmail(memberName: string, booking: any, items: any[],
           <p>Dear ${memberName},</p>
           <p>Great news! Your service booking has been approved. Please proceed with payment to confirm your booking.</p>
 
-          <div style="background-color: #fdefe2; border-left: 4px solid #c75b12; padding: 15px; margin: 20px 0;">
+          <div style="background-color: #fdefe2; border-left: 4px solid #b8530e; padding: 15px; margin: 20px 0;">
             <p style="margin: 0; font-weight: bold;">Booking Reference: ${booking.id.slice(0, 8).toUpperCase()}</p>
-            <p style="margin: 10px 0; font-size: 24px; color: #c75b12; font-weight: bold;">$${booking.total_amount.toFixed(2)}</p>
+            <p style="margin: 10px 0; font-size: 24px; color: #b8530e; font-weight: bold;">$${booking.total_amount.toFixed(2)}</p>
             <p style="margin: 0;">${itemsList}</p>
           </div>
 
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${paymentLink}" style="display: inline-block; background-color: #c75b12; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: bold;">
+            <a href="${paymentLink}" style="display: inline-block; background-color: #b8530e; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: bold;">
               Pay Now
             </a>
           </div>
@@ -104,7 +108,20 @@ function getBookingApprovedEmail(memberName: string, booking: any, items: any[],
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { bookingId, status } = await request.json()
+
+    // A member confirms their own new booking ("submitted"; row-level security
+    // limits the lookup below to bookings they can see). Every other email
+    // (approved with a payment link, confirmed) is sent by office staff.
+    if (!MEMBER_STATUSES.includes(status) && !(await isStaff())) {
+      return NextResponse.json({ error: 'Only office staff can send this notification' }, { status: 403 })
+    }
 
     // Get booking details
     const { data: booking, error: bookingError } = await supabase

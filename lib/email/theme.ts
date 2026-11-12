@@ -32,7 +32,7 @@ export const EMAIL = {
   /** The header band. Deep, not orange — white text on saffron fails AA. */
   kumkum: '#7b2d26',
   /** Buttons, links, accents. */
-  saffron: '#c75b12',
+  saffron: '#b8530e',
   /** Tint behind an accented panel. */
   saffronSoft: '#fdefe2',
   /** Highlight, used sparingly on a dark ground. */
