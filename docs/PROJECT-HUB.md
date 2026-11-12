@@ -74,8 +74,8 @@ prod waits for Sujit**, with the release).
 Also done 2026-11-12: `/debug` removed; not-found, error and global-error pages added;
 `calculateMembershipFee` deleted; saffron darkened to `#b8530e` (WCAG AA) and runtime theme
 switching removed, so dev and production share one palette. Migration `20261112000002` drops
-`theme_definitions` and the `active_theme` setting: **not yet applied anywhere; Sujit runs it
-on dev, then prod with the release** (Claude's apply was blocked by the permission classifier).
+`theme_definitions` and the `active_theme` setting: **applied to dev 2026-11-12 (Sujit, after
+PR #53 deployed); prod waits for Sujit, after the release** — the old code reads the table.
 Next: Zelle, built for real use (scope being agreed with Sujit 2026-11-12).
 
 **F. Product docs and role how-tos: waiting on docs-kit 0.1 (decided 2026-11-12, Sujit).**
