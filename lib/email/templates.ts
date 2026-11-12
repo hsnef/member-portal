@@ -41,7 +41,7 @@ function emailWrapper(content: string): string {
               <p style="margin: 0; color: #666; font-size: 12px; text-align: center;">
                 This email was sent from the HSNEF Membership Portal<br>
                 <a href="https://hsnef.org" style="color: #c75b12; text-decoration: none;">Visit Main Website</a> |
-                <a href="https://portal.hsnef.org" style="color: #c75b12; text-decoration: none;">Member Portal</a>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}" style="color: #c75b12; text-decoration: none;">Member Portal</a>
               </p>
             </td>
           </tr>
