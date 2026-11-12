@@ -79,6 +79,18 @@ Nobody pays before approval, so the temple never has to refund a rejected applic
 3. Zelle at the counter: staff confirm when it shows in the bank; until then it is an open
    Zelle request in the queue like any other.
 
+**Membership pass (QR).** Every member has a pass with a QR code (`/member/pass`); staff
+scan it at `/admin/scan-qr` and see the member at `/verify-qr`. Two fixes come with this
+work: the QR signature is checked on the server (it was checked in the browser, which
+never has the secret, so real passes fail and the public fallback key could forge one),
+and the result shows the live membership — "Annual, valid to Dec 31, 2026", "Lifetime, no
+expiry", "Expired — now Community" — read from the member's record, not from the level
+printed into the QR at the time it was made.
+
+**Counter payment methods:** cash, cheque, Zelle, and **Card (counter machine)** — kept
+as an option (Sujit, 2026-11-12) so card payments taken on the temple's own machine are
+recorded and receipted like the rest.
+
 ## Principles (Zelle)
 
 1. **Zelle is a payment method, not a feature.** Anywhere a member can pay by card, they
