@@ -7,7 +7,7 @@ This directory contains all project documentation organized by category. Use thi
 | Document | What it is |
 |----------|------------|
 | [`ONBOARDING.md`](ONBOARDING.md) | **New here? Start with this.** Access to grant, local setup, and the live hazards. |
-| [`PROJECT-HUB.md`](PROJECT-HUB.md) | **Current state.** Architecture, the decisions log (DEC-001..DEC-011), session handoffs. `/sdlc status` reads this. |
+| [`PROJECT-HUB.md`](PROJECT-HUB.md) | **Current state.** Architecture, the decisions log (DEC-001..DEC-011), session handoffs. `/govkit-session status` reads this. |
 | [`PRIORITY-ROADMAP.md`](PRIORITY-ROADMAP.md) | **What to work on next**, in tiers. |
 | [`../CLAUDE.md`](../CLAUDE.md) | Working rules, the design system, and the route/role gates. |
 | [`SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md) | **Which Supabase project is which.** Read before touching a database. `gapvsdrzavjaublwkqfm` is PRODUCTION. |

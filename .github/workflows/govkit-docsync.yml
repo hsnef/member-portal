@@ -1,7 +1,10 @@
 name: sdlc-docs
+# Renamed in govkit 0.8.0 (it was the sdlc-docs workflow file). The workflow name, the job name ("Doc-sync (gate|warn)")
+# and the PR-comment marker keep their old names on purpose: a repo may require the job as a status
+# check, and renaming it would leave every PR waiting for a check that never reports.
 
 # Documentation Sync Watchdog (CLAUDE.md §Doc-Sync Mechanism). Replaces the earlier
-# doc-sync.yml. Runner: scripts/sdlc-docs.mjs (dependency-free Node — no install needed).
+# doc-sync.yml. Runner: scripts/govkit-docsync.mjs (dependency-free Node — no install needed).
 #   • PR to dev  → --warn  (comments, never blocks)
 #   • PR to main → --gate  (comments AND fails on gating drift)
 # Registry: scripts/source-doc-map.json. Override a gate with /skip-doc-sync isn't used here —
@@ -21,11 +24,12 @@ jobs:
     name: Doc-sync (${{ github.base_ref == 'main' && 'gate' || 'warn' }})
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # v5+ of checkout and setup-node run on Node 24: a self-hosted runner must be v2.327.1 or later.
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
 
@@ -35,14 +39,29 @@ jobs:
           BASE="${{ github.base_ref }}"
           MODE=$([ "$BASE" = "main" ] && echo gate || echo warn)
           git fetch --no-tags --depth=100 origin "$BASE"
+          # The runner is scripts/govkit-docsync.mjs unless govkit.json `paths` puts it elsewhere.
+          RUNNER=$(node -e 'let p; try { p = require("./govkit.json").paths?.["scripts/govkit-docsync.mjs"] } catch {} process.stdout.write(p || "scripts/govkit-docsync.mjs")')
           set +e
-          node scripts/sdlc-docs.mjs audit --$MODE --base "origin/$BASE" | tee /tmp/sdlc-docs.txt
+          node "$RUNNER" audit --$MODE --base "origin/$BASE" | tee /tmp/sdlc-docs.txt
           echo "exit=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
           echo "mode=$MODE" >> "$GITHUB_OUTPUT"
 
-      - name: Comment findings on PR
+      # Always: the findings in the job summary, which every PR can show, a fork's included.
+      - name: Write findings to the job summary
         if: always()
-        uses: actions/github-script@v7
+        run: |
+          {
+            echo "### Doc-sync (${{ steps.audit.outputs.mode }} mode)"
+            echo '```'
+            cat /tmp/sdlc-docs.txt 2>/dev/null || echo "(the audit wrote no output)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Not on a PR from a fork: its token is read-only, so writing the comment would fail the run.
+      # The gate below still applies to forks.
+      - name: Comment findings on PR
+        if: always() && github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require("node:fs");
