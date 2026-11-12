@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/email/mailer'
 import { bookingConfirmationEmail } from '@/lib/email/templates'
+import { isStaff } from '@/lib/auth/helpers'
+
+/** Statuses a member may send for their own booking; all others need staff. */
+const MEMBER_STATUSES = ['submitted', 'Pending Approval']
 
 // Email templates for different booking statuses
 function getBookingSubmittedEmail(memberName: string, booking: any, items: any[]) {
@@ -104,7 +108,20 @@ function getBookingApprovedEmail(memberName: string, booking: any, items: any[],
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { bookingId, status } = await request.json()
+
+    // A member confirms their own new booking ("submitted"; row-level security
+    // limits the lookup below to bookings they can see). Every other email
+    // (approved with a payment link, confirmed) is sent by office staff.
+    if (!MEMBER_STATUSES.includes(status) && !(await isStaff())) {
+      return NextResponse.json({ error: 'Only office staff can send this notification' }, { status: 403 })
+    }
 
     // Get booking details
     const { data: booking, error: bookingError } = await supabase
