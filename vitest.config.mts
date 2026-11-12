@@ -5,6 +5,8 @@ import { defineConfig } from 'vitest/config'
 const root = resolve(fileURLToPath(new URL('.', import.meta.url)))
 
 export default defineConfig({
+  // tsconfig keeps JSX for Next ("preserve"); tests compile it themselves.
+  oxc: { jsx: { runtime: 'automatic' } },
   test: {
     // Node, not jsdom. Everything tested so far is a pure function; adding
     // component tests later means adding jsdom + @testing-library/react then,
