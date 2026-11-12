@@ -76,7 +76,9 @@ Also done 2026-11-12: `/debug` removed; not-found, error and global-error pages 
 switching removed, so dev and production share one palette. Migration `20261112000002` drops
 `theme_definitions` and the `active_theme` setting: **applied to dev 2026-11-12 (Sujit, after
 PR #53 deployed); prod waits for Sujit, after the release** — the old code reads the table.
-Next: Zelle, built for real use (scope being agreed with Sujit 2026-11-12).
+Next: **Payments, done right** — card, Zelle and office through one settlement step
+(`docs/architecture/payments.md`, agreed 2026-11-12). Card payments are a launch blocker:
+they are charged by Stripe but never recorded.
 
 **F. Product docs and role how-tos: waiting on docs-kit 0.1 (decided 2026-11-12, Sujit).**
 Do not reorganise `docs/` or write role guides by hand. docs-kit (techsilon-oss) is built

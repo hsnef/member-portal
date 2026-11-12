@@ -1,36 +1,96 @@
-# Zelle payments — specification
+# Payments — specification (card, Zelle, office)
 
-_Status: **agreed 2026-11-12** (Sujit). Not built yet._
-_Replaces the prototype in `lib/zelle/`, `app/admin/zelle/`, `app/pay/` and `components/zelle/`._
+_Status: **agreed 2026-11-12** (Sujit: "go for the wider job"). Being built._
+_Replaces the prototype in `lib/zelle/`, `app/admin/zelle/`, `app/pay/` and `components/zelle/`,
+and the four separate "mark it paid" paths for card payments._
 
 ## Why this exists
 
-Members already pay the temple by Zelle. The portal should make that as easy as a card
-payment for the member, and make it quick and safe for the office to confirm, without
-anyone keeping a separate spreadsheet. The portal cannot see the bank account, so money
-is only ever marked received by a person, or by a bank file a person uploads.
+Members pay the temple by card, by Zelle, and in person by cash or cheque. Every one of
+those should end the same way: the payment is recorded once, the thing paid for is marked
+paid, a numbered receipt is emailed, and the office sees it.
 
-The prototype could not be switched on: members could not complete a payment (the
-database refused it), $50-and-under payments would have been marked paid unchecked,
-staff could confirm a payment twice, and no receipts were sent. See the audit in the
-2026-11-12 session handoff in `PROJECT-HUB.md`.
+None of that works reliably today (audit, 2026-11-12):
+- **Card payments are never recorded.** Stripe takes the money, but the portal's write is
+  refused by the database (only staff may insert payments; the card paths run as the
+  member or as nobody). No receipt, no status change.
+- **Paid event registration cannot succeed** (it writes columns that do not exist).
+- **Renewals never change the level** ("annual" vs "Annual") and **no membership dates are
+  ever written**, so nobody's membership is extended.
+- **Joining at Annual or Lifetime grants the level without payment.**
+- **Amounts come from the browser** on every card payment.
+- **The receipts table is never used**; PDFs invent a number; only card donations email.
+- **Zelle** could not be switched on: members could not complete a payment, $50-and-under
+  would have been marked paid unchecked, staff could confirm twice, no receipts.
 
-## Principles
+## Settling a payment — the one step
+
+`settlePayment` runs on the server only, with the service role, inside one database
+transaction (a Postgres function). Given *what is being paid* and *what arrived*, it:
+
+1. Claims the source so it can only settle once (a Stripe payment intent id is unique;
+   a Zelle request moves out of its open state; an office entry is one form submit).
+2. Inserts the `payments` row (method, purpose, amount, member, references, who).
+3. Marks the item paid: booking → Paid (`payment_id`, `paid_at`); request → Paid;
+   event → registration created and confirmed; membership → level and dates (below);
+   donation → nothing else.
+4. Inserts the `receipts` row (numbered `RCP-YYYY-NNNNNN` by the existing trigger).
+5. After commit: emails the receipt; PDFs everywhere use the receipt number.
+
+Card (Stripe webhook), Zelle (staff confirmation, bank import) and office-recorded
+payments all call it. The browser never marks anything paid. The Stripe success pages
+only *show* the result, reading it back from the server.
+
+**The amount is always the server's.** A checkout starts from the item (booking id,
+request id, event id, membership level, or a donation with its amount and fund); the
+server works out the price and creates the Stripe payment intent or Zelle request for
+exactly that.
+
+## Membership
+
+**Membership year** (from the temple's brief, `docs/reference/…-final-prompt-v3.md` §2.2):
+Annual runs January 1 – December 31, with no prorating.
+- Paid **Jan 1 – Sep 30** → valid to Dec 31 of this year.
+- Paid **Oct 1 – Dec 31** → valid to Dec 31 of **next** year (about 15 months).
+- Not renewed → back to Community; history kept. Lifetime never expires or drops.
+
+Settling a membership payment writes a `memberships` row (level, year, start, end,
+payment) and sets `members.current_level`. A member's level is only ever Annual or
+Lifetime because a payment settled.
+
+**Scenario A — applying from home.**
+1. They apply at `/join`, choosing Community, Annual or Lifetime.
+2. The office approves the application (approval is on). The member is created as
+   **Community** whatever they chose, and gets the sign-in invitation.
+3. If they chose Annual or Lifetime, their dashboard says **Complete your membership —
+   $X**, with Card or Zelle. The approval email says the same, with the link.
+4. Card: active at once, receipt emailed. Zelle: active when the office confirms it.
+5. If they never pay, they stay a Community member, which is what they are entitled to.
+
+Nobody pays before approval, so the temple never has to refund a rejected applicant.
+
+**Scenario B — at the temple counter.**
+1. Staff open **Add member** (office console), enter name and email, choose the level
+   and, for a paid level, how they paid: cash, cheque or Zelle (sent from their phone at
+   the counter).
+2. Staff-created members need no approval. On save the member exists, the payment is
+   settled through the same step, the level and dates are set, and the member is emailed
+   the receipt and the sign-in invitation.
+3. Zelle at the counter: staff confirm when it shows in the bank; until then it is an open
+   Zelle request in the queue like any other.
+
+## Principles (Zelle)
 
 1. **Zelle is a payment method, not a feature.** Anywhere a member can pay by card, they
    can choose Zelle: joining, renewing or upgrading, donations, puja and service
    bookings, requests, event registrations.
-2. **One way to mark something paid.** A single server-side step records the payment,
-   marks the item paid (booking, renewal, registration, request), creates the receipt and
-   emails it. Card, Zelle and office-recorded cash/cheque all go through it. Today that
-   logic is copied in four places and the booking one runs in the member's browser; this
-   work replaces all four.
+2. **One way to mark something paid:** `settlePayment`, above.
 3. **A person confirms money.** No automatic confirmation from the member's say-so.
 4. **Nothing disappears.** Every Zelle request is visible to the office until it is paid,
    cancelled or expired, and expired ones stay findable.
 5. **Simple to follow.** One reference code, one queue, two buttons.
 
-## The member's journey
+## Zelle — the member's journey
 
 1. At checkout the member picks **Card** or **Zelle**.
 2. Zelle shows: the amount, the temple's Zelle email/phone, a QR code, and a reference
@@ -43,7 +103,7 @@ staff could confirm a payment twice, and no receipts were sent. See the audit in
    paid, exactly as after a card payment.
 6. If the money does not arrive, they get a reminder, then the request expires (below).
 
-## The office's journey
+## Zelle — the office's journey
 
 **Zelle queue** (`/admin/zelle`), three tabs: **Member says sent** (work these first),
 **Awaiting payment**, **Closed** (paid, cancelled, expired — searchable).
@@ -144,16 +204,23 @@ Auto-confirm, the unused signed QR token (and its known weakness), the quick-pay
 
 ## Done means
 
+- Card: each purpose, paid on dev with Stripe test cards by a real member, is recorded
+  once, marks the item paid, writes a receipt and emails it — even if the member closes
+  the tab straight after paying (the webhook settles it).
+
 - Every payment type above can be paid by Zelle end to end on dev, as a real member
   (not an Admin) and as Office Staff.
-- Card payments go through the same single "mark paid" step, and the booking
-  payment-success page no longer marks anything paid itself.
+- No page in the browser marks anything paid.
 - Tests: the confirmation step (exact, short, over, twice, wrong role), expiry, the bank
   file matcher (matched, possible, unmatched, duplicates), reference code format.
 - All Zelle screens on the design system; no type errors in the touched files.
 - Migrations applied to dev; production with the release, by Sujit.
 
 ## Decisions (Sujit, 2026-11-12)
+
+0. The work covers card, Zelle and office payments for every purpose, through one
+   settlement step (Sujit: "go for the wider job"). Joining at a paid level: approve,
+   then pay; Community until paid. Membership year as in the temple's brief (above).
 
 1. Defaults accepted: 7 days to pay, reminder at 3, hold places on. Admin-editable.
 2. Bank CSV import is built in; a sample export from the temple's bank follows the build.
