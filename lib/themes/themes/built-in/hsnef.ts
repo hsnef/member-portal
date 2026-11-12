@@ -27,7 +27,7 @@ export const hsnefTheme: Theme = {
     '--theme-bg-secondary': '#ffffff',
     '--theme-text-primary': '#2b2018',
     '--theme-text-secondary': '#6a5b4b',
-    '--theme-accent-primary': '#c75b12',
+    '--theme-accent-primary': '#b8530e',
     '--theme-accent-secondary': '#7b2d26',
     '--theme-border': '#f1e6d5',
     '--theme-border-radius-card': '18px',

@@ -40,8 +40,8 @@ function emailWrapper(content: string): string {
             <td style="background-color: #fffbf4; padding: 20px 30px; border-top: 1px solid #eee;">
               <p style="margin: 0; color: #666; font-size: 12px; text-align: center;">
                 This email was sent from the HSNEF Membership Portal<br>
-                <a href="https://hsnef.org" style="color: #c75b12; text-decoration: none;">Visit Main Website</a> |
-                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}" style="color: #c75b12; text-decoration: none;">Member Portal</a>
+                <a href="https://hsnef.org" style="color: #b8530e; text-decoration: none;">Visit Main Website</a> |
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}" style="color: #b8530e; text-decoration: none;">Member Portal</a>
               </p>
             </td>
           </tr>
@@ -76,11 +76,11 @@ export function registrationInvitationEmail(
   const memberName = member.member_profile_name || `${member.first_name} ${member.last_name}` || member.business_name
 
   const content = `
-    <h2 style="color: #c75b12; margin-top: 0;">Welcome to HSNEF!</h2>
+    <h2 style="color: #b8530e; margin-top: 0;">Welcome to HSNEF!</h2>
     <p>Dear ${memberName},</p>
     <p>The temple office has added you to the HSNEF Membership Portal. Sign in with this email address: we will email you a sign-in link, or you can use Google.</p>
     <p style="margin: 30px 0;">
-      <a href="${invitationLink}" style="display: inline-block; background-color: #c75b12; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+      <a href="${invitationLink}" style="display: inline-block; background-color: #b8530e; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
         Sign in to the portal
       </a>
     </p>
@@ -107,7 +107,7 @@ export function paymentReceiptEmail(
   const memberName = member.member_profile_name || `${member.first_name} ${member.last_name}` || member.business_name
 
   const content = `
-    <h2 style="color: #c75b12; margin-top: 0;">Payment Receipt</h2>
+    <h2 style="color: #b8530e; margin-top: 0;">Payment Receipt</h2>
     <p>Dear ${memberName},</p>
     <p>Thank you for your payment. Here are the details:</p>
 
@@ -122,7 +122,7 @@ export function paymentReceiptEmail(
       </tr>
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Amount:</strong></td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee; font-size: 18px; color: #c75b12;"><strong>$${receipt.amount.toFixed(2)}</strong></td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee; font-size: 18px; color: #b8530e;"><strong>$${receipt.amount.toFixed(2)}</strong></td>
       </tr>
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Payment Method:</strong></td>
@@ -155,7 +155,7 @@ export function paymentRequestEmail(
   const memberName = member.member_profile_name || `${member.first_name} ${member.last_name}` || member.business_name
 
   const content = `
-    <h2 style="color: #c75b12; margin-top: 0;">Payment Request</h2>
+    <h2 style="color: #b8530e; margin-top: 0;">Payment Request</h2>
     <p>Dear ${memberName},</p>
     <p>You have a payment request from HSNEF:</p>
 
@@ -170,7 +170,7 @@ export function paymentRequestEmail(
       </tr>
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Amount Due:</strong></td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee; font-size: 18px; color: #c75b12;"><strong>$${request.amount.toFixed(2)}</strong></td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee; font-size: 18px; color: #b8530e;"><strong>$${request.amount.toFixed(2)}</strong></td>
       </tr>
       ${request.due_date ? `
       <tr>
@@ -181,7 +181,7 @@ export function paymentRequestEmail(
     </table>
 
     <p style="margin: 30px 0;">
-      <a href="${paymentLink}" style="display: inline-block; background-color: #c75b12; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+      <a href="${paymentLink}" style="display: inline-block; background-color: #b8530e; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
         Pay Now
       </a>
     </p>
@@ -207,11 +207,11 @@ export function renewalReminderEmail(
   const memberName = member.member_profile_name || `${member.first_name} ${member.last_name}`
 
   const content = `
-    <h2 style="color: #c75b12; margin-top: 0;">Membership Renewal Reminder</h2>
+    <h2 style="color: #b8530e; margin-top: 0;">Membership Renewal Reminder</h2>
     <p>Dear ${memberName},</p>
     <p>Your HSNEF Annual Membership for ${year} is due for renewal.</p>
 
-    <div style="background-color: #fdefe2; border-left: 4px solid #c75b12; padding: 15px; margin: 20px 0;">
+    <div style="background-color: #fdefe2; border-left: 4px solid #b8530e; padding: 15px; margin: 20px 0;">
       <p style="margin: 0; color: #333;">
         <strong>Membership ID:</strong> ${member.membership_id}<br>
         <strong>Renewal Year:</strong> ${year}
@@ -219,7 +219,7 @@ export function renewalReminderEmail(
     </div>
 
     <p style="margin: 30px 0;">
-      <a href="${renewalLink}" style="display: inline-block; background-color: #c75b12; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+      <a href="${renewalLink}" style="display: inline-block; background-color: #b8530e; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
         Renew Now
       </a>
     </p>
@@ -258,11 +258,11 @@ export function eventRegistrationEmail(
   })
 
   const content = `
-    <h2 style="color: #c75b12; margin-top: 0;">Event Registration Confirmed!</h2>
+    <h2 style="color: #b8530e; margin-top: 0;">Event Registration Confirmed!</h2>
     <p>Dear ${memberName},</p>
     <p>You have successfully registered for the following event:</p>
 
-    <div style="background-color: #fdefe2; border-left: 4px solid #c75b12; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+    <div style="background-color: #fdefe2; border-left: 4px solid #b8530e; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
       <h3 style="margin: 0 0 10px 0; color: #333;">${event.event_name}</h3>
       <p style="margin: 0; color: #666; font-size: 14px;">
         <strong>📅 Date:</strong> ${eventDate}<br>
@@ -283,7 +283,7 @@ export function eventRegistrationEmail(
     </div>
 
     <p style="margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}/member/events" style="display: inline-block; background-color: #c75b12; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}/member/events" style="display: inline-block; background-color: #b8530e; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
         View My Events
       </a>
     </p>
@@ -318,7 +318,7 @@ export function eventCancellationEmail(
   })
 
   const content = `
-    <h2 style="color: #c75b12; margin-top: 0;">Event Registration Cancelled</h2>
+    <h2 style="color: #b8530e; margin-top: 0;">Event Registration Cancelled</h2>
     <p>Dear ${memberName},</p>
     <p>Your registration for the following event has been cancelled:</p>
 
@@ -336,7 +336,7 @@ export function eventCancellationEmail(
     </p>
 
     <p style="margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}/member/events" style="display: inline-block; background-color: #c75b12; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}/member/events" style="display: inline-block; background-color: #b8530e; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
         View Upcoming Events
       </a>
     </p>
@@ -371,11 +371,11 @@ export function bookingConfirmationEmail(
   })
 
   const content = `
-    <h2 style="color: #c75b12; margin-top: 0;">Booking Confirmed!</h2>
+    <h2 style="color: #b8530e; margin-top: 0;">Booking Confirmed!</h2>
     <p>Dear ${memberName},</p>
     <p>Your service booking has been confirmed:</p>
 
-    <div style="background-color: #fdefe2; border-left: 4px solid #c75b12; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+    <div style="background-color: #fdefe2; border-left: 4px solid #b8530e; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0;">
       <h3 style="margin: 0 0 10px 0; color: #333;">${booking.service_name}</h3>
       <p style="margin: 0; color: #666; font-size: 14px;">
         <strong>📅 Date:</strong> ${bookingDate}<br>
@@ -400,7 +400,7 @@ export function bookingConfirmationEmail(
     </div>
 
     <p style="margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}/member/bookings" style="display: inline-block; background-color: #c75b12; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}/member/bookings" style="display: inline-block; background-color: #b8530e; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
         View My Bookings
       </a>
     </p>
@@ -447,7 +447,7 @@ export function requestStatusUpdateEmail(
   }
 
   const content = `
-    <h2 style="color: #c75b12; margin-top: 0;">Service Request Update</h2>
+    <h2 style="color: #b8530e; margin-top: 0;">Service Request Update</h2>
     <p>Dear ${memberName},</p>
     <p>${statusMessage[request.status] || `Your service request status has been updated to: ${request.status}`}</p>
 
@@ -467,13 +467,13 @@ export function requestStatusUpdateEmail(
 
     ${request.status === 'Sent' && paymentLink ? `
     <p style="margin: 30px 0;">
-      <a href="${paymentLink}" style="display: inline-block; background-color: #c75b12; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+      <a href="${paymentLink}" style="display: inline-block; background-color: #b8530e; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
         Pay Now
       </a>
     </p>
     ` : `
     <p style="margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}/member/requests" style="display: inline-block; background-color: #c75b12; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://member.hsnef.org'}/member/requests" style="display: inline-block; background-color: #b8530e; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
         View My Requests
       </a>
     </p>
@@ -496,11 +496,11 @@ export function welcomeEmail(member: Member): { subject: string; html: string; t
   const memberName = member.member_profile_name || `${member.first_name} ${member.last_name}` || member.business_name
 
   const content = `
-    <h2 style="color: #c75b12; margin-top: 0;">Welcome to HSNEF!</h2>
+    <h2 style="color: #b8530e; margin-top: 0;">Welcome to HSNEF!</h2>
     <p>Dear ${memberName},</p>
     <p>Thank you for completing your registration. Your HSNEF Membership Portal account is now active!</p>
 
-    <div style="background-color: #fdefe2; border-left: 4px solid #c75b12; padding: 15px; margin: 20px 0;">
+    <div style="background-color: #fdefe2; border-left: 4px solid #b8530e; padding: 15px; margin: 20px 0;">
       <p style="margin: 0; color: #333;">
         <strong>Your Membership ID:</strong> ${member.membership_id}<br>
         <strong>Membership Level:</strong> ${member.current_level}
@@ -517,7 +517,7 @@ export function welcomeEmail(member: Member): { subject: string; html: string; t
     </ul>
 
     <p style="margin: 30px 0;">
-      <a href="${portalLoginLink(member.primary_email)}" style="display: inline-block; background-color: #c75b12; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+      <a href="${portalLoginLink(member.primary_email)}" style="display: inline-block; background-color: #b8530e; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
         Sign in to the portal
       </a>
     </p>

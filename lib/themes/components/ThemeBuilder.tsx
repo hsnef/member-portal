@@ -271,7 +271,7 @@ export function ThemeBuilder({ initialTheme, onSave, onCancel }: ThemeBuilderPro
               />
               <ColorPicker
                 label="Accent Primary"
-                value={formData.cssVariables?.['--theme-accent-primary'] || '#c75b12'}
+                value={formData.cssVariables?.['--theme-accent-primary'] || '#b8530e'}
                 onChange={(color) => handleCSSVariableChange('--theme-accent-primary', color)}
                 required
               />

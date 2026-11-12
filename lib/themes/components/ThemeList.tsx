@@ -142,7 +142,7 @@ function ThemeCard({
           />
           <div
             className="w-6 h-6 rounded border border-gray-300"
-            style={{ backgroundColor: theme.cssVariables['--theme-accent-primary'] || '#c75b12' }}
+            style={{ backgroundColor: theme.cssVariables['--theme-accent-primary'] || '#b8530e' }}
             title="Accent Color"
           />
         </div>

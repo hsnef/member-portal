@@ -116,8 +116,8 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
   was checked against the code, wrong ones were fixed, and everything out of date now carries a
   banner explaining why it is not a good reference. See the Session 6 handoff in
   `docs/PROJECT-HUB.md` for what was found.
-  **Already fixed:** `#FF9933` is gone from `lib/constants/temple.ts` (it is `#c75b12`
-  now) and survives only in `lib/themes/themes/built-in/default.ts`, which IS the legacy
+  **Already fixed:** `#FF9933` is gone from `lib/constants/temple.ts` (it is `#b8530e`
+  now, darkened 2026-11-12 for contrast) and survives only in `lib/themes/themes/built-in/default.ts`, which IS the legacy
   palette by definition — verified 2026-09-03. `CLAUDE.md` rule 9 now describes the
   `docs/status/**` move correctly.
 

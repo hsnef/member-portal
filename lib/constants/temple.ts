@@ -37,7 +37,7 @@ export const TEMPLE_CONFIG = {
   // Tailwind token classes (bg-saffron, text-kumkum) in the app; these
   // literals exist for surfaces that cannot read CSS variables.
   colors: {
-    primary: '#c75b12',     // saffron
+    primary: '#b8530e',     // saffron
     primaryDark: '#a94a0c', // saffron-hover
     maroon: '#7b2d26',      // kumkum
     gold: '#c9962c',        // gold

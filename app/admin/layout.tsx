@@ -15,7 +15,6 @@
  *   /admin/zelle/settings              ['Office Manager','Admin']
  *   /admin/settings/staff-roles        ['Admin']
  *   /admin/portal-settings             ['Office Manager','Admin']
- *   /admin/settings/appearance          Admin (inline check in the page)
  *
  * Do not remove a page's own guard on the assumption this layout covers it.
  */

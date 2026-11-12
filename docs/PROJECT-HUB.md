@@ -102,7 +102,7 @@ upgraded here to 0.12.1 on 2026-11-12; production `main` is tagged `v0.1.0` (`np
 | **Supabase pausing** | Keep-alive for pausing is Sujit's (#21). (Sign-in email through Resend SMTP is done on both projects, session 11) |
 | **Tokens to revoke** | A Vercel token and a Supabase PAT were issued to Claude on 2026-09-02. **Revoke both**, and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local` — still present 2026-10-08; risk accepted by Sujit for now |
 | **Test coverage is thin** | Tests cover the QR pass, the Zelle money path, the shared formatter, `cn()`, plus two guard suites — `app/auth-redirects.test.ts` (no auth redirect may point at a missing route) and `utils/design-tokens.test.ts` (no raw hex in `className`). Everything touching Supabase, Stripe and the API routes is still untested; that needs a Supabase client fake |
-| **Contrast** | White on `#c75b12` is 4.26:1, below WCAG AA's 4.5. `#b8530e` gives 4.90. One line in `app/globals.css`; a brand decision |
+| **Contrast** | ✅ Fixed 2026-11-12: saffron is `#b8530e` (white on it 4.90:1, was 4.26:1 on `#c75b12`) on web, emails and PDFs; theme switching removed so dev and production share one palette. `lib/colour-tokens.test.ts` |
 | **PII in git history** | Rewritten and branches deleted, but GitHub keeps orphaned commits reachable by SHA. Closes when the repo goes private, which is the plan. See DEC-010 |
 | **SPF** | `hsnef.org` publishes three `v=spf1` records; RFC 7208 allows one |
 | **Type errors** | Mostly local `interface` shapes drifted from `types/database.ts`. Real, not urgent |
@@ -829,7 +829,7 @@ type checker nobody was reading:
 
 **Found but NOT fixed — needs your decision:**
 - **DEC-009: the events feature cannot work.** Read it before touching events.
-- **White on `#c75b12` is 4.26:1, below WCAG AA's 4.5** for normal text. The
+- ~~**White on `#c75b12` is 4.26:1, below WCAG AA's 4.5**~~ **Fixed 2026-11-12** (now `#b8530e`). The
   design kit claimed it passes; it does not. Darkening `--saffron` to about
   `#b8530e` gives 4.90 and is nearly imperceptible. One line in
   `app/globals.css`; it propagates to emails and PDFs too. Brand colour, so

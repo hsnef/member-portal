@@ -12,7 +12,6 @@ import {
   ClipboardListIcon,
   FileClockIcon,
   HistoryIcon,
-  PaletteIcon,
   SettingsIcon,
   ShieldCheckIcon,
   UploadIcon,
@@ -55,14 +54,6 @@ const SETTINGS_CARDS: SettingsCard[] = [
     icon: SettingsIcon,
     tone: 'sandal',
     roles: ['Admin', 'Office Manager'],
-  },
-  {
-    title: 'Appearance',
-    description: 'The portal theme: colours, fonts and spacing.',
-    href: '/admin/settings/appearance',
-    icon: PaletteIcon,
-    tone: 'lotus',
-    roles: ['Admin'],
   },
   {
     title: 'Zelle payments',

@@ -127,7 +127,7 @@ in `docs/PROJECT-HUB.md`.
     `['Admin','Office Manager']` (narrowed 2026-11-11: importing and reverting
     whole batches is for Admin and Office Manager)
   - `/admin/portal-settings`, `/admin/zelle/settings` → `['Office Manager','Admin']`
-- `/admin/settings/appearance` uses an inline Admin check (a fourth pattern; see Tier 3)
+- `/admin/settings/appearance` was removed 2026-11-12: one palette, in `app/globals.css`, on both sites
 - `/verify-qr` sits outside both sections and keeps its own staff gate
 - `/admin/members/new` and `/[id]/edit` are **any staff role**, not
   Manager+Admin as previously documented

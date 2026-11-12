@@ -10,8 +10,8 @@
 export const PDF = {
   /** #7b2d26 — header bands and totals. White text on this passes AA at 9.35:1. */
   kumkum: [123, 45, 38] as [number, number, number],
-  /** #c75b12 — accents and table headers. */
-  saffron: [199, 91, 18] as [number, number, number],
+  /** #b8530e — accents and table headers. */
+  saffron: [184, 83, 14] as [number, number, number],
   /** #2b2018 — body text. */
   ink: [43, 32, 24] as [number, number, number],
   /** #6a5b4b — secondary text. */

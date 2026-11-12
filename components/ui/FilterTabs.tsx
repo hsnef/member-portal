@@ -50,7 +50,7 @@ export function FilterTabs<T extends string>({
             <motion.span
               layoutId={`tab-pill-${groupId}`}
               transition={{ duration: 0.35, ease: easeSmooth }}
-              className="absolute inset-0 rounded-xl bg-saffron shadow-[0_4px_12px_-4px_rgba(199,91,18,0.55)]" />
+              className="absolute inset-0 rounded-xl bg-saffron shadow-[0_4px_12px_-4px_rgba(184, 83, 14,0.55)]" />
 
             }
             <span className="relative z-10 whitespace-nowrap">

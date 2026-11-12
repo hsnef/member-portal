@@ -57,6 +57,8 @@ describe('colour tokens (CLAUDE.md rule 3)', () => {
     // the deliberate exception -- it IS the legacy palette -- and is not scanned
     // here because this only walks app/ and components/.
     expect(offenders(/#(FF9933|E68A2E)/i)).toEqual([])
+    // The pre-2026-11-12 saffron, retired because white on it was 4.26:1.
+    expect(offenders(/#c75b12|%23c75b12/i)).toEqual([])
   })
 
   it('never puts a gradient stop on an element with no gradient', () => {
