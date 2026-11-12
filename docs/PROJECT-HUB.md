@@ -2,14 +2,15 @@
 
 > The single source of truth for architecture decisions, current state, and session-to-session context. `/govkit-session status` reads this file. Keep it current — a stale hub poisons the next session's context.
 
-_Last checked 2026-11-11._
+_Last checked 2026-11-12._
 
 ## Current Status
 
 **Released to production 2026-11-11 (PR #50). The portal is live at https://member.hsnef.org
 with working registration (approval ON), bookings, reliable sign-in, Resend sign-in email on
 both projects, and Admin-managed staff roles. Both databases are at ground zero: no members;
-the only role is `gsujit@gmail.com` as Admin. Not launched to members yet: the real
+the only roles are Admin, held by `gsujit@gmail.com` and (since 2026-11-12) dev-mp@hsnef.org.
+Production is tagged `v0.1.0`. Not launched to members yet: the real
 membership import (#34) and the phase 1 reviews come first.**
 
 - **Production** — `main` → Vercel production → Supabase `prod-mp`
@@ -72,8 +73,9 @@ links `portal.hsnef.org`; booking and items are two inserts, not one transaction
 Do not reorganise `docs/` or write role guides by hand. docs-kit (techsilon-oss) is built
 first, as a standalone tool with no reference to this repo; this repo then adopts it as its
 first trial. Feature records belong to qa-kit, not docs-kit. How-tos stay per subject, with a
-per-role index (to be added to the docs-kit design). govkit was upgraded
-here to 0.12.1 on 2026-11-12 (versioning added; no release tag yet: `npm run release:status`).
+per-role index, now in the docs-kit design (techsilon-oss/docs-kit PR #1, 2026-11-12: Sujit
+merges). The next step is a separate session in the docs-kit repo, building 0.1. govkit was
+upgraded here to 0.12.1 on 2026-11-12; production `main` is tagged `v0.1.0` (`npm run release:status`).
 
 **Standing facts:**
 - [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) is done; do not restart it.

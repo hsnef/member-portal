@@ -32,8 +32,9 @@
 **The next things, in order** (the full step-by-step is in `docs/PROJECT-HUB.md` →
 *Start here next session*):
 
-1. **Sujit: Google sign-in on dev** (hub, Start here A).
-2. **Sujit: Vercel `RESEND_API_KEY`** per environment (#19), so app emails send.
+1. ~~Google sign-in on dev~~ **done 2026-11-12**, and confirmed on prod (hub, Start here A).
+2. **Sujit: email delivery test** (#19). The Vercel `RESEND_API_KEY` is set per environment;
+   what is left is one invitation on dev that shows Delivered in Resend.
 3. **The real membership import** (#34): template to the temple, import on prod by an Admin.
 4. **Phase 1 area reviews** (#22–#28) on dev, per role.
 
@@ -42,7 +43,7 @@ bookings (#40), Resend sign-in email on both projects (#18), Admin-managed staff
 the import format; both databases reset to ground zero with `gsujit@gmail.com` as the only
 Admin (DEC-012 for membership numbers).
 
-## Current Priority Tiers (as of 2026-11-11)
+## Current Priority Tiers (as of 2026-11-12)
 
 ### Tier 0 — EMPTY as of 2026-09-03
 
@@ -327,6 +328,7 @@ verify locally — copy dev's `QR_TOKEN_SECRET` from Vercel if you need that.
 
 | Date | Session | Changes |
 |------|---------|---------|
+| 2026-11-12 | 12 | Google sign-in on for dev and confirmed on prod; Vercel email key split per environment (#19 test pending); govkit 0.12.1; prod tagged `v0.1.0`; second Admin added; product docs wait on docs-kit 0.1 (docs-kit PR #1). |
 | 2026-11-11 | 11 (release) | Released to production (#50). START HERE now: Google on dev, Vercel email key, real import, phase 1 reviews. #18, #40, #43 closed; #20 closed as not needed. |
 | 2026-11-11 | 11 | START HERE: #18 done for dev, #43 and #40 fixed on the branch (migrations on dev-mp), the PR is next, then Google on dev, seed, release. |
 | 2026-10-09 | 10 | START HERE replaced with the resume order: Resend/Google steps for Sujit, then #43, #40, #20, release. #43 filed. Sign-in hardening (#41) merged to dev; Google (#42) open. |
