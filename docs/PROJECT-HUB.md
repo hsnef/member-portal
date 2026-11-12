@@ -1,16 +1,17 @@
 # HSNEF Member Portal — Project Hub
 
-> The single source of truth for architecture decisions, current state, and session-to-session context. `/sdlc status` reads this file. Keep it current — a stale hub poisons the next session's context.
+> The single source of truth for architecture decisions, current state, and session-to-session context. `/govkit-session status` reads this file. Keep it current — a stale hub poisons the next session's context.
 
-_Last checked 2026-11-11._
+_Last checked 2026-11-12._
 
 ## Current Status
 
-**The portal is live at https://member.hsnef.org, on the new design system, with dev
-and production on separate databases. The DNS blocker cleared on 2026-09-02. There is
-no infrastructure blocker left — but **sign-in email is not production-ready** (see
-Session 9): neither Supabase project has custom SMTP, so magic links go through
-Supabase's built-in mailer.**
+**Released to production 2026-11-11 (PR #50). The portal is live at https://member.hsnef.org
+with working registration (approval ON), bookings, reliable sign-in, Resend sign-in email on
+both projects, and Admin-managed staff roles. Both databases are at ground zero: no members;
+the only roles are Admin, held by `gsujit@gmail.com` and (since 2026-11-12) dev-mp@hsnef.org.
+Production is tagged `v0.1.0`. Not launched to members yet: the real
+membership import (#34) and the phase 1 reviews come first.**
 
 - **Production** — `main` → Vercel production → Supabase `prod-mp`
   (`gapvsdrzavjaublwkqfm`). PR #4 merged 2026-09-02 (110 commits on `main`, a real
@@ -37,58 +38,65 @@ Supabase's built-in mailer.**
 
 ### Start here next session
 
-**Paused 2026-11-11 (Session 11).** Work this list top to bottom. Items marked
-**Sujit** need his accounts; offer to walk him through them (Claude in Chrome works).
+**Paused 2026-11-11 (Session 11), after the production release.** Work this list top to
+bottom. Items marked **Sujit** need his accounts.
 
-**A. Sujit: merge the PR `redesign/design-system → dev`**, then test on dev:
-`/join` with `gsujit+test-NN@gmail.com` → Office → Pending registrations → approve →
-sign in → book a service as that member, and one as the office. Approval is **ON** on dev.
+**A. Google sign-in: done 2026-11-11 (session 12).** The Google OAuth client lives in Google
+Cloud project "Membership Portal" (`shaped-inverter-483523-b4`) under **dev-mp@hsnef.org**,
+not gsujit@gmail.com. Its redirect URIs now list both Supabase callbacks; Branding has the
+privacy link (`https://hsnef.org/privacy`) and terms link (`https://member.hsnef.org/terms`);
+the consent screen was moved from **Testing (0 test users) to In production**. Until then
+Google sign-in had never worked for anyone on prod (Google's counter showed 0 users). Dev has
+Google on with a second client secret (prod keeps the January one, `****7bwh`; do not disable
+it); `supabase:auth-config dev` shows 0 differences. **Confirmed on prod:** Sujit signed in with
+Google as gsujit@gmail.com and landed in the Admin area.
 
-**B. Sujit: Google sign-in on dev, about 5 minutes.**
-1. console.cloud.google.com → APIs & Services → Credentials → OAuth client
-   `846882916738-1kt27oa6…` → Authorized redirect URIs → **add**
-   `https://bcujsesgrzijyisvmnwm.supabase.co/auth/v1/callback` (keep the prod one). Save.
-2. Same page → Client secrets → **Add secret**. Put it in `.env.local` as
-   `GOOGLE_OAUTH_CLIENT_SECRET=…`.
-3. Preview, then `! npm run supabase:auth-config -- --env dev --apply`.
-4. OAuth consent screen: publishing status must be **In production**, not Testing.
+**B. Vercel `RESEND_API_KEY` (#19): set 2026-11-11, test pending.** Production now has
+`portal-app-prod`; Preview + Development have `portal-app-dev` (before, the one variable held
+the dev key for all three). Both sites redeployed. Still to do (Sujit, later): on dev, apply
+via `/join` with a plus-address, approve it, and confirm the invitation arrives and shows
+Delivered in Resend. Then close #19.
 
-**C. Sujit: Vercel `RESEND_API_KEY` (#19).** Production = Resend key `portal-app-prod`
-only; Preview = `portal-app-dev`. The register is in `.env.local.example`.
+**C. The real membership import (#34).** The temple fills the template (format on the
+import page and in `docs/guides/features/import-instructions-for-staff.md`); an Admin or
+Office Manager imports it on prod. Try it on dev first with a sample file.
 
-**D. Claude: seed rework (#20)** on `wip/seed-dev`, per the comment on #20: no demo
-sign-in accounts, demo rows marked `legacy_id` `DEMO-…`, testers onboard through the real
-app. Dev only: the script refuses any other target (`assertDevTarget`).
+**D. Phase 1 area reviews (#22–#28)** on dev, per role. Testers join through `/join`
+(approval ON on dev too) or are added by the office; there is no seed data (#20 closed).
 
-**E. Release and production (approval gate).** Checked read-only 2026-11-11: prod-mp has
-the membership-ID function and the same `members` triggers as dev, no booking trigger yet,
-the old INSERT policy, 0 bookings, **8 members** and approval **OFF**. Order matters:
-(1) turn `require_member_approval` **ON on prod before the release deploys**: the new
-`/join` works, and with approval off every applicant becomes a member at once;
-(2) if the 8 members are test rows, clear them (#34) **before** importing the real
-membership, or new numbers continue after the test ones (DEC-012).
-Then `dev → main` PR, and with Sujit's explicit go-ahead, on prod-mp: `RESEND_SMTP_KEY_PROD` (Resend key `supabase-auth-prod`,
-already created) and `npm run supabase:auth-config -- --env prod --apply --confirm-production`;
-migrations `20261111000001` (Office Staff insert, #43), `20261111000002` (booking
-numbers, #40) and `20261111000003` (membership-ID lock, DEC-012); first confirm
-`generate_membership_id` exists on prod-mp (schema parity, #30); set `require_member_approval` ON (Sujit's call: approval at launch).
-Production is kept launch-ready but **not launched** until the board and testers are comfortable.
+**E. Tidy-ups found 2026-11-11:** terms text names `portal.hsnef.org` as the portal (#35);
+a frozen tab holding the auth lock hangs other tabs, add a timeout (#29); the email footer
+links `portal.hsnef.org`; booking and items are two inserts, not one transaction (#25);
+`/api/members/send-welcome` has no auth check (#29); the footer's "Deployed" date can lag a day.
 
-**Then** the phase 1 area reviews (#22–#28) on dev, per role.
+**F. Product docs and role how-tos: waiting on docs-kit 0.1 (decided 2026-11-12, Sujit).**
+Do not reorganise `docs/` or write role guides by hand. docs-kit (techsilon-oss) is built
+first, as a standalone tool with no reference to this repo; this repo then adopts it as its
+first trial. Feature records belong to qa-kit, not docs-kit. How-tos stay per subject, with a
+per-role index, now in the docs-kit design (techsilon-oss/docs-kit PR #1, merged
+2026-11-12). The next step is a separate session in the docs-kit repo, building 0.1. govkit was
+upgraded here to 0.12.1 on 2026-11-12; production `main` is tagged `v0.1.0` (`npm run release:status`).
 
 **Standing facts:**
+- **Issues are tracked with govkit's tracker module (on 2026-11-12).** Every open issue has exactly one launch category (`pre-launch`, `post-launch`, `idea`, `triage`; the launch event is "member launch"), alongside the go-live phase labels. Owner actions and decisions live in the pinned **decision register, #51**. Close issues with `Completed:` (plain words) and optional `Technical:`.
 - [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) is done; do not restart it.
 - Token revocation (Vercel + Supabase PAT from 2026-09-02) is deferred: Sujit accepted
   the risk. `SUPABASE_ACCESS_TOKEN` in `.env.local` is what the auth-config script uses.
 - The classifier blocks Claude from Supabase Management PATCH calls and production
   reads. Sujit runs those with `!` (Git Bash syntax). Read-only GETs work for Claude.
 - Compare against `origin/*`; local `main` and `dev` are stale.
+- **Every migration that creates a table in `public` must grant it in the same file**
+  (Supabase stopped auto-granting new tables on 2026-10-30): `grant select … to anon`,
+  `grant select, insert, update, delete … to authenticated, service_role`, as RLS needs.
+  Existing tables keep their grants (dev checked 2026-11-11: 30 of 30). The nine January
+  migrations that create tables have no grants, so rebuilding a fresh database from
+  migrations would need them added.
 
 ### Still open, in rough priority order
 
 | | |
 |---|---|
-| **Sign-in email** | No custom SMTP on either Supabase project yet. The settings are now code (`supabase/auth-config.ts`) and waiting on a Resend key from Sujit; see Start here A. Keep-alive for pausing is Sujit's (#21) |
+| **Supabase pausing** | Keep-alive for pausing is Sujit's (#21). (Sign-in email through Resend SMTP is done on both projects, session 11) |
 | **Tokens to revoke** | A Vercel token and a Supabase PAT were issued to Claude on 2026-09-02. **Revoke both**, and delete the `SUPABASE_ACCESS_TOKEN` line from `.env.local` — still present 2026-10-08; risk accepted by Sujit for now |
 | **Test coverage is thin** | Tests cover the QR pass, the Zelle money path, the shared formatter, `cn()`, plus two guard suites — `app/auth-redirects.test.ts` (no auth redirect may point at a missing route) and `utils/design-tokens.test.ts` (no raw hex in `className`). Everything touching Supabase, Stripe and the API routes is still untested; that needs a Supabase client fake |
 | **Contrast** | White on `#c75b12` is 4.26:1, below WCAG AA's 4.5. `#b8530e` gives 4.90. One line in `app/globals.css`; a brand decision |
@@ -392,6 +400,29 @@ Supabase auth hook, which is dashboard configuration.
 Related: 18 of 21 member routes had no "no membership" state and rendered against
 a null member. Nine reachable ones now share `NoMembershipState`.
 
+### Session 11, release — 2026-11-11 — production released and reset to ground zero
+
+**Released:** PR #50 (`dev → main`, from #44–#49), deployed and checked on member.hsnef.org:
+Staff roles lists only `gsujit@gmail.com` (Admin, no membership); approval ON; import page
+shows the format card; `/join` shows prices; `/api/join` and `/api/admin/staff` live.
+
+**Production steps (run by Sujit, previewed first, all checked):**
+- Auth config applied to prod-mp: Resend SMTP (`supabase-auth-prod`), HSNEF templates,
+  email limit 2 → 60/h, allow-list narrowed to `https://member.hsnef.org/**`. Re-check: 0 diff.
+- One transaction (rehearsed on dev-mp first): `gsujit@gmail.com` → Admin; migrations
+  `20261111000001`–`…03`; approval ON; the 8 January leftover members deleted (no payments
+  or receipts; 2 terms rows, 18 audit rows) and the 4 roles on their `@hsnef.org` sign-in
+  accounts removed. Those bare accounts are kept: other tables reference them without
+  ON DELETE, and with no role or membership they cannot use the portal.
+
+**Dev reset the same way:** 7 test members, Test Eleven's application, 2 test bookings and
+the `gsujit+test-11` account deleted; #20 (seed data) closed as not needed.
+
+**Found during the dev test and fixed in this release:** a sign-in deadlock (#45), a new
+member being signed out on first sign-in (#46), the approval dialog's random ID and missing
+email, "Invalid Date", the priest being required, and the importer validating a number
+scheme the database rejects (#49).
+
 ### DEC-012: membership numbers are per database, level-encoded, and generated under a lock
 **2026-11-11 · Decided (Sujit).**
 - **Per database.** `generate_membership_id` takes the highest number for the
@@ -661,7 +692,7 @@ would have broken email.
 
 ### Session 5 — 2026-09-03 — the launch blocker cleared; four docs reconciled
 
-A `/sdlc status` read, no code changed.
+A session status read, no code changed.
 
 **`member.hsnef.org` came up.** The Cloudflare handoff from session 4 worked and nobody
 reported back, so every doc still said production was down. Sujit produced the DNS

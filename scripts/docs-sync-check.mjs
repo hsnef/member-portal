@@ -4,7 +4,7 @@
  *
  * WHY THIS EXISTS
  * ---------------
- * `sdlc-docs.mjs` answers "did a PR change code without changing its mapped doc?" That is a
+ * `govkit-docsync.mjs` answers "did a PR change code without changing its mapped doc?" That is a
  * per-PR question. It cannot catch the failure this repo actually kept hitting: a tracker that
  * confidently ASSERTS something the repo contradicts — "no `main` branch", "nothing has ever been
  * deployed", "zero GitHub issues", "`dev` is the default branch". Every one of those was written
@@ -45,11 +45,20 @@ function manifestConfig() {
 }
 const CFG = manifestConfig();
 
+/** The release branch, as govkit.json names it. Same lookup as release-version.mjs. */
+function releaseBranch() {
+  try {
+    return JSON.parse(readFileSync("govkit.json", "utf-8"))?.branches?.release ?? "main";
+  } catch {
+    return "main";
+  }
+}
+const RELEASE = releaseBranch();
+
 /** Docs that bootstrap a session's context. */
 const BOOTSTRAP_DOCS = (CFG.bootstrapDocs ?? [
   "docs/PROJECT-HUB.md",
   "docs/PRIORITY-ROADMAP.md",
-  "CLAUDE.md",
 ]).map((path) => ({ path }));
 
 /**
@@ -79,6 +88,52 @@ const git = (args, fallback = "") => {
     return fallback;
   }
 };
+
+const LS_REMOTE_TIMEOUT_MS = 8000;
+
+/**
+ * What origin holds right now (one ls-remote, no fetch): `{ heads: Map<name, sha> }`, or
+ * `{ error }` saying why not. It is git's only network call here, so it gets the session hook's
+ * 8 s bound: a hung remote must not hang the session's first command. Unlike `git()`, it keeps
+ * the reason: "timed out" and "refused" send someone to different fixes, so one must not be
+ * reported as the other.
+ */
+function lsRemoteHeads() {
+  try {
+    const out = execFileSync("git", ["ls-remote", "--heads", "origin"], {
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: LS_REMOTE_TIMEOUT_MS,
+      // Fail instead of waiting on a credential prompt nobody will answer.
+      env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
+    });
+    return {
+      heads: new Map(
+        out
+          .split("\n")
+          .map((l) => l.split(/\s+refs\/heads\//))
+          .filter(([sha, name]) => sha && name)
+          .map(([sha, name]) => [name, sha]),
+      ),
+    };
+  } catch (e) {
+    if (e.code === "ETIMEDOUT" || e.signal === "SIGTERM") {
+      return { error: `timed out after ${LS_REMOTE_TIMEOUT_MS / 1000} s` };
+    }
+    // Over ssh, git follows the specific cause ("ERROR: Repository not found.", "ssh: Could not
+    // resolve hostname …") with boilerplate that is the same for every failure. Skip it.
+    const boilerplate =
+      /could not read from remote repository|^please make sure you have|^and the repository exists/i;
+    const lines = String(e.stderr ?? "")
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const reason = lines.find((l) => !boilerplate.test(l)) ?? lines[0] ?? e.message;
+    // Shorten from the middle: a long URL or path sits in the middle, the cause at the end.
+    const r = reason.replace(/^(fatal|error):\s*/i, "");
+    return { error: `failed: ${r.length > 100 ? `${r.slice(0, 40)}…${r.slice(-59)}` : r}` };
+  }
+}
 
 const gh = (args) => {
   try {
@@ -112,13 +167,45 @@ function groundTruth() {
   const branch = git(["rev-parse", "--abbrev-ref", "HEAD"], "unknown");
   facts.push(["current branch", branch]);
 
-  const mainExists = git(["rev-parse", "--verify", "--quiet", "refs/heads/main"]) !== "";
-  facts.push(["main exists locally", mainExists ? "yes" : "NO"]);
+  const localRelease = git(["rev-parse", "--verify", "--quiet", `refs/heads/${RELEASE}`]);
+  const trackedRelease = git([
+    "rev-parse",
+    "--verify",
+    "--quiet",
+    `refs/remotes/origin/${RELEASE}`,
+  ]);
+  facts.push([`${RELEASE} exists locally`, localRelease ? "yes" : "NO"]);
 
-  if (mainExists) {
-    const ahead = git(["rev-list", "--count", "main..HEAD"], "?");
-    const behind = git(["rev-list", "--count", "HEAD..main"], "?");
-    facts.push([`${branch} vs main`, `${ahead} ahead, ${behind} behind`]);
+  const hasOrigin = git(["remote", "get-url", "origin"]) !== "";
+  const remote = hasOrigin ? lsRemoteHeads() : { heads: new Map() };
+  const remoteHeads = remote.heads ?? new Map();
+
+  // Compare against origin's release branch, not the local one. A local release branch is only
+  // as current as its last pull, and is often far behind: one consumer read "89 ahead, 17 behind"
+  // when the truth was 9 and 23. The local ref is the fallback for a repo with no remote.
+  const base = trackedRelease ? `origin/${RELEASE}` : localRelease ? RELEASE : null;
+  if (base) {
+    const ahead = git(["rev-list", "--count", `${base}..HEAD`], "?");
+    const behind = git(["rev-list", "--count", `HEAD..${base}`], "?");
+    facts.push([`${branch} vs ${base}`, `${ahead} ahead, ${behind} behind`]);
+  }
+
+  // The remote-tracking ref is itself only as fresh as the last fetch. Say so when origin has moved.
+  const liveRelease = remoteHeads.get(RELEASE);
+  if (trackedRelease && liveRelease && liveRelease !== trackedRelease) {
+    facts.push([
+      `origin/${RELEASE}`,
+      "STALE: origin has moved since the last fetch; run `git fetch` and re-run",
+    ]);
+  }
+
+  if (localRelease && trackedRelease && localRelease !== trackedRelease) {
+    const behind = git(["rev-list", "--count", `${RELEASE}..origin/${RELEASE}`], "?");
+    const ahead = git(["rev-list", "--count", `origin/${RELEASE}..${RELEASE}`], "?");
+    facts.push([
+      `local ${RELEASE}`,
+      `${behind} behind, ${ahead} ahead of origin/${RELEASE}`,
+    ]);
   }
 
   const dirty = git(["status", "--porcelain"]);
@@ -127,13 +214,10 @@ function groundTruth() {
     dirty ? `${dirty.split("\n").length} file(s) uncommitted` : "clean",
   ]);
 
-  const remotes = git(["ls-remote", "--heads", "origin"]);
-  if (remotes) {
-    const names = remotes
-      .split("\n")
-      .map((l) => l.split("refs/heads/")[1])
-      .filter(Boolean);
-    facts.push(["remote branches", names.join(", ")]);
+  if (remote.error) {
+    facts.push(["remote branches", `unknown (git ls-remote ${remote.error})`]);
+  } else if (remoteHeads.size) {
+    facts.push(["remote branches", [...remoteHeads.keys()].join(", ")]);
   }
 
   const defaultBranch = gh([
@@ -199,6 +283,7 @@ console.log(
 console.log(`   Newest watched-code commit: ${codeDate ?? "unknown"}\n`);
 
 const problems = [];
+let oldestStale = null;
 
 for (const doc of BOOTSTRAP_DOCS) {
   if (!existsSync(doc.path)) {
@@ -223,6 +308,7 @@ for (const doc of BOOTSTRAP_DOCS) {
       `   \u274c ${doc.path} \u2014 STALE: says ${declared}, code moved ${codeDate}`,
     );
     problems.push(`${doc.path} is stale (${declared} < ${codeDate})`);
+    if (!oldestStale || declared < oldestStale) oldestStale = declared;
   } else {
     console.log(`   \u2705 ${doc.path} \u2014 ${declared}`);
   }
@@ -237,6 +323,42 @@ if (problems.length === 0) {
 
 console.log(`${ci ? "\u274c" : "\u26a0\ufe0f "} ${problems.length} problem(s):`);
 for (const p of problems) console.log(`   \u2022 ${p}`);
+
+// What the stale docs missed. "Stale" alone sends someone to re-read every doc; the list of what
+// changed since the oldest stale date is the actual reconciliation work.
+if (oldestStale) {
+  console.log(`\n\u2500\u2500 Changed since ${oldestStale} (what the stale docs do not know) \u2500\u2500`);
+  const commits = git([
+    "log",
+    "--format=%h %ad %s",
+    "--date=short",
+    `--since=${oldestStale} 23:59:59`,
+    "--",
+    ...WATCHED,
+  ]);
+  const lines = commits ? commits.split("\n") : [];
+  for (const l of lines.slice(0, 15)) console.log(`   ${l}`);
+  if (lines.length > 15) console.log(`   \u2026and ${lines.length - 15} more code commits`);
+
+  const merged = gh([
+    "pr",
+    "list",
+    "--state",
+    "merged",
+    "--search",
+    `merged:>${oldestStale}`,
+    "--limit",
+    "30",
+    "--json",
+    "number,title,baseRefName",
+    "--jq",
+    '.[] | "#\\(.number) \\(.title) (into \\(.baseRefName))"',
+  ]);
+  if (merged) {
+    console.log("   Merged PRs:");
+    for (const l of merged.split("\n")) console.log(`     ${l}`);
+  }
+}
 console.log(
   "\nStale does not always mean wrong \u2014 but it means unverified. Re-read the doc against the\n" +
     "ground truth above, fix what has drifted, then update its declared date in the same commit.\n",

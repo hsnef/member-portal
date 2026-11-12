@@ -21,7 +21,7 @@
  *
  * A guardrail is never silently absent. It is either a decision or a finding.
  *
- * Dependency-free: Node built-ins only. No git, no network, no install step.
+ * Dependency-free: Node built-ins only. No git (it reads .git/config directly), no network, no install step.
  *
  * Usage:
  *   node scripts/govkit-doctor.mjs           # report; exit 0 always
@@ -29,9 +29,33 @@
  *   node scripts/govkit-doctor.mjs config    # print the manifest as a readable table
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { dirname, isAbsolute, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const MANIFEST = "govkit.json";
+
+/**
+ * Why a govkit.json `paths` value may not be used, or null if it may. Values are confined to the
+ * repo: an absolute path, one that climbs out with "..", or one that leaves through a symlinked
+ * directory is refused (the upgrade, which writes there, refuses the same values).
+ */
+function confined(value) {
+  if (typeof value !== "string" || value.trim() === "") return "is not a relative path";
+  if (isAbsolute(value) || /^[a-zA-Z]:/.test(value) || value.startsWith("\\")) return "is absolute";
+  const root = process.cwd();
+  const inside = (base, target) => {
+    const rel = relative(base, target);
+    return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
+  };
+  if (relative(root, resolve(root, value)) === "") return "is the repo root, not a file";
+  if (!inside(root, resolve(root, value))) return "points outside the repo";
+  let dir = resolve(root, value);
+  while (!existsSync(dir) && dirname(dir) !== dir) dir = dirname(dir);
+  if (!inside(realpathSync(root), realpathSync(dir))) return "points outside the repo through a symlink";
+  return null;
+}
 
 const read = (p) => {
   try {
@@ -57,6 +81,37 @@ if (!manifest) {
 const pkg = read("package.json") ?? {};
 const scripts = pkg.scripts ?? {};
 const guardrails = Object.entries(manifest.guardrails ?? {});
+
+/**
+ * Where a finding's fix is documented: the guides of the release THIS doctor came from, so its
+ * links match its own findings. Not the repo's govkitVersion: a repo that hasn't upgraded records
+ * an old one (every 0.5.0 install says 0.4.0), and the plugin's newest doctor runs against it.
+ *   - the plugin's copy (what /govkit-doctor runs) reads its own plugin.json;
+ *   - the repo's copy reads govkit.json files["scripts/govkit-doctor.mjs"].version (the newest
+ *     release in it, when record wrote a range);
+ *   - anything else, or anything below 0.10.0 (the first release with docs/modules/), is v0.10.0.
+ * MODULE_GUIDES lists the modules with a guide; a test keeps it equal to module.json's ids.
+ */
+const FIRST_GUIDES = "0.10.0";
+const semverOf = (s) => String(s ?? "").match(/\d+\.\d+\.\d+/g)?.at(-1) ?? null;
+const atLeast = (v, min) => {
+  const [a, b] = [v, min].map((x) => x.split(".").map(Number));
+  return a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+};
+function doctorRelease() {
+  try {
+    const own = JSON.parse(readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), "../../../../.claude-plugin/plugin.json"), "utf-8"));
+    if (own.name === "govkit" && semverOf(own.version)) return semverOf(own.version);
+  } catch {
+    // not running from the plugin: the repo's copy
+  }
+  return semverOf(manifest.files?.["scripts/govkit-doctor.mjs"]?.version);
+}
+const DOCTOR_RELEASE = doctorRelease();
+const GUIDE_REF = `v${DOCTOR_RELEASE && atLeast(DOCTOR_RELEASE, FIRST_GUIDES) >= 0 ? DOCTOR_RELEASE : FIRST_GUIDES}`;
+const guide = (path) => `https://github.com/techsilon-oss/govkit/blob/${GUIDE_REF}/${path}`;
+const MODULE_GUIDES = ["trackers", "release-gate", "ci", "pre-push-hook", "doc-sync", "docs-sync-check", "versioning", "supabase-account", "tracker"];
+const fixLink = (name) => (MODULE_GUIDES.includes(name) ? `        fix: ${guide(`docs/modules/${name}.md#fix-a-finding`)}` : null);
 
 // ------------------------------------------------------------------ config view
 
@@ -97,15 +152,44 @@ if (process.argv.includes("config")) {
 const ok = [];
 const skipped = [];
 const missing = [];
+// Opt-in modules not decided yet: a notice, never a failure, so --ci stays green in every repo that
+// upgraded before choosing (enabled: null, or no entry at all).
+const OPT_IN = ["tracker"];
+const undecided = OPT_IN.filter((n) => !manifest.guardrails?.[n] || manifest.guardrails[n].enabled === null);
 
 for (const [name, g] of guardrails) {
+  if (OPT_IN.includes(name) && g.enabled === null) continue; // listed in `undecided`
   if (!g.enabled) {
     skipped.push([name, g.skippedReason ?? "no reason recorded"]);
     continue;
   }
 
-  const absentFiles = (g.expects ?? []).filter((f) => !existsSync(f));
+  // `paths` relocates an owned file (a repo that runs govkit's files from elsewhere); look there.
+  // A value outside the repo is refused and reported, never followed (see confined()).
+  const absent = (f) => {
+    const p = manifest.paths?.[f];
+    if (p === undefined) return existsSync(f) ? null : f;
+    const why = confined(p);
+    if (why) return `${f}: govkit.json paths value ${JSON.stringify(p)} ${why} (refused)`;
+    return existsSync(p) ? null : `${f} (at ${p})`;
+  };
+  const absentFiles = (g.expects ?? []).map(absent).filter(Boolean);
   const absentScripts = (g.expectsScripts ?? []).filter((s) => !scripts[s]);
+  // The tracker, once on, needs its decision register: the session and the report read it.
+  if (name === "tracker" && !Number.isInteger(g.issues?.register)) {
+    absentFiles.push("the decision register's issue number (guardrails.tracker.issues.register)");
+  }
+  // The status report, once on: its two files, a delivery govkit knows, and (for github-issue) the
+  // issue it posts on. Secrets live in GitHub, which the doctor never contacts: it can't check them.
+  if (name === "tracker" && g.report?.enabled === true) {
+    for (const f of ["scripts/daily-report/report.mjs", ".github/workflows/govkit-daily-report.yml"]) {
+      const a = absent(f);
+      if (a) absentFiles.push(a);
+    }
+    const delivery = g.report.delivery ?? "github-issue";
+    if (!["github-issue", "resend"].includes(delivery)) absentFiles.push(`a known delivery (tracker.report.delivery is "${delivery}")`);
+    if (delivery === "github-issue" && !Number.isInteger(g.report.issue)) absentFiles.push("the status issue's number (guardrails.tracker.report.issue)");
+  }
 
   if (absentFiles.length === 0 && absentScripts.length === 0) {
     ok.push(name);
@@ -120,15 +204,24 @@ for (const name of ok) console.log(`  ✅ ${name}`);
 
 for (const [name, reason] of skipped) {
   console.log(`  ⏭️  ${name} — skipped: ${reason}`);
+  // A skip with no reason reads as an oversight; the guide's Undo/Fix sections say what to record.
+  if (reason === "no reason recorded" && fixLink(name)) console.log(fixLink(name));
 }
 
 for (const [name, items] of missing) {
   console.log(`  ❌ ${name} — declared on, but not installed:`);
   for (const i of items) console.log(`        missing ${i}`);
+  if (fixLink(name)) console.log(fixLink(name));
+}
+
+for (const name of undecided) {
+  console.log(`  ℹ️  ${name} — not decided (opt-in): run /govkit-init ${name} to turn it on or record "no"`);
+  if (fixLink(name)) console.log(fixLink(name));
 }
 
 console.log(
-  `\n  ${ok.length} ok · ${skipped.length} skipped by decision · ${missing.length} missing\n`,
+  `\n  ${ok.length} ok · ${skipped.length} skipped by decision · ${missing.length} missing` +
+    `${undecided.length ? ` · ${undecided.length} not decided` : ""}\n`,
 );
 
 if (missing.length > 0) {
@@ -143,11 +236,138 @@ if (missing.length > 0) {
 const known = new Set(guardrails.map(([n]) => n));
 const strays = [];
 if (existsSync(".githooks/pre-push") && !known.has("pre-push-hook")) strays.push(".githooks/pre-push");
-if (existsSync("scripts/sdlc-docs.mjs") && !known.has("doc-sync")) strays.push("scripts/sdlc-docs.mjs");
+if (existsSync("scripts/govkit-docsync.mjs") && !known.has("doc-sync")) strays.push("scripts/govkit-docsync.mjs");
 if (strays.length) {
   console.log(`  ⚠️  Installed but not in the manifest — govkit will not maintain these:`);
   for (const s of strays) console.log(`        ${s}`);
   console.log("");
+}
+
+// ------------------------------------------------------------------ project steps (.govkit/session.md)
+
+/**
+ * A repo's own steps for /govkit-session. Listed so the difference from the standard is visible,
+ * with every command spelled out, and whether this machine has trusted the file: until it has,
+ * /govkit-session uses none of it. (Parsing matches project-steps.mjs: a sh/bash/shell fence is a
+ * command, anything else under a point is a text step.)
+ */
+const SESSION_FILE = ".govkit/session.md";
+const SESSION_POINTS = ["On start", "Before commit", "On close"];
+if (existsSync(SESSION_FILE)) {
+  const text = readFileSync(SESSION_FILE, "utf-8").replace(/\r\n/g, "\n");
+  const points = Object.fromEntries(SESSION_POINTS.map((p) => [p, { text: 0, commands: [] }]));
+  const unknown = [];
+  let at = null;
+  let inPara = false;
+  const lines = text.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const h = /^##\s+(.+?)\s*$/.exec(lines[i]);
+    if (h) {
+      at = SESSION_POINTS.find((p) => p.toLowerCase() === h[1].toLowerCase()) ?? null;
+      if (!at) unknown.push(h[1]);
+      inPara = false;
+      continue;
+    }
+    const fence = /^```\s*(\w*)\s*$/.exec(lines[i]);
+    if (fence) {
+      const body = [];
+      for (i++; i < lines.length && !/^```\s*$/.test(lines[i]); i++) body.push(lines[i]);
+      if (at && ["sh", "bash", "shell"].includes(fence[1].toLowerCase())) points[at].commands.push(body.join(" ; ").trim());
+      else if (at) points[at].text++;
+      inPara = false;
+      continue;
+    }
+    if (/^\s*$/.test(lines[i]) || /^#\s/.test(lines[i])) {
+      inPara = false;
+      continue;
+    }
+    const item = /^\s*(?:[-*]|\d+\.)\s+/.test(lines[i]);
+    if (at && (item || !inPara)) points[at].text++;
+    inPara = true;
+  }
+  let trusted = "not trusted on this machine (/govkit-session uses none of it until the user trusts it)";
+  try {
+    const record = JSON.parse(readFileSync(".git/govkit/session-trust.json", "utf-8"));
+    const sha = createHash("sha256").update(text).digest("hex");
+    trusted = record.sha256 === sha ? `trusted on this machine (${record.trustedAt})` : "CHANGED since it was trusted on this machine: not used until trusted again";
+  } catch {
+    // no record, or .git is elsewhere (worktree): reported as not trusted
+  }
+  console.log(`  🧩 Project steps for /govkit-session, from ${SESSION_FILE}: ${trusted}`);
+  if (!trusted.startsWith("trusted")) console.log(`        how trust works: ${guide("docs/EXTENDING.md#trust-why-the-file-must-be-approved-first")}`);
+  for (const p of SESSION_POINTS) {
+    const { text: t, commands } = points[p];
+    console.log(`        ${p.padEnd(14)} ${t + commands.length} step(s), ${commands.length} command(s)`);
+    for (const c of commands) console.log(`          $ ${c}`);
+  }
+  if (unknown.length) console.log(`        unknown sections, ignored: ${unknown.join(", ")}`);
+  console.log("");
+}
+
+// ------------------------------------------------------------------ old names (renamed in 0.8.0)
+
+/**
+ * govkit 0.8.0 renamed /sdlc -> /govkit-session, /sdlc-docs -> /govkit-docsync, the runner
+ * scripts/sdlc-docs.mjs -> scripts/govkit-docsync.mjs, its workflow file, and the sdlc-docs:* npm
+ * scripts -> docsync:*. The old ones keep working until the first minor release on or after 2026-11-28 (extended in 0.9.0, which first planned to remove them). Listed here with file and line so a
+ * repo can fix its own docs and CI first.
+ *
+ * Two kinds. govkit-only names (the scripts, the runner, the workflow file) are always listed. The
+ * skill names /sdlc and /sdlc-docs are listed only when the repo has no skill of its own by that
+ * name (.claude/skills/<name>/): a project with its own /sdlc is why govkit renamed, and its
+ * mentions are correct. govkit.json `oldNames.ignore` takes "path" (glob) or "path:line" entries.
+ */
+const GOVKIT_ONLY = [
+  [/\bsdlc-docs:(audit|gate|report)\b/, "sdlc-docs:* npm script (now docsync:*)"],
+  [/scripts\/sdlc-docs\.mjs/, "scripts/sdlc-docs.mjs (now scripts/govkit-docsync.mjs)"],
+  [/\bsdlc-docs\.yml\b/, "sdlc-docs.yml (now govkit-docsync.yml)"],
+];
+const SKILL_NAMES = [
+  ["sdlc-docs", /(^|[^\w/.-])\/sdlc-docs\b/, "/sdlc-docs (now /govkit-docsync)"],
+  ["sdlc", /(^|[^\w/.-])\/sdlc\b(?!-)/, "/sdlc (now /govkit-session)"],
+];
+
+function hooksPath() {
+  try {
+    return readFileSync(".git/config", "utf-8").match(/^\s*hookspath\s*=\s*(.+?)\s*$/im)?.[1] ?? null;
+  } catch {
+    return null; // a worktree or submodule keeps .git elsewhere; .githooks/ is scanned regardless
+  }
+}
+
+function filesUnder(dir) {
+  if (!existsSync(dir)) return [];
+  if (!statSync(dir).isDirectory()) return [dir];
+  return readdirSync(dir).flatMap((name) => (name === ".git" || name === "node_modules" ? [] : filesUnder(`${dir}/${name}`)));
+}
+
+const globRe = (g) => new RegExp(`^${g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*/g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, ".*")}$`);
+const ignore = (manifest.oldNames?.ignore ?? []).map((e) => {
+  const m = /^(.*):(\d+)$/.exec(e);
+  return m ? { re: globRe(m[1]), line: Number(m[2]) } : { re: globRe(e), line: null };
+});
+const ignored = (file, line) => ignore.some((i) => i.re.test(file) && (i.line === null || i.line === line));
+
+const scanned = [...new Set(["CLAUDE.md", "docs", ".github", ".githooks", hooksPath()].filter(Boolean).flatMap(filesUnder))]
+  .filter((f) => !/(^|\/)CHANGELOG\.md$/.test(f) && statSync(f).size < 1_000_000);
+const ownSkill = (name) => existsSync(`.claude/skills/${name}`);
+const oldNames = [];
+for (const file of scanned) {
+  const lines = readFileSync(file, "utf-8").split("\n");
+  lines.forEach((text, i) => {
+    const hits = GOVKIT_ONLY.filter(([re]) => re.test(text)).map(([, what]) => ({ what, govkitOnly: true }));
+    for (const [name, re, what] of SKILL_NAMES) if (!ownSkill(name) && re.test(text)) hits.push({ what, govkitOnly: false });
+    for (const h of hits) if (!ignored(file, i + 1)) oldNames.push({ file, line: i + 1, ...h });
+  });
+}
+if (oldNames.length) {
+  console.log(`  ⚠️  Old names, renamed in govkit 0.8.0 (they keep working until the first minor release on or after 2026-11-28):`);
+  for (const o of oldNames) console.log(`        ${o.file}:${o.line}  ${o.what}`);
+  console.log(`        fix: ${guide("docs/UPGRADING.md#07--08")}`);
+  console.log(
+    `\n  /govkit-init --upgrade moves the files and scripts; fix the rest by hand. To keep a\n` +
+      `  reference on purpose, add "path" or "path:line" to oldNames.ignore in ${MANIFEST}.\n`,
+  );
 }
 
 process.exit(process.argv.includes("--ci") && missing.length > 0 ? 1 : 0);
