@@ -68,6 +68,13 @@ a frozen tab holding the auth lock hangs other tabs, add a timeout (#29); the em
 links `portal.hsnef.org`; booking and items are two inserts, not one transaction (#25);
 `/api/members/send-welcome` has no auth check (#29); the footer's "Deployed" date can lag a day.
 
+**F. Product docs and role how-tos: waiting on docs-kit 0.1 (decided 2026-11-12, Sujit).**
+Do not reorganise `docs/` or write role guides by hand. docs-kit (techsilon-oss) is built
+first, as a standalone tool with no reference to this repo; this repo then adopts it as its
+first trial. Feature records belong to qa-kit, not docs-kit. How-tos stay per subject, with a
+per-role index (to be added to the docs-kit design). Unblocked meanwhile: upgrading govkit
+here from 0.2.1 to the installed version.
+
 **Standing facts:**
 - [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) is done; do not restart it.
 - Token revocation (Vercel + Supabase PAT from 2026-09-02) is deferred: Sujit accepted
