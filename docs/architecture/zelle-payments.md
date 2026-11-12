@@ -1,6 +1,6 @@
 # Zelle payments — specification
 
-_Status: **proposed 2026-11-12**, for Sujit's sign-off. Nothing here is built yet._
+_Status: **agreed 2026-11-12** (Sujit). Not built yet._
 _Replaces the prototype in `lib/zelle/`, `app/admin/zelle/`, `app/pay/` and `components/zelle/`._
 
 ## Why this exists
@@ -82,6 +82,11 @@ Staff review and press **Confirm N payments**; each goes through the same confir
 step. Rows already imported are recognised and skipped, so uploading an overlapping file
 is safe. (Needs one sample export from the temple's bank to test against.)
 
+**If the bank never provides a file**, nothing is lost: the import is a speed-up, not a
+dependency. The office checks the Zelle activity in the bank's app or website and presses
+**Confirm received** in the queue, matching on the reference code in the memo. Every part
+of the flow works without the file.
+
 ## What an Admin sets (Portal Settings → Zelle)
 
 | Setting | Default | Notes |
@@ -93,12 +98,34 @@ is safe. (Needs one sample export from the temple's bank to test against.)
 | Days to pay before the request expires | 7 | |
 | Hold a booking or event place while Zelle is pending | **on** | If off, the place is only taken once paid |
 
+Changing a setting needs no code change or release: an Admin edits it and it applies
+to Zelle requests created from then on. Requests already open keep the dates they were
+given, so nobody's deadline moves under them.
+
 When a request expires, the member is told; a held booking or event place is released.
 Renewals and donations have nothing to release.
 
 Best practice behind the defaults: a week is long enough for a member to pay from their
 banking app, short enough that a held puja slot is not blocked for a month, and one
 reminder halfway catches most "forgot to send it".
+
+## Office alerts (one list, maintained by Admins)
+
+**Portal Settings → Office alerts**: a list of email addresses an Admin adds to and
+removes from, themselves included. Every alert the portal sends to the office goes to
+everyone on it. Starts with `dev-mp@hsnef.org` on both sites (seeded by the migration).
+
+It is one list for all office alerts, not a Zelle-only list, because the portal has none
+today: nobody is emailed when someone registers and needs approval, or when a booking
+needs approving. This work sends three alerts to it:
+
+| Alert | When |
+|---|---|
+| Zelle payment sent | A member presses **I've sent it** |
+| Registration awaiting approval | Someone joins and approval is on |
+| Booking awaiting approval | A member submits a booking |
+
+Each alert links straight to the item in the office console.
 
 ## Security
 
@@ -126,10 +153,9 @@ Auto-confirm, the unused signed QR token (and its known weakness), the quick-pay
 - All Zelle screens on the design system; no type errors in the touched files.
 - Migrations applied to dev; production with the release, by Sujit.
 
-## Open questions for Sujit
+## Decisions (Sujit, 2026-11-12)
 
-1. The defaults above (7 days to pay, reminder at 3, hold places on): accept?
-2. A sample CSV export from the temple's bank, for the import (can follow the build;
-   the matcher is tested on a made-up file until then).
-3. Who receives the "member says sent" alert: the office address (`office@hsnef.org`),
-   or a list set in Portal Settings?
+1. Defaults accepted: 7 days to pay, reminder at 3, hold places on. Admin-editable.
+2. Bank CSV import is built in; a sample export from the temple's bank follows the build.
+   Without one, the office confirms by hand (above).
+3. Office alerts go to an Admin-maintained list, starting with `dev-mp@hsnef.org`.
