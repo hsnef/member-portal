@@ -117,8 +117,7 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
   banner explaining why it is not a good reference. See the Session 6 handoff in
   `docs/PROJECT-HUB.md` for what was found.
   **Already fixed:** `#FF9933` is gone from `lib/constants/temple.ts` (it is `#b8530e`
-  now, darkened 2026-11-12 for contrast) and survives only in `lib/themes/themes/built-in/default.ts`, which IS the legacy
-  palette by definition — verified 2026-09-03. `CLAUDE.md` rule 9 now describes the
+  now, darkened 2026-11-12 for contrast) and, since the theme code was removed on 2026-11-12, is at zero everywhere. `CLAUDE.md` rule 9 now describes the
   `docs/status/**` move correctly.
 
 **Blocked on Sujit:**

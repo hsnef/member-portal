@@ -79,9 +79,10 @@ snapshot, wrong about routes, roles and dead links. See DEC-003.
 3. **Never hardcode a colour.** No hex values in `className`. Use the tokens:
    `saffron marigold kumkum tulsi lotus copper sandal neutral` and
    `ink ink-2 ink-3 canvas surface surface-sunk line line-strong`.
-   `#FF9933` and `#E68A2E` are at zero across the codebase; keep them there.
-   The only deliberate exception is `lib/themes/themes/built-in/default.ts`,
-   which IS the legacy palette by definition. Surfaces that cannot read CSS
+   `#FF9933`, `#E68A2E` and the old saffron `#c75b12` are at zero across the
+   codebase; keep them there. There is one palette, `app/globals.css`, with no
+   runtime theme switching (removed 2026-11-12), so dev and production always
+   match. Surfaces that cannot read CSS
    variables restate the tokens in `lib/email/theme.ts` and `lib/pdf/theme.ts` —
    change those together with `app/globals.css`.
 4. **Never import `react-router-dom`.** The kit routes through
@@ -127,7 +128,6 @@ in `docs/PROJECT-HUB.md`.
     `['Admin','Office Manager']` (narrowed 2026-11-11: importing and reverting
     whole batches is for Admin and Office Manager)
   - `/admin/portal-settings`, `/admin/zelle/settings` → `['Office Manager','Admin']`
-- `/admin/settings/appearance` was removed 2026-11-12: one palette, in `app/globals.css`, on both sites
 - `/verify-qr` sits outside both sections and keeps its own staff gate
 - `/admin/members/new` and `/[id]/edit` are **any staff role**, not
   Manager+Admin as previously documented

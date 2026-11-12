@@ -71,6 +71,12 @@ tab (`lib/supabase/authLock.ts`; verified in Chrome with two tabs); `send-welcom
 `bookings/send-notification` now check sign-in and staff role (#29); the email footer links the
 portal; the terms say `https://member.hsnef.org` (migration `20261112000001`, **applied to dev;
 prod waits for Sujit**, with the release).
+Also done 2026-11-12: `/debug` removed; not-found, error and global-error pages added;
+`calculateMembershipFee` deleted; saffron darkened to `#b8530e` (WCAG AA) and runtime theme
+switching removed, so dev and production share one palette. Migration `20261112000002` drops
+`theme_definitions` and the `active_theme` setting: **not yet applied anywhere; Sujit runs it
+on dev, then prod with the release** (Claude's apply was blocked by the permission classifier).
+Next: Zelle, built for real use (scope being agreed with Sujit 2026-11-12).
 
 **F. Product docs and role how-tos: waiting on docs-kit 0.1 (decided 2026-11-12, Sujit).**
 Do not reorganise `docs/` or write role guides by hand. docs-kit (techsilon-oss) is built
@@ -160,8 +166,10 @@ Settings → Appearance edits, silently breaking every themed surface.
 **Instead:** `globals.css` carries both token families. The seven semantically overlapping tokens
 (`--canvas`, `--surface`, `--ink`, `--ink-2`, `--saffron`, `--kumkum`, `--line`) are *aliased* to
 their `--theme-*` counterpart. Runtime theming still moves the design system, and un-ported pages
-picked up the new palette for free. `hsnef` is registered as a built-in theme and is the default via
-a single `DEFAULT_THEME_NAME` constant; `default` and `florida-oura` remain selectable.
+picked up the new palette for free.
+**Superseded 2026-11-12:** runtime theming was removed (it let dev and production differ, and the
+dev theme made buttons unreadable). `lib/themes/`, `app/api/themes/`, the Appearance page and the
+`theme_definitions` table are gone; `app/globals.css` is the only palette.
 
 ### DEC-002: Colour-token opacity uses `color-mix()`
 **2026-08-31 · Accepted.** Tailwind 3 cannot compose an alpha onto a colour defined as a bare

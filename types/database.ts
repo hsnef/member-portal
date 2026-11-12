@@ -804,25 +804,6 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['terms_content']['Row']>;
         Relationships: [];
       };
-      theme_definitions: {
-        Row: {
-          id: string;
-          name: string;
-          display_name: string;
-          description: string | null;
-          theme_type: string;
-          css_variables: Record<string, unknown>;
-          fonts: Record<string, unknown> | null;
-          metadata: Record<string, unknown> | null;
-          created_by: string | null;
-          created_at: string;
-          updated_at: string;
-          is_active: boolean | null;
-        };
-        Insert: Partial<Database['public']['Tables']['theme_definitions']['Row']>;
-        Update: Partial<Database['public']['Tables']['theme_definitions']['Row']>;
-        Relationships: [];
-      };
     };
 
     Views: {};
