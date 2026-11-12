@@ -78,6 +78,7 @@ merges). The next step is a separate session in the docs-kit repo, building 0.1.
 upgraded here to 0.12.1 on 2026-11-12; production `main` is tagged `v0.1.0` (`npm run release:status`).
 
 **Standing facts:**
+- **Issues are tracked with govkit's tracker module (on 2026-11-12).** Every open issue has exactly one launch category (`pre-launch`, `post-launch`, `idea`, `triage`; the launch event is "member launch"), alongside the go-live phase labels. Owner actions and decisions live in the pinned **decision register, #51**. Close issues with `Completed:` (plain words) and optional `Technical:`.
 - [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) is done; do not restart it.
 - Token revocation (Vercel + Supabase PAT from 2026-09-02) is deferred: Sujit accepted
   the risk. `SUPABASE_ACCESS_TOKEN` in `.env.local` is what the auth-config script uses.
@@ -691,7 +692,7 @@ would have broken email.
 
 ### Session 5 — 2026-09-03 — the launch blocker cleared; four docs reconciled
 
-A `/sdlc status` read, no code changed.
+A session status read, no code changed.
 
 **`member.hsnef.org` came up.** The Cloudflare handoff from session 4 worked and nobody
 reported back, so every doc still said production was down. Sujit produced the DNS

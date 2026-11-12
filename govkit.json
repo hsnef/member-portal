@@ -106,6 +106,29 @@
         "release:bump",
         "release:tag"
       ]
+    },
+    "tracker": {
+      "enabled": true,
+      "issues": {
+        "register": 51,
+        "launchEvent": "member launch",
+        "categories": [
+          "pre-launch",
+          "post-launch",
+          "idea",
+          "triage"
+        ],
+        "areaLabels": [
+          "membership",
+          "bookings",
+          "payments",
+          "office",
+          "platform"
+        ],
+        "labelAliases": {
+          "docs": "documentation"
+        }
+      }
     }
   },
   "branches": {
@@ -142,10 +165,5 @@
       "version": "0.12.1",
       "sha256": "141bedebf0a2b4a33e7c9d6dac32e488694dd14be427c1182e525a3bd80e3dac"
     }
-  },
-  "oldNames": {
-    "ignore": [
-      "docs/PROJECT-HUB.md:692"
-    ]
   }
 }
