@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/email/mailer'
 import { portalLoginLink, registrationInvitationEmail } from '@/lib/email/templates'
+import { isStaff } from '@/lib/auth/helpers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,11 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    // Only office pages send invitations (pending registrations, member
+    // detail, new member), and every one of them is staff-only.
+    if (!(await isStaff())) {
+      return NextResponse.json({ error: 'Only office staff can send invitations' }, { status: 403 })
     }
 
     // Get member details
