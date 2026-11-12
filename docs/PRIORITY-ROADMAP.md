@@ -208,12 +208,9 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
      caps the token. Pinned as a `KNOWN WEAKNESS` test in `lib/zelle/index.test.ts` so
      the behaviour is visible; that test is the one to invert when it is fixed.
      The token still has to be validly signed, so this is not a forgery route.
-  2. **`calculateMembershipFee` would throw if anything called it.**
-     `lib/stripe/payments.ts:70` reads `PAYMENT_CONFIG.membershipFees[level]`, but
-     `config.ts` deliberately removed `membershipFees` — fees come from Portal
-     Settings now. It has **zero callers**, so nothing is broken today, and `tsc`
-     already flags it (`TS2339`). Delete it, or reimplement it against
-     `getMembershipPricing()`. Leaving it is the option that eventually bites.
+  2. ~~**`calculateMembershipFee` would throw if anything called it.**~~ **Deleted
+     2026-11-12** (Sujit's call): it had no callers and read a fee table that no longer
+     exists. Fees come from Portal Settings via `getMembershipPricing()`.
 - ~~**Add `.github/workflows/ci.yml`.**~~ ✅ **Done 2026-09-03.** Two jobs, `Build` and
   `Tests`, named to match the `ciJob` values in `release-gate.config.json` so CI and the
   local gate describe the same checks. Runs on push and PR to `main` and `dev`, with

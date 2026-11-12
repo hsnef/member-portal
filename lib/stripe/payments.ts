@@ -1,12 +1,12 @@
 import { stripe, PAYMENT_CONFIG } from './config'
-import type { PaymentCategory, PaymentMethod } from '@/types/database'
+import type { PaymentPurpose, PaymentMethod } from '@/types/database'
 
 export interface CreatePaymentIntentParams {
   amount: number // in cents
   currency?: string
   memberId: string
   membershipId: string
-  category: PaymentCategory
+  category: PaymentPurpose
   description: string
   metadata?: Record<string, string>
 }
@@ -61,13 +61,6 @@ export async function getPaymentIntent(paymentIntentId: string) {
     console.error('Error retrieving payment intent:', error)
     throw new Error('Failed to retrieve payment intent')
   }
-}
-
-/**
- * Calculate membership renewal fee
- */
-export function calculateMembershipFee(level: 'Lifetime' | 'Annual' | 'Community'): number {
-  return PAYMENT_CONFIG.membershipFees[level]
 }
 
 /**
