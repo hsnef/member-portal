@@ -6,4 +6,4 @@ decisions log in [`../PROJECT-HUB.md`](../PROJECT-HUB.md); the note stays as the
 
 | Note | What it is |
 |---|---|
-| [`2026-11-12-docs-kit-reorganisation.md`](2026-11-12-docs-kit-reorganisation.md) | Proposal to reorganise `docs/` for docs-kit. Approved 2026-11-13; in progress. |
+| [`2026-11-12-docs-kit-reorganisation.md`](2026-11-12-docs-kit-reorganisation.md) | Proposal to reorganise `docs/` for docs-kit. Approved and done 2026-11-13 (PRs #57, #58, #59 and slice 3). |
