@@ -33,7 +33,7 @@ older notes are not lying; they are just from before the split.
 **Anything you read that calls `gapvsdrzavjaublwkqfm` "dev" predates 2026-09-02 and is
 now wrong.** The reference did not move. The meaning did.
 
-This is recorded as **DEC-006** in [`PROJECT-HUB.md`](PROJECT-HUB.md).
+This is recorded as **DEC-006** in [`PROJECT-HUB.md`](../PROJECT-HUB.md).
 
 ---
 
@@ -93,7 +93,7 @@ Production access is a separate, deliberate grant.
 
 | Environment | Set in |
 |---|---|
-| Local | `.env.local` on your own machine, copied from [`.env.local.example`](../.env.local.example) |
+| Local | `.env.local` on your own machine, copied from [`.env.local.example`](../../.env.local.example) |
 | Dev | Vercel project `member` → Preview environment variables |
 | Production | Vercel project `member` → Production environment variables |
 
@@ -102,7 +102,7 @@ Production access is a separate, deliberate grant.
 ## Auth settings are code, not dashboard clicks
 
 Site URL, redirect allow-list, sign-in email templates and SMTP live in
-[`supabase/auth-config.ts`](../supabase/auth-config.ts) for **both** projects. The two may
+[`supabase/auth-config.ts`](../../supabase/auth-config.ts) for **both** projects. The two may
 differ only in site address and allow-list; `supabase/auth-config.test.ts` fails if anything
 else diverges. Do not change these in the dashboard — the next apply will undo it.
 
@@ -131,9 +131,9 @@ default template uses a code that only works in the browser that asked.
 
 ## Related
 
-- [`.env.local.example`](../.env.local.example) — every variable the code reads
-- [`PROJECT-HUB.md`](PROJECT-HUB.md) — DEC-006 records the split
+- [`.env.local.example`](../../.env.local.example) — every variable the code reads
+- [`PROJECT-HUB.md`](../PROJECT-HUB.md) — DEC-006 records the split
 - [`ENVIRONMENT_QUICK_REFERENCE.md`](ENVIRONMENT_QUICK_REFERENCE.md) — which value goes where
-- [`ONBOARDING.md`](ONBOARDING.md) — what to grant a new developer
+- [`ONBOARDING.md`](../guides/ONBOARDING.md) — what to grant a new developer
 
 _Verified against the running sites 2026-09-04._

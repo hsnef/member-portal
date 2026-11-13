@@ -11,7 +11,7 @@
  * apply runs the file inside BEGIN ... COMMIT. On production it also needs
  *       --confirm-production (production is an approval gate; Sujit runs it).
  *
- * Project refs: docs/SUPABASE-PROJECTS.md.
+ * Project refs: docs/reference/SUPABASE-PROJECTS.md.
  */
 import { readFileSync } from 'node:fs'
 

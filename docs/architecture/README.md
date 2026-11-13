@@ -9,4 +9,5 @@ and the code disagree, the code is right.
 | [`events-system.md`](events-system.md) | Events management: events, registrations and their payments. |
 | [`requests-invoices-system.md`](requests-invoices-system.md) | Service requests and invoices. |
 | [`versioning.md`](versioning.md) | How the app version is generated and shown. |
+| [`ANALYSIS-railway-migration.md`](ANALYSIS-railway-migration.md) | A parked evaluation of moving off Vercel to Railway. No work done. |
 | [`architecture.md`](architecture.md) | Historical: the original foundation, not the app as built. |
