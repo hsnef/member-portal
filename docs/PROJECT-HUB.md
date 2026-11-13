@@ -101,12 +101,9 @@ Next: **Payments, done right** — card, Zelle and office through one settlement
 `…0002` (drop theme), `…0003` (settlement), `…0004` (requested level), `…0005` (request numbers),
 `…0006` (Zelle). `npm run db:sql -- apply gapvsdrzavjaublwkqfm <file> --confirm-production`
 each, after the release deploys (0002 must follow the deploy; the others can precede it).
-**Test data on dev to remove when payments are finished:** auth users and members
-`dev-mp+paytest@` (99997100, test account), `dev-mp+stafftest@` (**Office Staff and Office
-Manager roles**, no member), members "Counter Tester" (now Community 30000100 after the expiry
-test) and "Later Tester" (Lifetime 10000100) - real numbers, not test accounts - their payments
-and receipts RCP-2026-000001..11, bookings BK-2026-00001..3, request REQ-2026-000001, Zelle
-requests, the bank rows, and the events "Payment test event" and "Zelle hold test event".
+**Dev test data removed 2026-11-12:** the payments test accounts, members, payments, receipts,
+bookings, request, Zelle data and test events are gone; dev keeps the two Admin sign-ins,
+services, priests and settings (Zelle still on with the placeholder address).
 **Found, not fixed:** sign-in tracking fails for some accounts (login log insert refused by RLS,
 42501), so the office's sign-in history misses them. Tracked in #54.
 Open: is a Stripe webhook endpoint registered for dev and prod? (Payments are recorded by
