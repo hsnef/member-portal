@@ -77,8 +77,21 @@ switching removed, so dev and production share one palette. Migration `202611120
 `theme_definitions` and the `active_theme` setting: **applied to dev 2026-11-12 (Sujit, after
 PR #53 deployed); prod waits for Sujit, after the release** — the old code reads the table.
 Next: **Payments, done right** — card, Zelle and office through one settlement step
-(`docs/architecture/payments.md`, agreed 2026-11-12). Card payments are a launch blocker:
-they are charged by Stripe but never recorded.
+(`docs/architecture/payments.md`, agreed 2026-11-12). Progress (2026-11-12, branch only):
+1. ✅ `settle_payment` (migration `20261112000003`, **applied to dev**; prod with the release)
+   + `lib/payments/settle.ts`. DB tests: `npm run db:sql -- test bcujsesgrzijyisvmnwm
+   supabase/tests/settle_payment.sql`.
+2. ✅ Card: server-priced checkout, webhook + success page both settle (idempotent), events
+   hold a place. **Verified with Stripe test cards** on a local build against dev: booking,
+   Annual renewal, event, request, donation each recorded once, receipt emailed, item paid.
+   Test member `dev-mp+paytest@hsnef.org` (99997100, test account) and a "Payment test
+   event" were left on dev for the next steps.
+3. ⬜ Office-recorded payments and Add member at the counter. 4. ⬜ Zelle. 5. ⬜ Office alert
+   list. 6. ⬜ Membership pass scan on the server; join-at-paid-level → Community until paid.
+Open: is a Stripe webhook endpoint registered for dev and prod? (Payments are recorded by
+the success page regardless; the webhook covers a member who closes the tab.)
+Ask Sujit: delete `lib/stripe/payments.ts` (no importers) and the alias routes
+`api/stripe/verify-payment`, `api/events/confirm-payment` (CLAUDE.md rule 8).
 
 **F. Product docs and role how-tos: waiting on docs-kit 0.1 (decided 2026-11-12, Sujit).**
 Do not reorganise `docs/` or write role guides by hand. docs-kit (techsilon-oss) is built
