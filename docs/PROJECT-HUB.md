@@ -107,9 +107,8 @@ Manager roles**, no member), members "Counter Tester" (now Community 30000100 af
 test) and "Later Tester" (Lifetime 10000100) - real numbers, not test accounts - their payments
 and receipts RCP-2026-000001..11, bookings BK-2026-00001..3, request REQ-2026-000001, Zelle
 requests, the bank rows, and the events "Payment test event" and "Zelle hold test event".
-**Found, not fixed:** sign-in tracking fails for these accounts: inserting into
-`login_audit_logs` is refused by RLS (42501, seen in the server log 2026-11-12), so the
-office's sign-in history misses them. Needs its own look.
+**Found, not fixed:** sign-in tracking fails for some accounts (login log insert refused by RLS,
+42501), so the office's sign-in history misses them. Tracked in #54.
 Open: is a Stripe webhook endpoint registered for dev and prod? (Payments are recorded by
 the success page regardless; the webhook covers a member who closes the tab.)
 Deleted with Sujit's yes (2026-11-12): `lib/stripe/payments.ts` and the old confirm routes
