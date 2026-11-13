@@ -90,12 +90,26 @@ Next: **Payments, done right** — card, Zelle and office through one settlement
    approval and Add member start everyone as Community with `requested_level` (migration
    `20261112000004`, applied to dev); request numbers fixed (`20261112000005`, applied to
    dev). Verified on dev as a test Office Staff account.
-4. ⬜ Zelle. 5. ⬜ Office alert list. 6. ⬜ Membership pass scan on the server.
+4. ✅ Zelle for every payment type (migration `20261112000006`, applied to dev): checkout
+   option, office queue (short / over / not received), bank CSV import, daily reminders and
+   expiry. **Zelle is switched ON on dev with the placeholder address dev-mp@hsnef.org**; set
+   the temple's real Zelle email on prod before switching it on there.
+5. ✅ Office alert list (Portal Settings), emailed for Zelle sent, new applications, new bookings.
+6. ✅ Membership pass checked on the server with live standing; daily expiry of Annual
+   memberships (`/api/cron/daily`). Receipt PDFs print the real RCP number.
+**Production, with the release (Sujit, in order):** migrations `20261112000001` (terms address),
+`…0002` (drop theme), `…0003` (settlement), `…0004` (requested level), `…0005` (request numbers),
+`…0006` (Zelle). `npm run db:sql -- apply gapvsdrzavjaublwkqfm <file> --confirm-production`
+each, after the release deploys (0002 must follow the deploy; the others can precede it).
 **Test data on dev to remove when payments are finished:** auth users and members
-`dev-mp+paytest@` (99997100, test account), `dev-mp+stafftest@` (**Office Staff role**, no
-member), members "Counter Tester" (20000100) and "Later Tester" (10000100) - real numbers,
-not test accounts - their payments and receipts RCP-2026-000001..8, bookings BK-2026-00001/2,
-request REQ-2026-000001, and the "Payment test event".
+`dev-mp+paytest@` (99997100, test account), `dev-mp+stafftest@` (**Office Staff and Office
+Manager roles**, no member), members "Counter Tester" (now Community 30000100 after the expiry
+test) and "Later Tester" (Lifetime 10000100) - real numbers, not test accounts - their payments
+and receipts RCP-2026-000001..11, bookings BK-2026-00001..3, request REQ-2026-000001, Zelle
+requests, the bank rows, and the events "Payment test event" and "Zelle hold test event".
+**Found, not fixed:** sign-in tracking fails for these accounts: inserting into
+`login_audit_logs` is refused by RLS (42501, seen in the server log 2026-11-12), so the
+office's sign-in history misses them. Needs its own look.
 Open: is a Stripe webhook endpoint registered for dev and prod? (Payments are recorded by
 the success page regardless; the webhook covers a member who closes the tab.)
 Deleted with Sujit's yes (2026-11-12): `lib/stripe/payments.ts` and the old confirm routes
