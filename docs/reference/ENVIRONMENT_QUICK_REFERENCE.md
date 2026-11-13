@@ -8,12 +8,12 @@
 > set values for them; you will be configuring nothing.
 >
 > The canonical list of variables the code *actually* reads is
-> [`.env.local.example`](../.env.local.example).
+> [`.env.local.example`](../../.env.local.example).
 
-> **The canonical variable list is [`.env.local.example`](../.env.local.example)**,
+> **The canonical variable list is [`.env.local.example`](../../.env.local.example)**,
 > which is checked against the code. Where this file disagrees with it, it wins.
 
-> ⚠️ **Which Supabase project is which: [`docs/SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md).**
+> ⚠️ **Which Supabase project is which: [`docs/reference/SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md).**
 > `gapvsdrzavjaublwkqfm` is PRODUCTION. Anything calling it "dev" predates the
 > 2026-09-02 split and is wrong.
 
@@ -69,7 +69,7 @@ https://member.hsnef.org/auth/callback
 | `QR_TOKEN_SECRET` | (local/dev secret) | (dev secret) | **(different!)** |
 | `ZELLE_TOKEN_SECRET` | (local/dev secret) | (dev secret) | **(different!)** |
 | `CRON_SECRET` | (not needed) | (dev secret) | **(different!)** |
-| `STRIPE_WEBHOOK_SECRET` | (from Stripe CLI) | (dev webhook, test mode) | **(prod webhook, live mode)** — set up per `RUNBOOK-stripe-webhook.md` |
+| `STRIPE_WEBHOOK_SECRET` | (from Stripe CLI) | (dev webhook, test mode) | **(prod webhook, live mode)** — set up per [`HOWTO-set-up-stripe-webhook.md`](../operations/howto/HOWTO-set-up-stripe-webhook.md) |
 
 ### Supabase — DIFFERENT per environment since 2026-09-02
 

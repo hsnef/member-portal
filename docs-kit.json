@@ -1,0 +1,28 @@
+// docs-kit configuration, written by `docs-kit init` 0.2.0.
+// Every key: https://github.com/techsilon-oss/docs-kit/blob/main/docs/DESIGN.md#5-configuration-docs-kitjson
+// Comments and trailing commas are allowed.
+{
+  "docsRoot": "docs",
+  // One folder per subject at the docs root. Today's folders; a reorganisation renames them.
+  "subjects": ["architecture","audit","guides","notes","operations","reference","security","status","terms","troubleshooting"],
+  // Files allowed at the docs root besides the subject folders.
+  "rootAllowed": ["README.md","PRIORITY-ROADMAP.md","PROJECT-HUB.md"],
+  // Extra root entries another tool writes into, with the reason.
+  "rootAllowedTools": {},
+  // JSON files that list doc paths which must exist.
+  "docMaps": [{"file":"scripts/source-doc-map.json","path":"mappings[].docs[]"}],
+  // Paths that must never move, with the reason (hazard H2). Only you know these: add them.
+  "protected": {
+    "docs/architecture/payments.md": "Cited as the spec in immutable migrations 20261112000003, 20261112000004 and 20261112000006; a move would leave them pointing at nothing",
+  },
+  // Files the mover never edits (hazard H3).
+  // docs/status/ and docs/terms/ are historical records (CLAUDE.md rule 9): move never edits them.
+  // The reorganisation proposal records old paths on purpose; a move must not rewrite them.
+  "immutablePrefixes": ["supabase/migrations/","docs/status/","docs/terms/","docs/notes/2026-11-12-docs-kit-reorganisation.md",".githooks/install-hooks.sh",".githooks/pre-push",".github/workflows/govkit-docsync.yml","scripts/docs-sync-check.mjs","scripts/govkit-docsync.mjs","scripts/govkit-doctor.mjs","scripts/release-version.mjs"],
+  // Snapshot topic -> subject: <docsRoot>/<subject>/snapshots/<topic>/<TOPIC>_<YYYY-MM-DD>.md
+  "snapshotTopics": {},
+  "howtoStaleDays": 90,
+  "snapshotStaleDays": 30,
+  // Roles that how-tos may name; `docs-kit index` lists the how-tos by role. Add yours.
+  "roles": ["developer","admin","office-manager","office-staff","member"],
+}

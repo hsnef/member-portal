@@ -233,7 +233,7 @@ feature/* (optional)  →  dev  →  main
 | `main` | Production | `prod-mp` (`gapvsdrzavjaublwkqfm`) | https://member.hsnef.org |
 
 ⚠️ **Which project is which is documented once, in
-[`docs/SUPABASE-PROJECTS.md`](docs/SUPABASE-PROJECTS.md). If anything disagrees with that
+[`docs/reference/SUPABASE-PROJECTS.md`](docs/reference/SUPABASE-PROJECTS.md). If anything disagrees with that
 file, that thing is wrong.**
 
 ⚠️ **`gapvsdrzavjaublwkqfm` is PRODUCTION.** It was the shared project before the split

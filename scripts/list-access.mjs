@@ -2,7 +2,7 @@
 /**
  * Prints the live account / role / membership table for a Supabase project.
  *
- * docs/ACCESS-AND-ROLES.md documents the role MODEL, which changes rarely.
+ * docs/security/ACCESS-AND-ROLES.md documents the role MODEL, which changes rarely.
  * Who actually holds a role changes whenever someone is granted one, so that
  * list is not written down — it is read from the database by this script.
  *

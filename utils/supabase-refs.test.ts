@@ -19,12 +19,12 @@ import { describe, expect, it } from 'vitest'
  * gets switched off, so this now only asserts things that cannot be argued with:
  * where a value is actually assigned, and whether a file states which is which.
  *
- * `docs/SUPABASE-PROJECTS.md` is the single source of truth.
+ * `docs/reference/SUPABASE-PROJECTS.md` is the single source of truth.
  */
 
 const PROD_REF = 'gapvsdrzavjaublwkqfm'
 const DEV_REF = 'bcujsesgrzijyisvmnwm'
-const CANONICAL = 'docs/SUPABASE-PROJECTS.md'
+const CANONICAL = 'docs/reference/SUPABASE-PROJECTS.md'
 
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {

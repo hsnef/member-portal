@@ -179,7 +179,7 @@ the redesign and not a stale build.
 
 ### 2.0 (original instructions, for reference)
 
-> **Shareable version:** [`docs/RUNBOOK-cloudflare-member-domain.md`](RUNBOOK-cloudflare-member-domain.md)
+> **Shareable version:** [`docs/operations/RUNBOOK-cloudflare-member-domain.md`](RUNBOOK-cloudflare-member-domain.md)
 > is a self-contained walkthrough for whoever holds Cloudflare access. It assumes
 > no knowledge of this project — send them that file rather than this one.
 >

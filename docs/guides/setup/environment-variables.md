@@ -14,7 +14,7 @@
 > checked against the code. This document is the narrative version; where the two
 > disagree, the example file wins. Start with `cp .env.local.example .env.local`.
 
-> ⚠️ **Which Supabase project is which: [`docs/SUPABASE-PROJECTS.md`](../../SUPABASE-PROJECTS.md).**
+> ⚠️ **Which Supabase project is which: [`docs/reference/SUPABASE-PROJECTS.md`](../../reference/SUPABASE-PROJECTS.md).**
 > `gapvsdrzavjaublwkqfm` is PRODUCTION. Anything calling it "dev" predates the
 > 2026-09-02 split and is wrong.
 

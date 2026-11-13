@@ -18,7 +18,7 @@ membership import (#34) and the phase 1 reviews come first.**
   merge commit). The build is READY and serves the design system; verified from the
   shipped CSS.
 - **Dev** — `dev` → Vercel preview → Supabase `dev-mp` (`bcujsesgrzijyisvmnwm`).
-  ⚠️ **Which project is which: [`SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md).**
+  ⚠️ **Which project is which: [`SUPABASE-PROJECTS.md`](reference/SUPABASE-PROJECTS.md).**
   `gapvsdrzavjaublwkqfm` is PRODUCTION, and reads as "dev" in anything written before
   2026-09-02.
   Verified from the shipped JS that each host resolves its own database. The public
@@ -97,10 +97,11 @@ Next: **Payments, done right** — card, Zelle and office through one settlement
 5. ✅ Office alert list (Portal Settings), emailed for Zelle sent, new applications, new bookings.
 6. ✅ Membership pass checked on the server with live standing; daily expiry of Annual
    memberships (`/api/cron/daily`). Receipt PDFs print the real RCP number.
-**Production, with the release (Sujit, in order):** migrations `20261112000001` (terms address),
-`…0002` (drop theme), `…0003` (settlement), `…0004` (requested level), `…0005` (request numbers),
-`…0006` (Zelle). `npm run db:sql -- apply gapvsdrzavjaublwkqfm <file> --confirm-production`
-each, after the release deploys (0002 must follow the deploy; the others can precede it).
+**Released 2026-11-12 as v0.2.0** (PR #56, tag `v0.2.0` on `6327e53`): deployed to
+member.hsnef.org, then migrations `20261112000001`..`0006` applied to prod by Sujit, in order, all ok.
+Zelle is **off** on prod (`/api/zelle/settings` reports unavailable) until the temple's Zelle
+email/phone and the office alert list are set. Card payments are recorded once the Stripe webhook
+secrets are in (`docs/operations/howto/HOWTO-set-up-stripe-webhook.md`).
 **Dev test data removed 2026-11-12:** the payments test accounts, members, payments, receipts,
 bookings, request, Zelle data and test events are gone; dev keeps the two Admin sign-ins,
 services, priests and settings (Zelle still on with the placeholder address).
@@ -121,7 +122,7 @@ upgraded here to 0.12.1 on 2026-11-12; production `main` is tagged `v0.1.0` (`np
 
 **Standing facts:**
 - **Issues are tracked with govkit's tracker module (on 2026-11-12).** Every open issue has exactly one launch category (`pre-launch`, `post-launch`, `idea`, `triage`; the launch event is "member launch"), alongside the go-live phase labels. Owner actions and decisions live in the pinned **decision register, #51**. Close issues with `Completed:` (plain words) and optional `Technical:`.
-- [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) is done; do not restart it.
+- [`docs/operations/RUNBOOK-infra-consolidation.md`](operations/RUNBOOK-infra-consolidation.md) is done; do not restart it.
 - Token revocation (Vercel + Supabase PAT from 2026-09-02) is deferred: Sujit accepted
   the risk. `SUPABASE_ACCESS_TOKEN` in `.env.local` is what the auth-config script uses.
 - The classifier blocks Claude from Supabase Management PATCH calls and production
@@ -145,7 +146,7 @@ upgraded here to 0.12.1 on 2026-11-12; production `main` is tagged `v0.1.0` (`np
 | **PII in git history** | Rewritten and branches deleted, but GitHub keeps orphaned commits reachable by SHA. Closes when the repo goes private, which is the plan. See DEC-010 |
 | **SPF** | `hsnef.org` publishes three `v=spf1` records; RFC 7208 allows one |
 | **Type errors** | Mostly local `interface` shapes drifted from `types/database.ts`. Real, not urgent |
-| **Railway** | Parked. Analysis in [`docs/ANALYSIS-railway-migration.md`](ANALYSIS-railway-migration.md) |
+| **Railway** | Parked. Analysis in [`docs/architecture/ANALYSIS-railway-migration.md`](architecture/ANALYSIS-railway-migration.md) |
 
 ## Architecture at a glance
 
@@ -244,7 +245,7 @@ that each host resolves its own database. **Watch the ref confusion this leaves 
 `gapvsdrzavjaublwkqfm` reads as "the dev project" in everything written before the split.
 Original entry follows.
 
-**2026-08-31 · Open, blocking.** `docs/ENVIRONMENT_QUICK_REFERENCE.md` lists
+**2026-08-31 · Open, blocking.** `docs/reference/ENVIRONMENT_QUICK_REFERENCE.md` lists
 `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` under "Same Across All Environments".
 So **local, dev and production all read and write the same live member database**
 (`gapvsdrzavjaublwkqfm`). Testing on `dev` mutates real member records; a bad migration run against
@@ -482,6 +483,21 @@ scheme the database rejects (#49).
   the trigger assigns, so the approve dialog sends no `membership_id` when the
   office keeps the suggested one (`lib/registration/membershipIdChoice.ts`).
 
+### DEC-013: `docs/` follows the docs-kit layout, checked in the tests
+**2026-11-13 · Decided (Sujit).** Plan and audit:
+[`notes/2026-11-12-docs-kit-reorganisation.md`](notes/2026-11-12-docs-kit-reorganisation.md).
+- **One folder per subject**, each with a `README.md` map. Only `README.md`,
+  `PROJECT-HUB.md` and `PRIORITY-ROADMAP.md` sit at the docs root. New subjects:
+  `notes` (dated working notes) and `operations` (runbooks).
+- **File names kept** when the ten root docs moved; only the folder changed.
+  `SUPABASE-PROJECTS.md` is now `reference/SUPABASE-PROJECTS.md`.
+- **Move docs with `npx docs-kit move <old> <new>`**, never by hand: it rewrites every
+  link and path, CLAUDE.md and code included. It never edits `supabase/migrations/`,
+  `docs/status/`, `docs/terms/` or the reorganisation note (`immutablePrefixes`).
+- **`docs/architecture/payments.md` never moves**: migrations cite it (`protected`).
+- **`lib/docs-layout.test.ts`** runs `docs-kit check` in `npm test`, so a doc in the
+  wrong place fails the tests. Configuration: `docs-kit.json`.
+
 ### Session 11 — 2026-11-11 — dev sign-in email live; registration and bookings repaired
 
 **Done (on `redesign/design-system`, PR to `dev`):**
@@ -518,7 +534,7 @@ footer links `portal.hsnef.org`, which is the sending domain, not the portal (fo
 - Supabase auth settings are now **code**, for both projects:
   `supabase/auth-config.ts` + `npm run supabase:auth-config`. The two projects may
   differ only in site URL and allow-list, and a test enforces that. See
-  [`SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md).
+  [`SUPABASE-PROJECTS.md`](reference/SUPABASE-PROJECTS.md).
 
 **Merged to dev (after the session):** #42, Google sign-in on both projects, without the
 forced consent prompt.
@@ -605,7 +621,7 @@ This is the exact failure the whole documentation problem was pointing at, sitti
 on the machine of the person who had just had it explained to them. Worth
 remembering when judging how much "everyone knows that" is worth.
 
-**[`docs/SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md) is now the single source of
+**[`docs/reference/SUPABASE-PROJECTS.md`](reference/SUPABASE-PROJECTS.md) is now the single source of
 truth** for which project is which. It explains *why* the confusion is structural
 rather than careless — the ref did not move, its meaning did — and carries a
 verified command for reading the live value out of a deployed site. Fourteen files

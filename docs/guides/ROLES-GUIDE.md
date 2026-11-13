@@ -3,7 +3,7 @@
 A practical guide to the four roles: what a person holding each one actually
 sees and can do. For the mechanics — how roles are stored, how a member record
 links to an account, how to grant one — see
-[`docs/ACCESS-AND-ROLES.md`](ACCESS-AND-ROLES.md).
+[`docs/security/ACCESS-AND-ROLES.md`](../security/ACCESS-AND-ROLES.md).
 
 Roles are **cumulative in practice but not in code**. There is no hierarchy: an
 Office Manager is not automatically Office Staff. A person holds a *list* of
