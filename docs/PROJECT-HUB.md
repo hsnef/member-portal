@@ -97,10 +97,11 @@ Next: **Payments, done right** — card, Zelle and office through one settlement
 5. ✅ Office alert list (Portal Settings), emailed for Zelle sent, new applications, new bookings.
 6. ✅ Membership pass checked on the server with live standing; daily expiry of Annual
    memberships (`/api/cron/daily`). Receipt PDFs print the real RCP number.
-**Production, with the release (Sujit, in order):** migrations `20261112000001` (terms address),
-`…0002` (drop theme), `…0003` (settlement), `…0004` (requested level), `…0005` (request numbers),
-`…0006` (Zelle). `npm run db:sql -- apply gapvsdrzavjaublwkqfm <file> --confirm-production`
-each, after the release deploys (0002 must follow the deploy; the others can precede it).
+**Released 2026-11-12 as v0.2.0** (PR #56, tag `v0.2.0` on `6327e53`): deployed to
+member.hsnef.org, then migrations `20261112000001`..`0006` applied to prod by Sujit, in order, all ok.
+Zelle is **off** on prod (`/api/zelle/settings` reports unavailable) until the temple's Zelle
+email/phone and the office alert list are set. Card payments are recorded once the Stripe webhook
+secrets are in (`docs/RUNBOOK-stripe-webhook.md`).
 **Dev test data removed 2026-11-12:** the payments test accounts, members, payments, receipts,
 bookings, request, Zelle data and test events are gone; dev keeps the two Admin sign-ins,
 services, priests and settings (Zelle still on with the placeholder address).
