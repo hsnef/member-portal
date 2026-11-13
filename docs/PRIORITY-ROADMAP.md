@@ -8,7 +8,7 @@
 >
 > **The portal is live at https://member.hsnef.org.** There is no infrastructure
 > blocker left. Do not restart
-> [`docs/RUNBOOK-infra-consolidation.md`](RUNBOOK-infra-consolidation.md) — phases 1, 2,
+> [`docs/operations/RUNBOOK-infra-consolidation.md`](operations/RUNBOOK-infra-consolidation.md) — phases 1, 2,
 > 3, 5 and 6 are ticked, and only Phase 4 (test-data cleanup) remains, which is optional.
 >
 > - **Cloudflare (Phase 2) is done.** The `member` record is a CNAME to
@@ -317,7 +317,7 @@ to; both are live pages (566 + 372 lines). Restyle them.
 | Dev | https://dev.member.hsnef.org | `dev` | `dev-mp` (`bcujsesgrzijyisvmnwm`) |
 | Production | https://member.hsnef.org | `main` | `prod-mp` (`gapvsdrzavjaublwkqfm`) |
 
-Main site: https://hsnef.org · See `docs/ENVIRONMENT_QUICK_REFERENCE.md` — **that file is
+Main site: https://hsnef.org · See `docs/reference/ENVIRONMENT_QUICK_REFERENCE.md` — **that file is
 pre-split and still lists the Supabase keys as "Same Across All Environments", which is no
 longer true.** It has not been swept yet.
 

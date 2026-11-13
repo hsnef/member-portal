@@ -4,6 +4,12 @@ How to set up, run, use and test the portal. A doc marked ⚠️ is broadly usef
 a specific error, named in a box at its top. Docs marked Historical or Not used are records
 only.
 
+| Doc | What it is |
+|---|---|
+| [`ONBOARDING.md`](ONBOARDING.md) | **New here? Start with this.** Access to grant, local setup, and the live hazards. |
+| [`ROLES-GUIDE.md`](ROLES-GUIDE.md) | What each of the four roles can actually do. |
+| [`HSNEF-Member-Portal-User-Reference-Manual.html`](HSNEF-Member-Portal-User-Reference-Manual.html) | The user reference manual, as a standalone HTML page. |
+
 ## Setup — `setup/`
 
 | Doc | What it is |

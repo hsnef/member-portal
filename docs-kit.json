@@ -16,7 +16,9 @@
     "docs/architecture/payments.md": "Cited as the spec in immutable migrations 20261112000003, 20261112000004 and 20261112000006; a move would leave them pointing at nothing",
   },
   // Files the mover never edits (hazard H3).
-  "immutablePrefixes": ["supabase/migrations/",".githooks/install-hooks.sh",".githooks/pre-push",".github/workflows/govkit-docsync.yml","scripts/docs-sync-check.mjs","scripts/govkit-docsync.mjs","scripts/govkit-doctor.mjs","scripts/release-version.mjs"],
+  // docs/status/ and docs/terms/ are historical records (CLAUDE.md rule 9): move never edits them.
+  // The reorganisation proposal records old paths on purpose; a move must not rewrite them.
+  "immutablePrefixes": ["supabase/migrations/","docs/status/","docs/terms/","docs/notes/2026-11-12-docs-kit-reorganisation.md",".githooks/install-hooks.sh",".githooks/pre-push",".github/workflows/govkit-docsync.yml","scripts/docs-sync-check.mjs","scripts/govkit-docsync.mjs","scripts/govkit-doctor.mjs","scripts/release-version.mjs"],
   // Snapshot topic -> subject: <docsRoot>/<subject>/snapshots/<topic>/<TOPIC>_<YYYY-MM-DD>.md
   "snapshotTopics": {},
   "howtoStaleDays": 90,

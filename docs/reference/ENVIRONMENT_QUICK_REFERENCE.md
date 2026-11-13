@@ -8,12 +8,12 @@
 > set values for them; you will be configuring nothing.
 >
 > The canonical list of variables the code *actually* reads is
-> [`.env.local.example`](../.env.local.example).
+> [`.env.local.example`](../../.env.local.example).
 
-> **The canonical variable list is [`.env.local.example`](../.env.local.example)**,
+> **The canonical variable list is [`.env.local.example`](../../.env.local.example)**,
 > which is checked against the code. Where this file disagrees with it, it wins.
 
-> ⚠️ **Which Supabase project is which: [`docs/SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md).**
+> ⚠️ **Which Supabase project is which: [`docs/reference/SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md).**
 > `gapvsdrzavjaublwkqfm` is PRODUCTION. Anything calling it "dev" predates the
 > 2026-09-02 split and is wrong.
 

@@ -6,7 +6,7 @@ to it** — see the warning at the bottom.
 
 ## 1. Access to grant
 
-> ⚠️ **Which Supabase project is which: [`docs/SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md).**
+> ⚠️ **Which Supabase project is which: [`docs/reference/SUPABASE-PROJECTS.md`](../reference/SUPABASE-PROJECTS.md).**
 > `gapvsdrzavjaublwkqfm` is PRODUCTION. Anything calling it "dev" predates the
 > 2026-09-02 split and is wrong.
 
@@ -42,17 +42,17 @@ generated; if you ever see `TS2307` on `./version.generated`, run
 
 Then read, in this order:
 
-1. [`CLAUDE.md`](../CLAUDE.md) — the rules for this repo. Not optional.
-2. [`docs/PROJECT-HUB.md`](PROJECT-HUB.md) — current state and the decisions log
+1. [`CLAUDE.md`](../../CLAUDE.md) — the rules for this repo. Not optional.
+2. [`docs/PROJECT-HUB.md`](../PROJECT-HUB.md) — current state and the decisions log
    (DEC-001 … DEC-011). **Read DEC-009 before touching events.**
-3. [`docs/ROLES-GUIDE.md`](ROLES-GUIDE.md) — what each role can do
-4. [`docs/ACCESS-AND-ROLES.md`](ACCESS-AND-ROLES.md) — how access works mechanically
+3. [`docs/guides/ROLES-GUIDE.md`](ROLES-GUIDE.md) — what each role can do
+4. [`docs/security/ACCESS-AND-ROLES.md`](../security/ACCESS-AND-ROLES.md) — how access works mechanically
 
 ## 3. The `.env.local` file
 
 The app will not start without it. It is gitignored and **must stay that way**.
 
-**[`.env.local.example`](../.env.local.example) is the canonical list** — copy it
+**[`.env.local.example`](../../.env.local.example) is the canonical list** — copy it
 and fill it in. It names every variable the code actually reads, says which are
 required, and explains what breaks when each is missing. Do not work from a list
 copied into a doc; this one drifted before.

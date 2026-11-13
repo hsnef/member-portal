@@ -5,6 +5,8 @@ built. Much of it is historical; each doc's banner says so.
 
 | Doc | What it is |
 |---|---|
+| [`SUPABASE-PROJECTS.md`](SUPABASE-PROJECTS.md) | **Current, canonical.** Which Supabase project is which. Read before touching a database. |
+| [`ENVIRONMENT_QUICK_REFERENCE.md`](ENVIRONMENT_QUICK_REFERENCE.md) | Which value goes where, per environment. |
 | [`hsnef-membership-portal-final-prompt-v3.md`](hsnef-membership-portal-final-prompt-v3.md) | The specification the project started from. Much of it has changed since. |
 | [`test-data-filtering.md`](test-data-filtering.md) | Historical: how test-data filtering was built. |
 | [`test-accounts-setup-complete.md`](test-accounts-setup-complete.md) | Historical: a completion record. |

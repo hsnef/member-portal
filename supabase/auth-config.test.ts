@@ -22,7 +22,7 @@ describe('auth settings as code', () => {
     }
   })
 
-  it('project refs match docs/SUPABASE-PROJECTS.md', () => {
+  it('project refs match docs/reference/SUPABASE-PROJECTS.md', () => {
     expect(PROJECTS.dev.ref).toBe('bcujsesgrzijyisvmnwm')
     expect(PROJECTS.prod.ref).toBe('gapvsdrzavjaublwkqfm')
   })

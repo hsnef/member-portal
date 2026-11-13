@@ -12,7 +12,7 @@
  * are the site address and which addresses may receive a redirect, and a test
  * (`auth-config.test.ts`) fails if anything else diverges.
  *
- * Which project is which: docs/SUPABASE-PROJECTS.md.
+ * Which project is which: docs/reference/SUPABASE-PROJECTS.md.
  */
 import { EMAIL, EMAIL_FONT } from '../lib/email/theme'
 import { TEMPLE_CONFIG } from '../lib/constants/temple'
