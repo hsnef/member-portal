@@ -143,24 +143,16 @@ export default function BookingPaymentPage() {
       const response = await fetch('/api/stripe/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: Math.round(bookingData.total_amount * 100), // Convert dollars to cents
-          memberId: member?.id,
-          category: 'Service',
-          description: `Service Booking #${bookingData.id.slice(0, 8)}`,
-          metadata: {
-            bookingId: bookingData.id,
-            requesterName: bookingData.requester_name,
-          },
-        }),
+        // The server charges the booking's own total, and only if it is the
+        // member's and approved.
+        body: JSON.stringify({ item: { kind: 'booking', bookingId: bookingData.id } }),
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to create payment intent')
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.clientSecret) {
+        throw new Error(data.error || 'Could not start the payment')
       }
-
-      const { clientSecret: secret } = await response.json()
-      setClientSecret(secret)
+      setClientSecret(data.clientSecret)
     } catch (err: any) {
       console.error('Error:', err)
       setError(err.message || 'Failed to load payment form')

@@ -1,30 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe/config'
+import { POST } from '../confirm-payment/route'
 
-export async function POST(request: NextRequest) {
-  try {
-    const { paymentIntentId } = await request.json()
-
-    if (!paymentIntentId) {
-      return NextResponse.json(
-        { error: 'Missing payment intent ID' },
-        { status: 400 }
-      )
-    }
-
-    // Retrieve payment intent from Stripe
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
-
-    return NextResponse.json({
-      status: paymentIntent.status,
-      amount: paymentIntent.amount,
-      currency: paymentIntent.currency,
-    })
-  } catch (error) {
-    console.error('Error verifying payment:', error)
-    return NextResponse.json(
-      { error: 'Failed to verify payment' },
-      { status: 500 }
-    )
-  }
-}
+/**
+ * Same as /api/stripe/confirm-payment (kept so older links keep working).
+ * It used to report a payment intent's status to anyone, with no sign-in.
+ */
+export { POST }

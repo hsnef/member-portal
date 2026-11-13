@@ -163,14 +163,10 @@ function DonateContent() {
       const response = await fetch('/api/stripe/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        // The server decides what is charged; a donation is the one item
+        // whose amount the member chooses (checked against the limits).
         body: JSON.stringify({
-          amount: Math.round(donationAmount * 100), // Convert to cents
-          memberId: member.id,
-          category: 'Donation',
-          description: `Donation - ${donationPurpose}`,
-          metadata: {
-            purpose: donationPurpose,
-          },
+          item: { kind: 'donation', amount: donationAmount, fund: donationPurpose },
         }),
       })
 

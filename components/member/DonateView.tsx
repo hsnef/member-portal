@@ -24,15 +24,8 @@ import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 
 export const SUGGESTED_DONATIONS = [25, 51, 101, 251, 501, 1001]
 
-export const DONATION_PURPOSES: Array<{ value: string; label: string }> = [
-  { value: 'General', label: 'General Temple Fund' },
-  { value: 'Building', label: 'Building & Maintenance' },
-  { value: 'Festival', label: 'Festival Sponsorship' },
-  { value: 'Education', label: 'Education Programs' },
-  { value: 'Annadanam', label: 'Annadanam (Food Service)' },
-  { value: 'Priest', label: 'Priest Support' },
-  { value: 'Other', label: 'Other' },
-]
+import { DONATION_PURPOSES } from '@/lib/payments/donations'
+export { DONATION_PURPOSES }
 
 export type DonatePaymentMethod = 'card' | 'zelle'
 

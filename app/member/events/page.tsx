@@ -71,6 +71,7 @@ export default function MemberEventsPage() {
             .from('event_registrations')
             .select('*', { count: 'exact', head: true })
             .eq('event_id', event.id)
+            .neq('status', 'Cancelled')
 
           // Check if current member is registered
           const { data: userReg } = await supabase
@@ -78,7 +79,8 @@ export default function MemberEventsPage() {
             .select('id')
             .eq('event_id', event.id)
             .eq('member_id', member.id)
-            .single()
+            .eq('status', 'Confirmed')
+            .maybeSingle()
 
           return {
             ...event,

@@ -73,18 +73,27 @@ export default function EventRegistrationsPage() {
             last_name,
             business_name,
             member_class,
+            membership_id,
             primary_email,
             primary_phone
           )
         `)
         .eq('event_id', eventId)
-        .order('registration_date', { ascending: false })
+        .neq('status', 'Cancelled')
+        .order('registered_at', { ascending: false })
 
       if (regsError) throw regsError
 
       // Transform data
+      // The table has registered_at and status; the member carries the
+      // membership number. Payment reads from the registration's own state.
       const transformedRegs = (regsData || []).map((reg: any) => ({
         ...reg,
+        membership_id: reg.members?.membership_id ?? '',
+        registration_date: reg.registered_at,
+        registration_status: reg.status,
+        payment_status:
+          reg.status === 'Pending Payment' ? 'Awaiting payment' : reg.payment_id ? 'Paid' : undefined,
         member_name: reg.members?.member_class === 'Personal'
           ? `${reg.members.first_name} ${reg.members.last_name}`
           : reg.members?.business_name || 'Unknown',
@@ -125,7 +134,9 @@ export default function EventRegistrationsPage() {
     try {
       const { error } = await supabase
         .from('event_registrations')
-        .delete()
+        // Cancelled, not deleted: a paid registration keeps its payment record
+        // (any refund is made by the office outside the portal).
+        .update({ status: 'Cancelled' })
         .eq('id', registrationId)
 
       if (error) throw error

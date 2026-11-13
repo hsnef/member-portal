@@ -130,23 +130,15 @@ function RequestPaymentContent() {
         const response = await fetch('/api/stripe/create-payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amount: Math.round(requestData.amount * 100), // Convert to cents
-            memberId: member.id,
-            category: 'Request',
-            description: `${requestData.request_type}: ${requestData.service_description.substring(0, 50)}`,
-            metadata: {
-              requestId: requestData.id,
-              requestType: requestData.request_type,
-            },
-          }),
+          // The server charges the request's own amount, and only if it is the member's.
+          body: JSON.stringify({ item: { kind: 'request', requestId: requestData.id } }),
         })
 
         const data = await response.json()
         if (data.clientSecret) {
           setClientSecret(data.clientSecret)
         } else {
-          setError('Failed to initialize payment')
+          setError(data.error || 'Failed to initialize payment')
         }
       } catch (err) {
         console.error('Error initializing payment:', err)
