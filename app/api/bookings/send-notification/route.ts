@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/email/mailer'
 import { bookingConfirmationEmail } from '@/lib/email/templates'
 import { isStaff } from '@/lib/auth/helpers'
+import { createServiceClient } from '@/lib/supabase/client'
+import { sendOfficeAlert } from '@/lib/notify/office'
 
 /** Statuses a member may send for their own booking; all others need staff. */
 const MEMBER_STATUSES = ['submitted', 'Pending Approval']
@@ -178,6 +180,19 @@ export async function POST(request: NextRequest) {
         { name: 'status', value: status },
       ],
     })
+
+    // A new booking waits for the office: tell the office alert list.
+    if (MEMBER_STATUSES.includes(status)) {
+      const services = (items || []).map((i: any) => i.services?.name).filter(Boolean).join(', ')
+      await sendOfficeAlert(createServiceClient(), {
+        subject: `Booking to approve: ${booking.booking_number ?? memberName}`,
+        lines: [
+          `${memberName} booked ${services || 'a service'}, $${Number(booking.total_amount).toFixed(2)}.`,
+          'It is waiting for approval.',
+        ],
+        link: { path: `/admin/bookings/${bookingId}`, label: 'Review the booking' },
+      })
+    }
 
     if (!emailResult.success) {
       console.error('Failed to send booking notification:', emailResult.error)

@@ -23,6 +23,9 @@ vi.mock('@/lib/supabase/server', () => ({
 }))
 vi.mock('@/lib/auth/helpers', () => ({ isStaff: async () => staff }))
 vi.mock('@/lib/email/mailer', () => ({ sendEmail: (m: unknown) => sendEmail(m) }))
+const sendOfficeAlert = vi.fn(async (_db: unknown, _a: unknown) => true)
+vi.mock('@/lib/notify/office', () => ({ sendOfficeAlert: (db: unknown, a: unknown) => sendOfficeAlert(db, a) }))
+vi.mock('@/lib/supabase/client', () => ({ createServiceClient: () => ({}) }))
 vi.mock('@/lib/email/templates', () => ({
   bookingConfirmationEmail: () => ({ subject: 'Confirmed', html: '<p>ok</p>', text: 'ok' }),
 }))
@@ -39,6 +42,7 @@ beforeEach(() => {
   staff = false
   booking = { id: 'b-1234567890', requester_name: 'A Member', requester_email: 'member@example.org', total_amount: 51 }
   sendEmail.mockClear()
+  sendOfficeAlert.mockClear()
   vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
@@ -49,9 +53,13 @@ describe('/api/bookings/send-notification', () => {
     expect(sendEmail).not.toHaveBeenCalled()
   })
 
-  it('lets a member send the "submitted" email for their own booking', async () => {
+  it('lets a member send the "submitted" email for their own booking, and tells the office', async () => {
     expect((await POST(req({ bookingId: 'b-1', status: 'submitted' }))).status).toBe(200)
     expect(sendEmail).toHaveBeenCalledWith(expect.objectContaining({ to: 'member@example.org' }))
+    expect(sendOfficeAlert).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ link: expect.objectContaining({ path: '/admin/bookings/b-1' }) }),
+    )
   })
 
   it('refuses a member sending an approval (payment link) email', async () => {

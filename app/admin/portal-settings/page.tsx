@@ -19,6 +19,7 @@ import { Field, Input } from '@/components/ui/Field'
 import { IconTile } from '@/components/ui/IconTile'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { SettingsIcon, CreditCardIcon, SaveIcon } from 'lucide-react'
+import { OfficeAlertsCard } from '@/components/admin/OfficeAlertsCard'
 
 export default function PortalSettingsPage() {
   const supabase = createClient()
@@ -38,7 +39,14 @@ export default function PortalSettingsPage() {
     try {
       setLoading(true)
       const data = await getAllSettings()
-      setSettings(data)
+      // Settings with their own editors are not listed as plain text boxes:
+      // membership pricing (below), Zelle (/admin/zelle/settings), and the
+      // office alert list (OfficeAlertsCard).
+      setSettings(
+        data.filter(
+          (s) => s.setting_key !== 'membership_pricing' && s.setting_key !== 'office_alert_emails' && !s.setting_key.startsWith('zelle_')
+        )
+      )
     } catch (error) {
       console.error('Error loading settings:', error)
       setMessage({ type: 'error', text: 'Failed to load settings' })
@@ -142,36 +150,6 @@ export default function PortalSettingsPage() {
         [field]: field === 'price' ? Number(value) : value,
       },
     })
-  }
-
-  // Group settings by category
-  const settingsByCategory = settings.reduce((acc, setting) => {
-    if (!acc[setting.category]) {
-      acc[setting.category] = []
-    }
-    acc[setting.category].push(setting)
-    return acc
-  }, {} as Record<string, PortalSetting[]>)
-
-  const categoryNames: Record<string, string> = {
-    authentication: 'Authentication',
-    registration: 'Membership Registration',
-    general: 'General Settings',
-  }
-
-  if (loading) {
-    return (
-      <ProtectedRoute requiredRoles={['Office Manager', 'Admin']}>
-        <>
-          <div className="flex justify-center items-center min-h-[400px]">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-solid border-saffron border-r-transparent"></div>
-              <p className="mt-4 text-gray-600">Loading settings...</p>
-            </div>
-          </div>
-        </>
-      </ProtectedRoute>
-    )
   }
 
   if (loading) {
@@ -304,6 +282,8 @@ export default function PortalSettingsPage() {
             </ul>
           </Card>
         ))}
+
+        <OfficeAlertsCard />
 
         {/* ---- Membership pricing ---- */}
         {pricing && (

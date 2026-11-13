@@ -9,24 +9,14 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 import { sendEmail } from '@/lib/email/mailer'
 import { officeAlertEmail } from '@/lib/email/templates/zelle'
+import { normaliseAlertEmails, OFFICE_ALERTS_KEY } from './alertList'
 
 type Client = SupabaseClient<Database>
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-/** Clean a list an Admin typed: trimmed, lower-cased, valid, no repeats. */
-export function normaliseAlertEmails(input: unknown): string[] {
-  const list = Array.isArray(input) ? input : typeof input === 'string' ? input.split(/[\s,;]+/) : []
-  const out: string[] = []
-  for (const raw of list) {
-    const e = String(raw).trim().toLowerCase()
-    if (EMAIL_RE.test(e) && !out.includes(e)) out.push(e)
-  }
-  return out
-}
+export { normaliseAlertEmails } from './alertList'
 
 export async function readAlertEmails(db: Client): Promise<string[]> {
-  const { data } = await db.from('portal_settings').select('setting_value').eq('setting_key', 'office_alert_emails').maybeSingle()
+  const { data } = await db.from('portal_settings').select('setting_value').eq('setting_key', OFFICE_ALERTS_KEY).maybeSingle()
   return normaliseAlertEmails((data?.setting_value as { value?: unknown } | null)?.value)
 }
 

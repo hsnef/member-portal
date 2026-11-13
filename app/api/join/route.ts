@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/client'
 import { exactIlike } from '@/lib/auth/memberEmail'
 import { parseJoinPayload, toMemberRow, toPendingRow } from '@/lib/registration/joinPayload'
 import { sendEmail } from '@/lib/email/mailer'
+import { sendOfficeAlert } from '@/lib/notify/office'
 import { welcomeEmail } from '@/lib/email/templates'
 
 /**
@@ -74,6 +75,18 @@ export async function POST(request: Request) {
           { status: 500 }
         )
       }
+      const who =
+        application.memberClass === 'Business'
+          ? application.businessName
+          : [application.firstName, application.lastName].filter(Boolean).join(' ')
+      await sendOfficeAlert(service, {
+        subject: `New application: ${who}`,
+        lines: [
+          `${who} (${application.primaryEmail}) applied to join as ${application.requestedLevel}.`,
+          'It is waiting for approval.',
+        ],
+        link: { path: '/admin/pending-registrations', label: 'Review applications' },
+      })
       return NextResponse.json({ status: 'pending' }, { status: 201 })
     }
 
