@@ -1,6 +1,6 @@
 # Proposal: reorganise `docs/` for docs-kit
 
-_Written 2026-11-12. Status: **proposal, awaiting Sujit's approval.** Nothing has moved._
+_Written 2026-11-12. Status: **approved by Sujit 2026-11-13** (see "Decisions" at the end)._
 
 docs-kit 0.2.0 was set up on `docs/adopt-docs-kit` (commit `bcaed29`). Its layout check
 (`npm run docs:check`) fails with 18 findings, because `docs/` predates the layout. This note
@@ -97,18 +97,18 @@ These are documentation readers, not the app's `UserRole`: `developer` has no ap
 2. **Moves:** the 10 files above with `docs-kit move`, the H1 constant, the front door
    (`docs/README.md`) updated. The check passes here. **Close:** `docs-kit init --test
    lib/docs-layout.test.ts`, and a DEC entry in `docs/PROJECT-HUB.md`.
-3. **First how-tos (optional):** `RUNBOOK-stripe-webhook.md` →
-   `operations/howto/HOWTO-set-up-stripe-webhook.md` and `ONBOARDING.md` →
-   `guides/howto/HOWTO-onboard-a-developer.md`, with `roles:` and `last_checked`, `roles` in
-   `docs-kit.json`, and `docs-kit index`. CLAUDE.md and the front door call ONBOARDING the
-   starting point, so its new name needs your yes on its own.
+3. **First how-to:** `RUNBOOK-stripe-webhook.md` →
+   `operations/howto/HOWTO-set-up-stripe-webhook.md`, with `roles:` and `last_checked`,
+   `roles` in `docs-kit.json`, and `docs-kit index`.
 
 Each slice: `docs-kit move <old> <new> --dry-run`, then `move`, then `npm test`,
 `npm run build` and `npm run docs:check`; stage everything `git status` lists.
 
-## Decisions needed
+## Decisions (2026-11-13)
 
-1. The two new subjects, `notes` and `operations`.
-2. The old → new table, keeping file names.
-3. The roles list.
-4. Whether to do slice 3, and whether ONBOARDING becomes a how-to.
+1. **Approved:** the two new subjects. `operations` is added to `subjects` in slice 1, with
+   its README.
+2. **Approved:** the old → new table, keeping file names.
+3. **Approved:** the roles list.
+4. **Slice 3, narrowed:** only the Stripe webhook how-to. `ONBOARDING.md` stays a guide at
+   `docs/guides/ONBOARDING.md`, not renamed and not a how-to.
