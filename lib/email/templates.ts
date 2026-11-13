@@ -3,6 +3,7 @@
 // ============================================================================
 
 import type { Member, Receipt, Request } from '@/types/database'
+import { paymentMethodLabel } from '@/lib/payments/labels'
 
 // Base email wrapper with HSNEF branding
 function emailWrapper(content: string): string {
@@ -126,7 +127,7 @@ export function paymentReceiptEmail(
       </tr>
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Payment Method:</strong></td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">${receipt.payment_method}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">${paymentMethodLabel(receipt.payment_method)}</td>
       </tr>
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Purpose:</strong></td>
@@ -142,7 +143,7 @@ export function paymentReceiptEmail(
   return {
     subject: `HSNEF Receipt ${receipt.receipt_number}`,
     html: emailWrapper(content),
-    text: `Payment Receipt\n\nDear ${memberName},\n\nThank you for your payment.\n\nReceipt Number: ${receipt.receipt_number}\nDate: ${new Date(receipt.receipt_date).toLocaleDateString()}\nAmount: $${receipt.amount.toFixed(2)}\nPayment Method: ${receipt.payment_method}\nPurpose: ${receipt.purpose}\n\nPlease keep this receipt for your records.`,
+    text: `Payment Receipt\n\nDear ${memberName},\n\nThank you for your payment.\n\nReceipt Number: ${receipt.receipt_number}\nDate: ${new Date(receipt.receipt_date).toLocaleDateString()}\nAmount: $${receipt.amount.toFixed(2)}\nPayment Method: ${paymentMethodLabel(receipt.payment_method)}\nPurpose: ${receipt.purpose}\n\nPlease keep this receipt for your records.`,
   }
 }
 

@@ -38,7 +38,8 @@ export type MembershipLevel = 'Community' | 'Annual' | 'Lifetime';
 
 export type MembershipStatus = 'Active' | 'Expired' | 'Cancelled' | 'Pending';
 
-export type PaymentMethod = 'Stripe' | 'Cash' | 'Check' | 'Zelle';
+/** 'Stripe' is an online card payment; 'Card' is the temple's own card machine at the counter. */
+export type PaymentMethod = 'Stripe' | 'Card' | 'Cash' | 'Check' | 'Zelle';
 
 export type PaymentPurpose = 'Membership' | 'Event' | 'Donation' | 'Sponsorship' | 'Request' | 'Service';
 
@@ -176,6 +177,8 @@ export type Payment = {
   payment_date: string;
   created_at: string;
   created_by: string | null;
+  /** Names the source of a settled payment (stripe:<intent>, zelle:<request>, office:<id>). */
+  idempotency_key: string | null;
 }
 
 export type Receipt = {
@@ -239,6 +242,7 @@ export type EventRegistration = {
   total_attendees: number;
   payment_id: string | null;
   amount_paid: number | null;
+  status: 'Pending Payment' | 'Confirmed' | 'Cancelled';
   registered_at: string;
   attended: boolean | null;
 }
@@ -831,6 +835,31 @@ export type Database = {
       get_current_member_id: {
         Args: {};
         Returns: string;
+      };
+      membership_term_year: {
+        Args: { p_member_id: string; p_paid_on: string };
+        Returns: number;
+      };
+      /** Service role only. See supabase/migrations/20261112000003_payment_settlement.sql. */
+      settle_payment: {
+        Args: {
+          p_idempotency_key: string;
+          p_member_id: string;
+          p_purpose: PaymentPurpose;
+          p_method: PaymentMethod;
+          p_amount: number;
+          p_target_kind: 'membership' | 'booking' | 'request' | 'event_registration' | 'donation';
+          p_target_id?: string | null;
+          p_level?: MembershipLevel | null;
+          p_stripe_payment_intent_id?: string | null;
+          p_stripe_charge_id?: string | null;
+          p_check_number?: string | null;
+          p_zelle_reference?: string | null;
+          p_notes?: string | null;
+          p_created_by?: string | null;
+          p_paid_at?: string;
+        };
+        Returns: { payment_id: string; receipt_id: string; receipt_number: string; already_settled: boolean }[];
       };
     };
     Enums: {
