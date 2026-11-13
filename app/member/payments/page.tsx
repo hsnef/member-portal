@@ -1,5 +1,6 @@
 'use client'
 
+import { receiptNumberOf } from '@/lib/payments/labels'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { PaymentsView, type MemberPayment } from '@/components/member/PaymentsView'
@@ -30,7 +31,7 @@ export default function MemberPaymentsPage() {
     try {
       const { data, error } = await supabase
         .from('payments')
-        .select('*')
+        .select('*, receipts(receipt_number)')
         .eq('member_id', member.id)
         .order('payment_date', { ascending: false })
 
@@ -51,7 +52,7 @@ export default function MemberPaymentsPage() {
       : member.business_name
 
     downloadReceipt({
-      receiptNumber: `R-${payment.id.slice(0, 8).toUpperCase()}`,
+      receiptNumber: receiptNumberOf(payment as any),
       paymentId: payment.id,
       memberName,
       membershipId: member.membership_id,
@@ -124,7 +125,7 @@ export default function MemberPaymentsPage() {
 
     filteredPayments.forEach((payment, index) => {
       const receiptData = {
-        receiptNumber: `R-${payment.id.slice(0, 8).toUpperCase()}`,
+        receiptNumber: receiptNumberOf(payment as any),
         paymentId: payment.id,
         memberName,
         membershipId: member.membership_id,
@@ -187,7 +188,7 @@ export default function MemberPaymentsPage() {
       finalPdf.text('PAYMENT RECEIPT', 105, 45, { align: 'center' })
       finalPdf.setFontSize(10)
       finalPdf.setFont('helvetica', 'normal')
-      finalPdf.text(`Receipt #: R-${payment.id.slice(0, 8).toUpperCase()}`, 20, 60)
+      finalPdf.text(`Receipt #: ${receiptNumberOf(payment as any)}`, 20, 60)
       finalPdf.text(`Date: ${new Date(payment.payment_date).toLocaleDateString()}`, 150, 60)
       finalPdf.line(20, 65, 190, 65)
       finalPdf.text(`Member: ${memberName}`, 20, 75)

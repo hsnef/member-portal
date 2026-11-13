@@ -17,3 +17,14 @@ export function paymentMethodLabel(method: PaymentMethod | string): string {
       return String(method)
   }
 }
+
+/**
+ * The receipt number to print for a payment loaded with `receipts(receipt_number)`.
+ * Every payment recorded through the settlement step has one (RCP-YYYY-NNNNNN);
+ * a payment recorded before receipts existed falls back to a reference made
+ * from its id, marked as such.
+ */
+export function receiptNumberOf(p: { id: string; receipts?: Array<{ receipt_number: string }> | { receipt_number: string } | null }): string {
+  const r = Array.isArray(p.receipts) ? p.receipts[0] : p.receipts
+  return r?.receipt_number ?? `REF-${p.id.slice(0, 8).toUpperCase()}`
+}
