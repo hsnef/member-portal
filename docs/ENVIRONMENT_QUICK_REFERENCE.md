@@ -69,7 +69,7 @@ https://member.hsnef.org/auth/callback
 | `QR_TOKEN_SECRET` | (local/dev secret) | (dev secret) | **(different!)** |
 | `ZELLE_TOKEN_SECRET` | (local/dev secret) | (dev secret) | **(different!)** |
 | `CRON_SECRET` | (not needed) | (dev secret) | **(different!)** |
-| `STRIPE_WEBHOOK_SECRET` | (from Stripe CLI) | (dev webhook) | **(prod webhook)** |
+| `STRIPE_WEBHOOK_SECRET` | (from Stripe CLI) | (dev webhook, test mode) | **(prod webhook, live mode)** — set up per `RUNBOOK-stripe-webhook.md` |
 
 ### Supabase — DIFFERENT per environment since 2026-09-02
 

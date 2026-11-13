@@ -90,8 +90,8 @@ Next: **Payments, done right** — card, Zelle and office through one settlement
    list. 6. ⬜ Membership pass scan on the server; join-at-paid-level → Community until paid.
 Open: is a Stripe webhook endpoint registered for dev and prod? (Payments are recorded by
 the success page regardless; the webhook covers a member who closes the tab.)
-Ask Sujit: delete `lib/stripe/payments.ts` (no importers) and the alias routes
-`api/stripe/verify-payment`, `api/events/confirm-payment` (CLAUDE.md rule 8).
+Deleted with Sujit's yes (2026-11-12): `lib/stripe/payments.ts` and the old confirm routes
+`api/stripe/verify-payment`, `api/events/confirm-payment`; `api/stripe/confirm-payment` is the one.
 
 **F. Product docs and role how-tos: waiting on docs-kit 0.1 (decided 2026-11-12, Sujit).**
 Do not reorganise `docs/` or write role guides by hand. docs-kit (techsilon-oss) is built
