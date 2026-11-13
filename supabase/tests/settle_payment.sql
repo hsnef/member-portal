@@ -83,6 +83,9 @@ BEGIN
   IF v_text <> 'Paid|true|true' THEN RAISE EXCEPTION 'booking not marked paid: %', v_text; END IF;
 
   -- Request: Sent -> Paid, linked on the payment.
+  -- Two requests in a row: the second used to fail (request number generator).
+  INSERT INTO requests (request_number, member_id, purpose, description, amount, status)
+    VALUES ('', m1, 'Request', 'Earlier invoice', 10, 'Draft');
   INSERT INTO requests (request_number, member_id, purpose, description, amount, status)
     VALUES ('', m1, 'Request', 'Test invoice', 25, 'Sent') RETURNING id INTO v_req;
   SELECT * INTO r FROM settle_payment('test:q1', m1, 'Request', 'Zelle', 25, 'request', v_req, p_zelle_reference => 'HSNEF-TEST01');
@@ -103,6 +106,19 @@ BEGIN
   SELECT * INTO r FROM settle_payment('test:d1', m3, 'Donation', 'Card', 11, 'donation', p_notes => 'Donation - General');
   SELECT COUNT(*) INTO v_count FROM receipts WHERE payment_id = r.payment_id;
   IF v_count <> 1 THEN RAISE EXCEPTION 'donation receipt missing'; END IF;
+
+  -- A requested level is cleared by the payment that satisfies it, and only by that.
+  UPDATE members SET requested_level = 'Lifetime' WHERE id = m3;
+  PERFORM settle_payment('test:r1', m3, 'Membership', 'Cash', 150, 'membership', p_level => 'Annual');
+  SELECT requested_level::TEXT INTO v_text FROM members WHERE id = m3;
+  IF v_text IS DISTINCT FROM 'Lifetime' THEN RAISE EXCEPTION 'Annual cleared a Lifetime request: %', v_text; END IF;
+  PERFORM settle_payment('test:r2', m3, 'Membership', 'Cash', 1000, 'membership', p_level => 'Lifetime');
+  SELECT requested_level::TEXT INTO v_text FROM members WHERE id = m3;
+  IF v_text IS NOT NULL THEN RAISE EXCEPTION 'Lifetime payment left the request: %', v_text; END IF;
+  v_failed := FALSE;
+  BEGIN UPDATE members SET requested_level = 'Community' WHERE id = m3;
+  EXCEPTION WHEN check_violation THEN v_failed := TRUE; END;
+  IF NOT v_failed THEN RAISE EXCEPTION 'Community accepted as a requested level'; END IF;
 
   -- One Stripe intent can never be recorded twice, even under a different key.
   v_failed := FALSE;

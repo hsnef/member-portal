@@ -58,6 +58,8 @@ export type Member = {
   legacy_id: string | null;
   member_class: MemberClass;
   current_level: MembershipLevel;
+  /** A paid level asked for but not yet paid for; cleared when the membership payment settles. */
+  requested_level: Extract<MembershipLevel, 'Annual' | 'Lifetime'> | null;
   is_founding_member: boolean;
 
   // Personal fields
@@ -424,7 +426,8 @@ export type Database = {
     Tables: {
       members: {
         Row: Member;
-        Insert: Omit<Member, 'id' | 'created_at' | 'updated_at'> & {
+        Insert: Omit<Member, 'id' | 'created_at' | 'updated_at' | 'requested_level'> & {
+          requested_level?: Member['requested_level'];
           id?: string;
           created_at?: string;
           updated_at?: string;
