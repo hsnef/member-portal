@@ -4,7 +4,7 @@
 {
   "docsRoot": "docs",
   // One folder per subject at the docs root. Today's folders; a reorganisation renames them.
-  "subjects": ["architecture","audit","guides","reference","security","status","terms","troubleshooting"],
+  "subjects": ["architecture","audit","guides","notes","reference","security","status","terms","troubleshooting"],
   // Files allowed at the docs root besides the subject folders.
   "rootAllowed": ["README.md","PRIORITY-ROADMAP.md","PROJECT-HUB.md"],
   // Extra root entries another tool writes into, with the reason.
