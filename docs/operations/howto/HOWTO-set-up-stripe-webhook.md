@@ -1,6 +1,12 @@
+---
+title: Set up the Stripe webhook
+last_checked: 2026-11-13
+roles: [admin, developer]
+---
+
 # Stripe webhook: steps for the temple's Stripe administrator
 
-_Written 2026-11-12. For whoever administers the HSNEF Stripe account. About 15 minutes.
+_Written 2026-11-12; steps checked against the code 2026-11-13._ For whoever administers the HSNEF Stripe account. About 15 minutes.
 No code, and nothing changes for existing payments._
 
 ## Why we are asking

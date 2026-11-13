@@ -101,7 +101,7 @@ Next: **Payments, done right** — card, Zelle and office through one settlement
 member.hsnef.org, then migrations `20261112000001`..`0006` applied to prod by Sujit, in order, all ok.
 Zelle is **off** on prod (`/api/zelle/settings` reports unavailable) until the temple's Zelle
 email/phone and the office alert list are set. Card payments are recorded once the Stripe webhook
-secrets are in (`docs/operations/RUNBOOK-stripe-webhook.md`).
+secrets are in (`docs/operations/howto/HOWTO-set-up-stripe-webhook.md`).
 **Dev test data removed 2026-11-12:** the payments test accounts, members, payments, receipts,
 bookings, request, Zelle data and test events are gone; dev keeps the two Admin sign-ins,
 services, priests and settings (Zelle still on with the placeholder address).
