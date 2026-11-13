@@ -86,8 +86,16 @@ Next: **Payments, done right** — card, Zelle and office through one settlement
    Annual renewal, event, request, donation each recorded once, receipt emailed, item paid.
    Test member `dev-mp+paytest@hsnef.org` (99997100, test account) and a "Payment test
    event" were left on dev for the next steps.
-3. ⬜ Office-recorded payments and Add member at the counter. 4. ⬜ Zelle. 5. ⬜ Office alert
-   list. 6. ⬜ Membership pass scan on the server; join-at-paid-level → Community until paid.
+3. ✅ Office-recorded payments (`/api/admin/payments`) and Add member at the counter; join,
+   approval and Add member start everyone as Community with `requested_level` (migration
+   `20261112000004`, applied to dev); request numbers fixed (`20261112000005`, applied to
+   dev). Verified on dev as a test Office Staff account.
+4. ⬜ Zelle. 5. ⬜ Office alert list. 6. ⬜ Membership pass scan on the server.
+**Test data on dev to remove when payments are finished:** auth users and members
+`dev-mp+paytest@` (99997100, test account), `dev-mp+stafftest@` (**Office Staff role**, no
+member), members "Counter Tester" (20000100) and "Later Tester" (10000100) - real numbers,
+not test accounts - their payments and receipts RCP-2026-000001..8, bookings BK-2026-00001/2,
+request REQ-2026-000001, and the "Payment test event".
 Open: is a Stripe webhook endpoint registered for dev and prod? (Payments are recorded by
 the success page regardless; the webhook covers a member who closes the tab.)
 Deleted with Sujit's yes (2026-11-12): `lib/stripe/payments.ts` and the old confirm routes
