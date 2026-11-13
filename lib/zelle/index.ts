@@ -1,276 +1,313 @@
 /**
- * Zelle Payment Utilities
+ * Zelle: the parts that need no database. Safe to import from the browser.
  *
- * Provides functions for Zelle payment operations including:
- * - Token generation for QR codes
- * - Settings management
- * - Reference code generation
+ * Spec: docs/architecture/payments.md ("Zelle"). Server operations are in
+ * lib/zelle/server.ts; tables in supabase/migrations/20261112000006_zelle.sql.
  */
 
-import jwt from 'jsonwebtoken'
-import QRCode from 'qrcode'
-import { createClient } from '@/lib/supabase/client'
-import type { ZelleSettings, ZellePaymentRequest, PaymentPurpose } from '@/types/database'
+// ---------------------------------------------------------------------------
+// Reference codes
+// ---------------------------------------------------------------------------
 
-const ZELLE_TOKEN_SECRET = process.env.ZELLE_TOKEN_SECRET || process.env.QR_TOKEN_SECRET || 'zelle-secret-change-in-production'
+/** No 0/O, 1/I/L: the code is read off a screen and typed into a bank memo. */
+export const REFERENCE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
+export const REFERENCE_PREFIX = 'HSNEF-'
+const REFERENCE_LENGTH = 6
 
-// ============================================================================
-// Token Generation
-// ============================================================================
-
-export interface ZelleTokenPayload {
-  reference: string
-  amount: number
-  purpose: PaymentPurpose
-  memberId?: string
-  expiresAt: string
-}
-
-/**
- * Generate a signed JWT token for Zelle payment QR code
- */
-export function generateZelleToken(payload: ZelleTokenPayload): string {
-  return jwt.sign(payload, ZELLE_TOKEN_SECRET, {
-    expiresIn: '48h', // Default expiry, actual expiry is in payload
-    issuer: 'hsnef-zelle-payment',
-  })
-}
-
-/**
- * Verify and decode a Zelle payment token
- */
-export function verifyZelleToken(token: string): ZelleTokenPayload | null {
-  try {
-    const decoded = jwt.verify(token, ZELLE_TOKEN_SECRET, {
-      issuer: 'hsnef-zelle-payment',
-    }) as ZelleTokenPayload
-
-    // Check if expired based on payload
-    if (new Date(decoded.expiresAt) < new Date()) {
-      return null
-    }
-
-    return decoded
-  } catch {
-    return null
-  }
-}
-
-// ============================================================================
-// QR Code Generation
-// ============================================================================
-
-/**
- * Generate QR code data URL for a Zelle payment
- */
-export async function generateZelleQRCode(
-  referenceCode: string,
-  baseUrl?: string
-): Promise<string> {
-  const base = baseUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  const url = `${base}/pay/${referenceCode}`
-
-  return QRCode.toDataURL(url, {
-    width: 300,
-    margin: 2,
-    color: {
-      dark: '#000000',
-      light: '#FFFFFF',
-    },
-  })
-}
-
-/**
- * Generate the payment URL for a reference code
- */
-export function getZellePaymentURL(referenceCode: string, baseUrl?: string): string {
-  const base = baseUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  return `${base}/pay/${referenceCode}`
-}
-
-// ============================================================================
-// Reference Code Generation
-// ============================================================================
-
-/**
- * Generate a unique reference code for Zelle payment
- * Format: HSNEF-Z-XXXX (where XXXX is alphanumeric)
- */
-export function generateReferenceCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // Removed confusing chars like 0, O, 1, I
+/** A new reference code, e.g. HSNEF-7K3Q9P. About 887 million possibilities. */
+export function generateReferenceCode(random: (n: number) => Uint8Array = randomBytes): string {
+  const bytes = random(REFERENCE_LENGTH)
   let code = ''
-  for (let i = 0; i < 4; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return `HSNEF-Z-${code}`
+  for (let i = 0; i < REFERENCE_LENGTH; i++) code += REFERENCE_ALPHABET[bytes[i] % REFERENCE_ALPHABET.length]
+  return REFERENCE_PREFIX + code
 }
 
-// ============================================================================
-// Settings Management
-// ============================================================================
+function randomBytes(n: number): Uint8Array {
+  const out = new Uint8Array(n)
+  globalThis.crypto.getRandomValues(out)
+  return out
+}
 
-const DEFAULT_ZELLE_SETTINGS: ZelleSettings = {
+/** Find a reference code in a bank memo, however the member typed it. */
+export function findReferenceCode(memo: string | null | undefined): string | null {
+  if (!memo) return null
+  const m = memo.toUpperCase().match(/HSNEF[\s\-_]*([A-HJ-NP-Z2-9]{6})(?![A-Z0-9])/)
+  return m ? REFERENCE_PREFIX + m[1] : null
+}
+
+// ---------------------------------------------------------------------------
+// Settings
+// ---------------------------------------------------------------------------
+
+export interface ZelleSettings {
+  enabled: boolean
+  email: string
+  phone: string
+  recipientName: string
+  instructions: string
+  reminderDays: number
+  expiryDays: number
+  qrImagePath: string
+  csvMapping: CsvMapping | null
+}
+
+export const DEFAULT_ZELLE_SETTINGS: ZelleSettings = {
   enabled: false,
-  zelle_email: '',
-  zelle_phone: '',
-  auto_confirm_threshold: 50,
-  request_expiry_hours: 48,
-  instructions: 'Please send your Zelle payment and include the reference code in the memo field.',
+  email: '',
+  phone: '',
+  recipientName: 'Hindu Society of North East Florida',
+  instructions: '',
+  reminderDays: 3,
+  expiryDays: 7,
+  qrImagePath: '',
+  csvMapping: null,
 }
 
-/**
- * Get Zelle payment settings from portal_settings
- */
-export async function getZelleSettings(): Promise<ZelleSettings> {
-  const supabase = createClient()
-
-  const settingKeys = [
-    'zelle_enabled',
-    'zelle_email',
-    'zelle_phone',
-    'zelle_auto_confirm_threshold',
-    'zelle_request_expiry_hours',
-    'zelle_instructions',
-  ]
-
-  const { data, error } = await supabase
-    .from('portal_settings')
-    .select('setting_key, setting_value, setting_type')
-    .in('setting_key', settingKeys)
-
-  if (error || !data) {
-    console.error('Error fetching Zelle settings:', error)
-    return DEFAULT_ZELLE_SETTINGS
+/** Settings from portal_settings rows ({ setting_key, setting_value }). */
+export function parseZelleSettings(rows: Array<{ setting_key: string; setting_value: unknown }>): ZelleSettings {
+  const v = (key: string): unknown => {
+    const row = rows.find((r) => r.setting_key === key)
+    const value = row?.setting_value as { value?: unknown; enabled?: unknown } | null | undefined
+    if (!value || typeof value !== 'object') return undefined
+    return 'enabled' in value ? value.enabled : value.value
   }
+  const text = (key: string, fallback: string) => (typeof v(key) === 'string' ? (v(key) as string).trim() : fallback)
+  const days = (key: string, fallback: number) => {
+    const n = Number(v(key))
+    return Number.isInteger(n) && n >= 1 && n <= 60 ? n : fallback
+  }
+  const mapping = v('zelle_csv_mapping')
+  return {
+    enabled: v('zelle_enabled') === true,
+    email: text('zelle_email', ''),
+    phone: text('zelle_phone', ''),
+    recipientName: text('zelle_recipient_name', DEFAULT_ZELLE_SETTINGS.recipientName) || DEFAULT_ZELLE_SETTINGS.recipientName,
+    instructions: text('zelle_instructions', ''),
+    reminderDays: days('zelle_reminder_days', DEFAULT_ZELLE_SETTINGS.reminderDays),
+    expiryDays: days('zelle_expiry_days', DEFAULT_ZELLE_SETTINGS.expiryDays),
+    qrImagePath: text('zelle_qr_image_path', ''),
+    csvMapping: isCsvMapping(mapping) ? mapping : null,
+  }
+}
 
-  const settings: ZelleSettings = { ...DEFAULT_ZELLE_SETTINGS }
+/** Zelle is offered only when switched on AND there is somewhere to send money. */
+export function zelleIsReady(s: Pick<ZelleSettings, 'enabled' | 'email' | 'phone'>): boolean {
+  return s.enabled && (s.email !== '' || s.phone !== '')
+}
 
-  for (const row of data) {
-    const value = row.setting_type === 'boolean'
-      ? row.setting_value?.enabled === true
-      : row.setting_value?.value
+/** Problems with settings an Admin is about to save, or [] if they are fine. */
+export function validateZelleSettings(s: ZelleSettings): string[] {
+  const errors: string[] = []
+  if (s.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.email)) errors.push('The Zelle email address does not look right.')
+  if (s.phone && s.phone.replace(/\D/g, '').length !== 10) errors.push('The Zelle phone number needs 10 digits.')
+  if (s.enabled && !s.email && !s.phone) errors.push('Add a Zelle email or phone before switching Zelle on.')
+  if (!(s.reminderDays >= 1)) errors.push('The reminder needs to be at least 1 day.')
+  if (!(s.expiryDays > s.reminderDays)) errors.push('Requests must expire after the reminder is sent.')
+  if (s.expiryDays > 60) errors.push('Requests can stay open at most 60 days.')
+  return errors
+}
 
-    switch (row.setting_key) {
-      case 'zelle_enabled':
-        settings.enabled = value === true
-        break
-      case 'zelle_email':
-        settings.zelle_email = value || ''
-        break
-      case 'zelle_phone':
-        settings.zelle_phone = value || ''
-        break
-      case 'zelle_auto_confirm_threshold':
-        settings.auto_confirm_threshold = typeof value === 'number' ? value : 50
-        break
-      case 'zelle_request_expiry_hours':
-        settings.request_expiry_hours = typeof value === 'number' ? value : 48
-        break
-      case 'zelle_instructions':
-        settings.instructions = value || DEFAULT_ZELLE_SETTINGS.instructions
-        break
+// ---------------------------------------------------------------------------
+// What arrived, against what was due
+// ---------------------------------------------------------------------------
+
+export type TransferOutcome =
+  | { kind: 'exact' }
+  | { kind: 'short'; balance: number }
+  | { kind: 'over'; extra: number }
+
+const cents = (n: number) => Math.round(n * 100)
+
+export function compareReceived(due: number, received: number): TransferOutcome {
+  const d = cents(due)
+  const r = cents(received)
+  if (r === d) return { kind: 'exact' }
+  if (r < d) return { kind: 'short', balance: (d - r) / 100 }
+  return { kind: 'over', extra: (r - d) / 100 }
+}
+
+/** When a request opened at `from` expires, or its reminder is due. */
+export function daysAfter(from: Date, days: number): Date {
+  return new Date(from.getTime() + days * 24 * 60 * 60 * 1000)
+}
+
+// ---------------------------------------------------------------------------
+// The bank's transaction file (CSV)
+// ---------------------------------------------------------------------------
+
+/** Which column (by header text) holds each field. Saved once per bank. */
+export interface CsvMapping {
+  date: string
+  amount: string
+  memo: string
+  sender: string
+}
+
+function isCsvMapping(v: unknown): v is CsvMapping {
+  const m = v as Record<string, unknown> | null
+  return !!m && ['date', 'amount', 'memo', 'sender'].every((k) => typeof m[k] === 'string' && m[k] !== '')
+}
+
+/** Parse CSV text (quoted fields, embedded commas and quotes, CRLF). */
+export function parseCsv(text: string): string[][] {
+  const rows: string[][] = []
+  let row: string[] = []
+  let field = ''
+  let quoted = false
+  const src = text.replace(/^﻿/, '')
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i]
+    if (quoted) {
+      if (c === '"' && src[i + 1] === '"') {
+        field += '"'
+        i++
+      } else if (c === '"') quoted = false
+      else field += c
+    } else if (c === '"') quoted = true
+    else if (c === ',') {
+      row.push(field)
+      field = ''
+    } else if (c === '\n' || c === '\r') {
+      if (c === '\r' && src[i + 1] === '\n') i++
+      row.push(field)
+      if (row.some((f) => f.trim() !== '')) rows.push(row)
+      row = []
+      field = ''
+    } else field += c
+  }
+  row.push(field)
+  if (row.some((f) => f.trim() !== '')) rows.push(row)
+  return rows
+}
+
+/** A first guess at the mapping from the header row, for the Admin to confirm. */
+export function guessCsvMapping(headers: string[]): Partial<CsvMapping> {
+  // Words in order of preference: "Memo" beats "Description" when both exist.
+  const find = (...words: string[]) => {
+    for (const w of words) {
+      const hit = headers.find((h) => h.toLowerCase().includes(w))
+      if (hit) return hit
     }
+    return undefined
   }
-
-  return settings
+  return {
+    date: find('posting date', 'date', 'posted'),
+    amount: find('amount', 'credit'),
+    memo: find('memo', 'description', 'details', 'note'),
+    sender: find('sender', 'from', 'name', 'payer'),
+  }
 }
 
-/**
- * Check if Zelle payments are enabled
- */
-export async function isZelleEnabled(): Promise<boolean> {
-  const settings = await getZelleSettings()
-  return settings.enabled && (!!settings.zelle_email || !!settings.zelle_phone)
-}
-
-// ============================================================================
-// Payment Request Helpers
-// ============================================================================
-
-export interface CreateZelleRequestParams {
-  memberId?: string
+export interface BankRow {
+  /** Stable id for this row, so the same row in a later file is recognised. */
+  hash: string
+  postedOn: string | null
   amount: number
-  purpose: PaymentPurpose
-  description?: string
-  requestId?: string
-  eventRegistrationId?: string
-  serviceBookingId?: string
-  createdBy?: string
+  memo: string
+  sender: string
 }
 
-/**
- * Calculate expiration date based on settings
- */
-export function calculateExpiryDate(expiryHours: number = 48): Date {
-  const expiry = new Date()
-  expiry.setHours(expiry.getHours() + expiryHours)
-  return expiry
-}
-
-/**
- * Check if a payment request should auto-confirm
- */
-export function shouldAutoConfirm(amount: number, threshold: number): boolean {
-  return amount <= threshold
-}
-
-/**
- * Format amount for display
- */
-export function formatAmount(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount)
-}
-
-/**
- * Get human-readable status label
- */
-export function getStatusLabel(status: ZellePaymentRequest['status']): string {
-  const labels: Record<ZellePaymentRequest['status'], string> = {
-    pending: 'Awaiting Payment',
-    member_confirmed: 'Awaiting Confirmation',
-    staff_confirmed: 'Confirmed',
-    auto_confirmed: 'Confirmed',
-    cancelled: 'Cancelled',
-    expired: 'Expired',
+/** Money in only (positive amounts), with a stable hash per row. */
+export function readBankRows(table: string[][], mapping: CsvMapping): BankRow[] {
+  const [headers, ...rows] = table
+  const col = (name: string) => headers.findIndex((h) => h.trim() === name.trim())
+  const ci = { date: col(mapping.date), amount: col(mapping.amount), memo: col(mapping.memo), sender: col(mapping.sender) }
+  if (Object.values(ci).some((i) => i < 0)) throw new Error('The bank file does not have the columns that were set up for it.')
+  const seen = new Map<string, number>()
+  const out: BankRow[] = []
+  for (const r of rows) {
+    const amount = parseMoney(r[ci.amount])
+    if (!(amount > 0)) continue
+    const postedOn = parseDate(r[ci.date])
+    const memo = (r[ci.memo] ?? '').trim()
+    const sender = (r[ci.sender] ?? '').trim()
+    const base = [postedOn, amount.toFixed(2), memo, sender].join('|')
+    // Two identical transactions on the same day are still two rows.
+    const n = (seen.get(base) ?? 0) + 1
+    seen.set(base, n)
+    out.push({ hash: hashString(`${base}|${n}`), postedOn, amount, memo, sender })
   }
-  return labels[status]
+  return out
 }
 
-/**
- * Get status color class for styling
- */
-export function getStatusColor(status: ZellePaymentRequest['status']): string {
-  const colors: Record<ZellePaymentRequest['status'], string> = {
-    pending: 'text-yellow-600 bg-yellow-50 border-yellow-200',
-    member_confirmed: 'text-blue-600 bg-blue-50 border-blue-200',
-    staff_confirmed: 'text-green-600 bg-green-50 border-green-200',
-    auto_confirmed: 'text-green-600 bg-green-50 border-green-200',
-    cancelled: 'text-gray-600 bg-gray-50 border-gray-200',
-    expired: 'text-red-600 bg-red-50 border-red-200',
-  }
-  return colors[status]
+function parseMoney(v: string | undefined): number {
+  if (!v) return NaN
+  const negative = /^\s*\(.*\)\s*$/.test(v) || v.trim().startsWith('-')
+  const n = Number(v.replace(/[^0-9.]/g, ''))
+  return negative ? -n : n
 }
 
-/**
- * Calculate time remaining until expiry
- */
-export function getTimeRemaining(expiresAt: string): string {
-  const now = new Date()
-  const expiry = new Date(expiresAt)
-  const diff = expiry.getTime() - now.getTime()
-
-  if (diff <= 0) return 'Expired'
-
-  const hours = Math.floor(diff / (1000 * 60 * 60))
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-
-  if (hours >= 24) {
-    const days = Math.floor(hours / 24)
-    return `${days}d ${hours % 24}h`
+function parseDate(v: string | undefined): string | null {
+  if (!v) return null
+  const s = v.trim()
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/)
+  if (m) {
+    const year = m[3].length === 2 ? `20${m[3]}` : m[3]
+    return `${year}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`
   }
+  return null
+}
 
-  return `${hours}h ${minutes}m`
+/** cyrb53: a small, stable, non-cryptographic hash (row identity only). */
+export function hashString(s: string): string {
+  let h1 = 0xdeadbeef
+  let h2 = 0x41c6ce57
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i)
+    h1 = Math.imul(h1 ^ c, 2654435761)
+    h2 = Math.imul(h2 ^ c, 1597334677)
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909)
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909)
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(14, '0')
+}
+
+/** An open request, as the matcher needs it. */
+export interface MatchableRequest {
+  id: string
+  reference_code: string
+  amount_due: number
+  received: number
+  memberName: string
+}
+
+export type BankMatch =
+  | { kind: 'matched'; row: BankRow; request: MatchableRequest }
+  | { kind: 'possible'; row: BankRow; candidates: MatchableRequest[] }
+  | { kind: 'unmatched'; row: BankRow }
+
+/**
+ * Matched: the memo carries an open request's code and the amount is what
+ * is still owed on it. Possible: no code, but the amount owed matches and the
+ * sender's name shares a word with the member's. Everything else: unmatched.
+ */
+export function matchBankRows(rows: BankRow[], open: MatchableRequest[]): BankMatch[] {
+  const owed = (r: MatchableRequest) => Math.round((r.amount_due - r.received) * 100)
+  const words = (s: string) => new Set(s.toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 1))
+  return rows.map((row) => {
+    const code = findReferenceCode(row.memo)
+    const byCode = code ? open.find((r) => r.reference_code === code) : undefined
+    if (byCode && owed(byCode) === Math.round(row.amount * 100)) return { kind: 'matched', row, request: byCode }
+    if (byCode) return { kind: 'possible', row, candidates: [byCode] } // right code, other amount: a person decides
+    const sender = words(row.sender)
+    const candidates = open.filter(
+      (r) => owed(r) === Math.round(row.amount * 100) && [...words(r.memberName)].some((w) => sender.has(w)),
+    )
+    return candidates.length ? { kind: 'possible', row, candidates } : { kind: 'unmatched', row }
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Wording
+// ---------------------------------------------------------------------------
+
+export const ZELLE_STATUS_LABEL: Record<string, string> = {
+  awaiting: 'Awaiting payment',
+  sent: 'Member says sent',
+  paid: 'Paid',
+  not_received: 'Not received',
+  cancelled: 'Cancelled',
+  expired: 'Expired',
 }

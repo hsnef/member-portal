@@ -70,7 +70,7 @@ describe('row shapes', () => {
   // Columns `members` really has (dev-mp, 2026-11-11). /join used to send
   // `business_type` and `how_did_you_hear`, which it does not.
   const MEMBER_COLUMNS = new Set([
-    'member_class', 'current_level', 'first_name', 'last_name', 'nakshatra', 'family_gotra',
+    'member_class', 'current_level', 'requested_level', 'first_name', 'last_name', 'nakshatra', 'family_gotra',
     'secondary_first_name', 'secondary_last_name', 'secondary_nakshatra', 'business_name',
     'business_ein', 'primary_email', 'primary_phone', 'secondary_email', 'secondary_phone',
     'address_line_1', 'address_line_2', 'city', 'state', 'zip',
@@ -80,7 +80,10 @@ describe('row shapes', () => {
     const row = toMemberRow(parsed({ memberClass: 'Business', businessName: 'Shop' }))
     for (const key of Object.keys(row)) expect(MEMBER_COLUMNS.has(key), key).toBe(true)
     expect(row).not.toHaveProperty('membership_id')
-    expect(row.current_level).toBe('Annual')
+    // Asked for Annual: starts Community, Annual remembered until paid.
+    expect(row.current_level).toBe('Community')
+    expect(row.requested_level).toBe('Annual')
+    expect(toMemberRow(parsed({ requestedLevel: 'Community' })).requested_level).toBeNull()
   })
 
   it('toPendingRow keeps everything the applicant typed, with the terms they accepted', () => {

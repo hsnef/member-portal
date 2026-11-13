@@ -3,9 +3,10 @@
 // ============================================================================
 
 import type { Member, Receipt, Request } from '@/types/database'
+import { paymentMethodLabel } from '@/lib/payments/labels'
 
 // Base email wrapper with HSNEF branding
-function emailWrapper(content: string): string {
+export function emailWrapper(content: string): string {
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -74,6 +75,10 @@ export function registrationInvitationEmail(
   invitationLink: string
 ): { subject: string; html: string; text: string } {
   const memberName = member.member_profile_name || `${member.first_name} ${member.last_name}` || member.business_name
+  // Asked for a paid level and not yet paid: say how to complete it.
+  const toComplete = member.requested_level
+    ? `You asked to become a ${member.requested_level} member. You are a Community member until it is paid: after signing in, choose "Complete my ${member.requested_level} membership" to pay by card, or pay at the temple office.`
+    : ''
 
   const content = `
     <h2 style="color: #b8530e; margin-top: 0;">Welcome to HSNEF!</h2>
@@ -87,6 +92,7 @@ export function registrationInvitationEmail(
     <p style="color: #666; font-size: 14px;">
       <strong>Your Membership ID:</strong> ${member.membership_id}
     </p>
+    ${toComplete ? `<p>${toComplete}</p>` : ''}
     <p style="color: #999; font-size: 12px;">
       If you have any trouble signing in, please contact the temple office.
     </p>
@@ -95,7 +101,7 @@ export function registrationInvitationEmail(
   return {
     subject: 'Your HSNEF Membership Portal access',
     html: emailWrapper(content),
-    text: `Welcome to HSNEF!\n\nDear ${memberName},\n\nThe temple office has added you to the HSNEF Membership Portal. Sign in with this email address at:\n\n${invitationLink}\n\nWe will email you a sign-in link, or you can use Google.\n\nYour Membership ID: ${member.membership_id}`,
+    text: `Welcome to HSNEF!\n\nDear ${memberName},\n\nThe temple office has added you to the HSNEF Membership Portal. Sign in with this email address at:\n\n${invitationLink}\n\nWe will email you a sign-in link, or you can use Google.\n\nYour Membership ID: ${member.membership_id}${toComplete ? `\n\n${toComplete}` : ''}`,
   }
 }
 
@@ -126,7 +132,7 @@ export function paymentReceiptEmail(
       </tr>
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Payment Method:</strong></td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">${receipt.payment_method}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">${paymentMethodLabel(receipt.payment_method)}</td>
       </tr>
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Purpose:</strong></td>
@@ -142,7 +148,7 @@ export function paymentReceiptEmail(
   return {
     subject: `HSNEF Receipt ${receipt.receipt_number}`,
     html: emailWrapper(content),
-    text: `Payment Receipt\n\nDear ${memberName},\n\nThank you for your payment.\n\nReceipt Number: ${receipt.receipt_number}\nDate: ${new Date(receipt.receipt_date).toLocaleDateString()}\nAmount: $${receipt.amount.toFixed(2)}\nPayment Method: ${receipt.payment_method}\nPurpose: ${receipt.purpose}\n\nPlease keep this receipt for your records.`,
+    text: `Payment Receipt\n\nDear ${memberName},\n\nThank you for your payment.\n\nReceipt Number: ${receipt.receipt_number}\nDate: ${new Date(receipt.receipt_date).toLocaleDateString()}\nAmount: $${receipt.amount.toFixed(2)}\nPayment Method: ${paymentMethodLabel(receipt.payment_method)}\nPurpose: ${receipt.purpose}\n\nPlease keep this receipt for your records.`,
   }
 }
 

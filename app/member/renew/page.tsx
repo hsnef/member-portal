@@ -113,14 +113,9 @@ function RenewMembershipContent() {
       const response = await fetch('/api/stripe/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        // The server prices the level from Portal Settings.
         body: JSON.stringify({
-          amount: Math.round(membershipPricing[level].price * 100), // Convert to cents
-          memberId: member.id,
-          category: 'Membership',
-          description: `${level.charAt(0).toUpperCase() + level.slice(1)} membership renewal`,
-          metadata: {
-            membershipLevel: level,
-          },
+          item: { kind: 'membership', level: level === 'lifetime' ? 'Lifetime' : 'Annual' },
         }),
       })
 
@@ -158,8 +153,10 @@ function RenewMembershipContent() {
         const membershipPricing = await getMembershipPricing()
         setPricing(membershipPricing)
 
-        // Create payment intent with default annual price
-        const secret = await createPaymentIntent('annual', membershipPricing)
+        // Start on the level they asked for when joining (if any), else Annual.
+        const initial: RenewLevel = member.requested_level === 'Lifetime' ? 'lifetime' : 'annual'
+        setSelectedLevel(initial)
+        const secret = await createPaymentIntent(initial, membershipPricing)
         if (secret) {
           setClientSecret(secret)
         }

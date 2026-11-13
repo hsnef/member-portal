@@ -16,8 +16,8 @@ import { Card, CardHeader } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { cn } from '@/utils/cn'
 import { formatCurrency } from '@/utils/format'
-import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 import type { MembershipPricing } from '@/lib/utils/portalSettings'
+import { ZelleCheckout } from '@/components/zelle/ZelleCheckout'
 
 export type RenewLevel = 'annual' | 'lifetime'
 
@@ -166,17 +166,12 @@ export function RenewView({
           </Card>
 
           <Card tone="sunk">
-            <p className="text-[14px] leading-relaxed text-ink-2">
-              Prefer to pay by check or Zelle? The temple office can take your renewal in person —
-              call{' '}
-              <a
-                href={`tel:${TEMPLE_CONFIG.contact.phone.replace(/[^0-9+]/g, '')}`}
-                className="tnum font-semibold text-saffron hover:text-saffron-hover"
-              >
-                {TEMPLE_CONFIG.contact.phone}
-              </a>
-              .
-            </p>
+            <CardHeader title="Prefer not to pay by card?" />
+            {/* key: a new Zelle request per level, so switching level never reuses the other's. */}
+            <ZelleCheckout
+              key={selectedLevel}
+              item={{ kind: 'membership', level: LEVEL_LABEL[selectedLevel] as 'Annual' | 'Lifetime' }}
+            />
           </Card>
         </div>
       </div>

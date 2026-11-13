@@ -74,9 +74,42 @@ prod waits for Sujit**, with the release).
 Also done 2026-11-12: `/debug` removed; not-found, error and global-error pages added;
 `calculateMembershipFee` deleted; saffron darkened to `#b8530e` (WCAG AA) and runtime theme
 switching removed, so dev and production share one palette. Migration `20261112000002` drops
-`theme_definitions` and the `active_theme` setting: **not yet applied anywhere; Sujit runs it
-on dev, then prod with the release** (Claude's apply was blocked by the permission classifier).
-Next: Zelle, built for real use (scope being agreed with Sujit 2026-11-12).
+`theme_definitions` and the `active_theme` setting: **applied to dev 2026-11-12 (Sujit, after
+PR #53 deployed); prod waits for Sujit, after the release** — the old code reads the table.
+Next: **Payments, done right** — card, Zelle and office through one settlement step
+(`docs/architecture/payments.md`, agreed 2026-11-12). Progress (2026-11-12, branch only):
+1. ✅ `settle_payment` (migration `20261112000003`, **applied to dev**; prod with the release)
+   + `lib/payments/settle.ts`. DB tests: `npm run db:sql -- test bcujsesgrzijyisvmnwm
+   supabase/tests/settle_payment.sql`.
+2. ✅ Card: server-priced checkout, webhook + success page both settle (idempotent), events
+   hold a place. **Verified with Stripe test cards** on a local build against dev: booking,
+   Annual renewal, event, request, donation each recorded once, receipt emailed, item paid.
+   Test member `dev-mp+paytest@hsnef.org` (99997100, test account) and a "Payment test
+   event" were left on dev for the next steps.
+3. ✅ Office-recorded payments (`/api/admin/payments`) and Add member at the counter; join,
+   approval and Add member start everyone as Community with `requested_level` (migration
+   `20261112000004`, applied to dev); request numbers fixed (`20261112000005`, applied to
+   dev). Verified on dev as a test Office Staff account.
+4. ✅ Zelle for every payment type (migration `20261112000006`, applied to dev): checkout
+   option, office queue (short / over / not received), bank CSV import, daily reminders and
+   expiry. **Zelle is switched ON on dev with the placeholder address dev-mp@hsnef.org**; set
+   the temple's real Zelle email on prod before switching it on there.
+5. ✅ Office alert list (Portal Settings), emailed for Zelle sent, new applications, new bookings.
+6. ✅ Membership pass checked on the server with live standing; daily expiry of Annual
+   memberships (`/api/cron/daily`). Receipt PDFs print the real RCP number.
+**Production, with the release (Sujit, in order):** migrations `20261112000001` (terms address),
+`…0002` (drop theme), `…0003` (settlement), `…0004` (requested level), `…0005` (request numbers),
+`…0006` (Zelle). `npm run db:sql -- apply gapvsdrzavjaublwkqfm <file> --confirm-production`
+each, after the release deploys (0002 must follow the deploy; the others can precede it).
+**Dev test data removed 2026-11-12:** the payments test accounts, members, payments, receipts,
+bookings, request, Zelle data and test events are gone; dev keeps the two Admin sign-ins,
+services, priests and settings (Zelle still on with the placeholder address).
+**Found, not fixed:** sign-in tracking fails for some accounts (login log insert refused by RLS,
+42501), so the office's sign-in history misses them. Tracked in #54.
+Open: is a Stripe webhook endpoint registered for dev and prod? (Payments are recorded by
+the success page regardless; the webhook covers a member who closes the tab.)
+Deleted with Sujit's yes (2026-11-12): `lib/stripe/payments.ts` and the old confirm routes
+`api/stripe/verify-payment`, `api/events/confirm-payment`; `api/stripe/confirm-payment` is the one.
 
 **F. Product docs and role how-tos: waiting on docs-kit 0.1 (decided 2026-11-12, Sujit).**
 Do not reorganise `docs/` or write role guides by hand. docs-kit (techsilon-oss) is built

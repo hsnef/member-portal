@@ -7,6 +7,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { CheckoutView, stripeAppearance } from '@/components/member/CheckoutView'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
+import { formatDate } from '@/utils/format'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
@@ -22,6 +23,7 @@ interface BookingItem {
 
 interface Booking {
   id: string
+  booking_number: string
   requester_name: string
   total_amount: number
   status: string
@@ -69,12 +71,12 @@ function PaymentForm({ booking }: { booking: Booking }) {
 
   return (
     <CheckoutView
-      eyebrow={`Booking #${booking.id.slice(0, 8)}`}
+      eyebrow={`Booking ${booking.booking_number}`}
       title="Complete your payment"
       description="Your booking is confirmed once this payment clears. A receipt is emailed immediately."
       summaryItems={items.map((item) => ({
         label: item.services.name,
-        value: new Date(item.service_date).toLocaleDateString(),
+        value: formatDate(item.service_date),
         numeric: true,
       }))}
       lineItems={items.map((item) => ({
@@ -87,7 +89,8 @@ function PaymentForm({ booking }: { booking: Booking }) {
       submitting={loading}
       disabled={!stripe}
       error={message}
-      reference={booking.id.slice(0, 8).toUpperCase()}
+      zelleItem={{ kind: 'booking', bookingId: booking.id }}
+      reference={booking.booking_number}
       backHref={`/member/bookings/${booking.id}`}
       backLabel="Back to this booking"
     />
@@ -143,24 +146,16 @@ export default function BookingPaymentPage() {
       const response = await fetch('/api/stripe/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: Math.round(bookingData.total_amount * 100), // Convert dollars to cents
-          memberId: member?.id,
-          category: 'Service',
-          description: `Service Booking #${bookingData.id.slice(0, 8)}`,
-          metadata: {
-            bookingId: bookingData.id,
-            requesterName: bookingData.requester_name,
-          },
-        }),
+        // The server charges the booking's own total, and only if it is the
+        // member's and approved.
+        body: JSON.stringify({ item: { kind: 'booking', bookingId: bookingData.id } }),
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to create payment intent')
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.clientSecret) {
+        throw new Error(data.error || 'Could not start the payment')
       }
-
-      const { clientSecret: secret } = await response.json()
-      setClientSecret(secret)
+      setClientSecret(data.clientSecret)
     } catch (err: any) {
       console.error('Error:', err)
       setError(err.message || 'Failed to load payment form')

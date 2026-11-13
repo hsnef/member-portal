@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { membershipIdForInsert } from '@/lib/registration/membershipIdChoice'
+import { requestedPaidLevel } from '@/lib/registration/joinPayload'
+import type { MembershipLevel } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
 
 interface PendingRegistration {
@@ -100,6 +102,7 @@ export default function PendingRegistrationsPage() {
         membership_id: string
         member_class: string
         current_level: string
+        requested_level: 'Annual' | 'Lifetime' | null
         first_name: string | null
         last_name: string | null
         primary_email: string
@@ -122,7 +125,8 @@ export default function PendingRegistrationsPage() {
       } = {
         membership_id: membershipId,
         member_class: selectedRegistration.member_class,
-        current_level: selectedRegistration.requested_level,
+        current_level: 'Community',
+        requested_level: requestedPaidLevel(selectedRegistration.requested_level as MembershipLevel),
         first_name: selectedRegistration.first_name,
         last_name: selectedRegistration.last_name,
         primary_email: selectedRegistration.primary_email,
@@ -300,8 +304,10 @@ export default function PendingRegistrationsPage() {
     setMembershipId('')
     setSuggestedId('')
     setShowApprovalModal(true)
+    // Everyone is approved as Community; a paid level (and its number) comes
+    // with the payment (docs/architecture/payments.md).
     const { data, error } = await (supabase as any).rpc('generate_membership_id', {
-      p_level: registration.requested_level,
+      p_level: 'Community',
     })
     if (error) {
       console.error('Could not suggest a membership ID:', error)
@@ -625,10 +631,18 @@ export default function PendingRegistrationsPage() {
                     disabled={processing}
                   />
                   <p className="mt-1 text-xs text-gray-500">
-                    Format: 8 digits, first digit = level (1=Lifetime, 2=Annual, 3=Community),
-                    ends with 00
+                    A Community number (starts with 3, ends with 00). Keep the suggestion
+                    unless you have a reason not to.
                   </p>
                 </div>
+
+                {requestedPaidLevel(selectedRegistration.requested_level as MembershipLevel) && (
+                  <p className="rounded-md bg-saffron-soft px-3 py-2 text-sm text-ink-2">
+                    They asked for <strong>{selectedRegistration.requested_level}</strong>. They are
+                    approved as a Community member and asked to pay; they become{' '}
+                    {selectedRegistration.requested_level} (with a new number) when the payment is made.
+                  </p>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

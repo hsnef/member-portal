@@ -75,6 +75,7 @@ export default function EventsPage() {
             .from('event_registrations')
             .select('*', { count: 'exact', head: true })
             .eq('event_id', event.id)
+            .neq('status', 'Cancelled')
 
           // Check if this is a test-created event
           const isTestEvent = event.created_by && testAuthUserIds.includes(event.created_by)

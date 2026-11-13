@@ -35,6 +35,9 @@ vi.mock('@/lib/supabase/client', () => ({
 const sendEmail = vi.fn()
 vi.mock('@/lib/email/mailer', () => ({ sendEmail: (o: unknown) => sendEmail(o) }))
 
+const sendOfficeAlert = vi.fn(async (_db: unknown, _alert: unknown) => true)
+vi.mock('@/lib/notify/office', () => ({ sendOfficeAlert: (db: unknown, a: unknown) => sendOfficeAlert(db, a) }))
+
 const { POST } = await import('./route')
 
 const application = {
@@ -58,6 +61,7 @@ const post = (body: unknown) =>
 beforeEach(() => {
   existingMembers = []
   approvalSetting = { setting_value: { enabled: true } }
+  sendOfficeAlert.mockClear()
   memberInsertResult = {
     data: { id: 'm1', membership_id: '30001200', primary_email: 'asha@example.org',
       first_name: 'Asha', last_name: 'Rao', current_level: 'Community' },
@@ -79,6 +83,14 @@ describe('POST /api/join', () => {
     })
     expect(inserts.members).toBeUndefined()
     expect(sendEmail).not.toHaveBeenCalled()
+    // The office alert list hears about it, with a link to the approvals page.
+    expect(sendOfficeAlert).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        subject: 'New application: Asha Rao',
+        link: expect.objectContaining({ path: '/admin/pending-registrations' }),
+      }),
+    )
   })
 
   it('approval OFF: creates the member without a membership_id, records terms, sends the welcome email', async () => {

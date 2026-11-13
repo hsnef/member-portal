@@ -38,13 +38,15 @@ export type MembershipLevel = 'Community' | 'Annual' | 'Lifetime';
 
 export type MembershipStatus = 'Active' | 'Expired' | 'Cancelled' | 'Pending';
 
-export type PaymentMethod = 'Stripe' | 'Cash' | 'Check' | 'Zelle';
+/** 'Stripe' is an online card payment; 'Card' is the temple's own card machine at the counter. */
+export type PaymentMethod = 'Stripe' | 'Card' | 'Cash' | 'Check' | 'Zelle';
 
 export type PaymentPurpose = 'Membership' | 'Event' | 'Donation' | 'Sponsorship' | 'Request' | 'Service';
 
 export type RequestStatus = 'Draft' | 'Sent' | 'Partially Paid' | 'Paid' | 'Cancelled' | 'Expired';
 
-export type ZelleRequestStatus = 'pending' | 'member_confirmed' | 'staff_confirmed' | 'auto_confirmed' | 'cancelled' | 'expired';
+/** See supabase/migrations/20261112000006_zelle.sql. */
+export type ZelleStatus = 'awaiting' | 'sent' | 'paid' | 'not_received' | 'cancelled' | 'expired';
 
 export type UserRole = 'Member' | 'Office Staff' | 'Office Manager' | 'Admin';
 
@@ -57,6 +59,8 @@ export type Member = {
   legacy_id: string | null;
   member_class: MemberClass;
   current_level: MembershipLevel;
+  /** A paid level asked for but not yet paid for; cleared when the membership payment settles. */
+  requested_level: Extract<MembershipLevel, 'Annual' | 'Lifetime'> | null;
   is_founding_member: boolean;
 
   // Personal fields
@@ -176,6 +180,8 @@ export type Payment = {
   payment_date: string;
   created_at: string;
   created_by: string | null;
+  /** Names the source of a settled payment (stripe:<intent>, zelle:<request>, office:<id>). */
+  idempotency_key: string | null;
 }
 
 export type Receipt = {
@@ -239,6 +245,7 @@ export type EventRegistration = {
   total_attendees: number;
   payment_id: string | null;
   amount_paid: number | null;
+  status: 'Pending Payment' | 'Confirmed' | 'Cancelled';
   registered_at: string;
   attended: boolean | null;
 }
@@ -381,37 +388,53 @@ export type PendingMemberRegistration = {
   updated_at: string;
 }
 
-export type ZellePaymentRequest = {
+export type ZelleRequest = {
   id: string;
   reference_code: string;
-  member_id: string | null;
-  amount: number;
+  member_id: string;
+  target_kind: 'membership' | 'booking' | 'request' | 'event_registration' | 'donation';
+  target_id: string | null;
+  level: MembershipLevel | null;
   purpose: PaymentPurpose;
-  description: string | null;
-  request_id: string | null;
-  event_registration_id: string | null;
-  service_booking_id: string | null;
-  status: ZelleRequestStatus;
-  member_confirmed_at: string | null;
-  member_zelle_reference: string | null;
-  staff_confirmed_at: string | null;
-  staff_confirmed_by: string | null;
-  staff_notes: string | null;
+  description: string;
+  notes: string | null;
+  amount_due: number;
+  status: ZelleStatus;
+  member_sent_at: string | null;
+  member_bank_reference: string | null;
+  reminder_sent_at: string | null;
   expires_at: string;
-  qr_token: string | null;
+  closed_at: string | null;
+  closed_by: string | null;
+  close_reason: string | null;
+  payment_id: string | null;
   created_at: string;
   created_by: string | null;
   updated_at: string;
-  payment_id: string | null;
 }
 
-export interface ZelleSettings {
-  enabled: boolean;
-  zelle_email: string;
-  zelle_phone: string;
-  auto_confirm_threshold: number;
-  request_expiry_hours: number;
-  instructions: string;
+export type ZelleTransfer = {
+  id: string;
+  request_id: string;
+  amount: number;
+  received_on: string;
+  bank_reference: string | null;
+  bank_row_hash: string | null;
+  submission_id: string | null;
+  recorded_by: string | null;
+  recorded_at: string;
+}
+
+export type ZelleBankRow = {
+  hash: string;
+  posted_on: string | null;
+  amount: number | null;
+  memo: string | null;
+  sender: string | null;
+  outcome: 'confirmed' | 'ignored';
+  request_id: string | null;
+  imported_at: string;
+  imported_by: string | null;
 }
 
 // Database schema type for Supabase client
@@ -420,7 +443,8 @@ export type Database = {
     Tables: {
       members: {
         Row: Member;
-        Insert: Omit<Member, 'id' | 'created_at' | 'updated_at'> & {
+        Insert: Omit<Member, 'id' | 'created_at' | 'updated_at' | 'requested_level'> & {
+          requested_level?: Member['requested_level'];
           id?: string;
           created_at?: string;
           updated_at?: string;
@@ -598,14 +622,23 @@ export type Database = {
         Update: Partial<PendingMemberRegistration>;
         Relationships: [];
       };
-      zelle_payment_requests: {
-        Row: ZellePaymentRequest;
-        Insert: Omit<ZellePaymentRequest, 'id' | 'created_at' | 'updated_at'> & {
-          id?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: Partial<ZellePaymentRequest>;
+      zelle_requests: {
+        Row: ZelleRequest;
+        Insert: Partial<ZelleRequest> &
+          Pick<ZelleRequest, 'reference_code' | 'member_id' | 'target_kind' | 'purpose' | 'description' | 'amount_due' | 'expires_at'>;
+        Update: Partial<ZelleRequest>;
+        Relationships: [];
+      };
+      zelle_transfers: {
+        Row: ZelleTransfer;
+        Insert: Partial<ZelleTransfer> & Pick<ZelleTransfer, 'request_id' | 'amount'>;
+        Update: Partial<ZelleTransfer>;
+        Relationships: [];
+      };
+      zelle_bank_rows: {
+        Row: ZelleBankRow;
+        Insert: Partial<ZelleBankRow> & Pick<ZelleBankRow, 'hash' | 'outcome'>;
+        Update: Partial<ZelleBankRow>;
         Relationships: [];
       };
       // ---------------------------------------------------------------
@@ -832,6 +865,49 @@ export type Database = {
         Args: {};
         Returns: string;
       };
+      /** Service role only. Changes the level and issues a number in its series. */
+      set_member_level: {
+        Args: { p_member_id: string; p_level: MembershipLevel };
+        Returns: undefined;
+      };
+      membership_term_year: {
+        Args: { p_member_id: string; p_paid_on: string };
+        Returns: number;
+      };
+      /** Service role only. See supabase/migrations/20261112000006_zelle.sql. */
+      zelle_record_transfer: {
+        Args: {
+          p_request_id: string;
+          p_amount: number;
+          p_received_on: string | null;
+          p_bank_reference: string | null;
+          p_bank_row_hash: string | null;
+          p_submission_id: string | null;
+          p_staff: string | null;
+        };
+        Returns: { received_total: number; amount_due: number; status: ZelleStatus; duplicate: boolean }[];
+      };
+      /** Service role only. See supabase/migrations/20261112000003_payment_settlement.sql. */
+      settle_payment: {
+        Args: {
+          p_idempotency_key: string;
+          p_member_id: string;
+          p_purpose: PaymentPurpose;
+          p_method: PaymentMethod;
+          p_amount: number;
+          p_target_kind: 'membership' | 'booking' | 'request' | 'event_registration' | 'donation';
+          p_target_id?: string | null;
+          p_level?: MembershipLevel | null;
+          p_stripe_payment_intent_id?: string | null;
+          p_stripe_charge_id?: string | null;
+          p_check_number?: string | null;
+          p_zelle_reference?: string | null;
+          p_notes?: string | null;
+          p_created_by?: string | null;
+          p_paid_at?: string;
+        };
+        Returns: { payment_id: string; receipt_id: string; receipt_number: string; already_settled: boolean }[];
+      };
     };
     Enums: {
       nakshatra: Nakshatra;
@@ -841,7 +917,7 @@ export type Database = {
       payment_method: PaymentMethod;
       payment_purpose: PaymentPurpose;
       request_status: RequestStatus;
-      zelle_request_status: ZelleRequestStatus;
+      zelle_status: ZelleStatus;
       user_role: UserRole;
       activity_type: ActivityType;
     };

@@ -271,6 +271,28 @@ export function MemberDashboard({
         <KolamBand className="relative px-7 pb-4 text-marigold/30" />
       </motion.section>
 
+      {/* ---- Asked for a paid level and not yet paid (join, approval, Add member) ---- */}
+      {member.requested_level && (
+        <section aria-labelledby="complete-heading">
+          <SectionTitle id="complete-heading" eyebrow="Your membership">
+            Complete your membership
+          </SectionTitle>
+          <div className="mt-5">
+            <Alert
+              tone="info"
+              title={`You asked to become a ${member.requested_level} member`}
+              action={
+                <Link to="/member/renew">
+                  <Button size="sm">Complete my {member.requested_level} membership</Button>
+                </Link>
+              }
+            >
+              You are a Community member until it is paid. Pay by card here, or at the temple office.
+            </Alert>
+          </div>
+        </section>
+      )}
+
       {/* ---- Needs attention ---- */}
       {needsAttention && (
         <section aria-labelledby="attention-heading">

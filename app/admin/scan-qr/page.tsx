@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState, useEffect, useRef } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { verifyQRToken } from '@/lib/qr-token'
+import type { Standing } from '@/lib/membership/standing'
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library'
 import type { Member, FamilyMember } from '@/types/database'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -39,12 +39,21 @@ function ScanQRContent() {
   const [verifying, setVerifying] = useState(false)
   const [member, setMember] = useState<Member | null>(null)
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
+  const [standing, setStanding] = useState<Standing | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const [manualInput, setManualInput] = useState('')
   const [manualSearchType, setManualSearchType] = useState<'id' | 'name' | 'email' | 'phone'>('id')
 
   const supabase = createClient()
+
+  const linkedToken = useSearchParams().get('token')
+  useEffect(() => {
+    if (!linkedToken) return
+    setScanMode('manual') // no need for the camera: the pass was read already
+    verifyMember(linkedToken)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkedToken])
 
   // Start camera scanning
   const startScanning = async () => {
@@ -105,38 +114,25 @@ function ScanQRContent() {
     setScanning(false)
   }
 
-  // Verify member from QR token
+  // A scanned pass: checked on the server (/api/members/verify-pass), which
+  // has the signing secret, and returns the family and today's standing.
+  const loadPass = async (query: string) => {
+    const res = await fetch(`/api/members/verify-pass?${query}`)
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Could not check this pass')
+    setMember(data.member)
+    setFamilyMembers(data.familyMembers ?? [])
+    setStanding(data.standing ?? null)
+  }
+
   const verifyMember = async (token: string) => {
     setVerifying(true)
     setError(null)
     setMember(null)
-
+    setStanding(null)
     try {
-      // Verify the JWT token
-      const payload = verifyQRToken(token)
-
-      // Fetch member details
-      const { data: memberData, error: memberError } = await supabase
-        .from('members')
-        .select('*')
-        .eq('id', payload.memberId)
-        .single()
-
-      if (memberError) throw memberError
-      setMember(memberData)
-
-      // Fetch family members if Personal
-      if (memberData.member_class === 'Personal') {
-        const { data: familyData } = await supabase
-          .from('family_members')
-          .select('*')
-          .eq('member_id', memberData.id)
-          .order('created_at', { ascending: false })
-
-        setFamilyMembers(familyData || [])
-      }
+      await loadPass(`token=${encodeURIComponent(token)}`)
     } catch (err) {
-      console.error('Error verifying QR:', err)
       setError(err instanceof Error ? err.message : 'Failed to verify member')
     } finally {
       setVerifying(false)
@@ -179,18 +175,8 @@ function ScanQRContent() {
         throw memberError
       }
 
-      setMember(memberData)
-
-      // Fetch family members if Personal
-      if (memberData.member_class === 'Personal') {
-        const { data: familyData } = await supabase
-          .from('family_members')
-          .select('*')
-          .eq('member_id', memberData.id)
-          .order('created_at', { ascending: false })
-
-        setFamilyMembers(familyData || [])
-      }
+      // Same view as a scanned pass: family and today's standing.
+      await loadPass(`memberId=${encodeURIComponent(memberData.id)}`)
     } catch (err) {
       console.error('Error searching member:', err)
       setError(err instanceof Error ? err.message : 'Failed to find member')
@@ -202,6 +188,7 @@ function ScanQRContent() {
   // Reset to scan again
   const resetScan = () => {
     setMember(null)
+    setStanding(null)
     setFamilyMembers([])
     setError(null)
     setManualInput('')
@@ -256,20 +243,6 @@ function ScanQRContent() {
     }
   }, [scanMode])
 
-  const getMembershipColor = () => {
-    if (!member) return 'bg-transparent0'
-    switch (member.current_level) {
-      case 'Lifetime': return 'bg-amber-500'
-      case 'Annual': return 'bg-blue-500'
-      case 'Community': return 'bg-green-500'
-      default: return 'bg-transparent0'
-    }
-  }
-
-  const displayName = member?.member_class === 'Personal'
-    ? `${member.first_name} ${member.last_name}`
-    : member?.business_name
-
   const levelTone: Record<string, 'kumkum' | 'saffron' | 'tulsi' | 'neutral'> = {
     Lifetime: 'kumkum',
     Annual: 'saffron',
@@ -313,6 +286,15 @@ function ScanQRContent() {
                     </Badge>
                     <span className="tnum text-[14px] text-ink-3">{member.membership_id}</span>
                   </div>
+                  {standing && (
+                    <p
+                      className={`mt-2 text-[15px] font-semibold ${
+                        standing.state === 'expired' ? 'text-danger' : standing.state === 'community' || standing.state === 'no_dates' ? 'text-ink-2' : 'text-tulsi'
+                      }`}
+                    >
+                      {standing.label}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -465,5 +447,10 @@ function ScanQRContent() {
 }
 
 export default function ScanQRPage() {
-  return <ScanQRContent />
+  // useSearchParams (a pass opened from /verify-qr) needs a Suspense boundary.
+  return (
+    <Suspense>
+      <ScanQRContent />
+    </Suspense>
+  )
 }

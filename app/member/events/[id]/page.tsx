@@ -51,6 +51,7 @@ function EventDetailContent() {
         .from('event_registrations')
         .select('*', { count: 'exact', head: true })
         .eq('event_id', eventId)
+        .neq('status', 'Cancelled')
 
       // Check if current member is registered
       const { data: userReg } = await supabase
@@ -58,7 +59,8 @@ function EventDetailContent() {
         .select('id')
         .eq('event_id', eventId)
         .eq('member_id', member!.id)
-        .single()
+        .eq('status', 'Confirmed')
+        .maybeSingle()
 
       setEvent({
         ...eventData,

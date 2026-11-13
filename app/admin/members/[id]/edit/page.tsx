@@ -171,7 +171,8 @@ export default function EditMemberPage() {
         .from('members')
         .update({
           member_class: data.member_class,
-          current_level: data.current_level,
+          // The level is not edited here: it changes only through a membership
+          // payment, which also issues a number in that level's series.
           is_founding_member: data.is_founding_member,
 
           // Personal fields
@@ -224,7 +225,7 @@ export default function EditMemberPage() {
     <AdminFormView
       eyebrow="Members"
       title="Edit member"
-      description="Changes are recorded in this member\'s change history."
+      description="Changes are recorded in this member's change history."
       backHref="/admin/members"
       onSubmit={handleSubmit(onSubmit)}
       saving={saving}
@@ -232,7 +233,12 @@ export default function EditMemberPage() {
       error={error}
       loading={loading}
     >
-      <MemberFormFields register={register} errors={errors} memberClass={memberClass} />
+      <MemberFormFields
+        register={register}
+        errors={errors}
+        memberClass={memberClass}
+        level={{ mode: 'show', current: watch('current_level') ?? '' }}
+      />
     </AdminFormView>
   )
 }

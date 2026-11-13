@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/email/mailer'
 import { eventRegistrationEmail } from '@/lib/email/templates'
+import { createServiceClient } from '@/lib/supabase/client'
+import { eventPriceFor, holdRegistration } from '@/lib/events/registration'
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +19,7 @@ export async function POST(request: NextRequest) {
     // Get member details
     const { data: member, error: memberError } = await supabase
       .from('members')
-      .select('id, membership_id, primary_email, first_name, last_name, business_name, member_class')
+      .select('id, membership_id, primary_email, first_name, last_name, business_name, member_class, current_level')
       .eq('auth_user_id', user.id)
       .single()
 
@@ -36,44 +38,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 })
     }
 
-    // Check if already registered
-    const { data: existingReg } = await supabase
-      .from('event_registrations')
-      .select('id')
-      .eq('event_id', eventId)
-      .eq('member_id', member.id)
-      .single()
-
-    if (existingReg) {
-      return NextResponse.json({ error: 'Already registered for this event' }, { status: 400 })
+    // Free events only: a paid event is registered by paying for it
+    // (/api/stripe/create-payment-intent holds the place; settlement confirms it).
+    if (event.is_payable && eventPriceFor(event, member.current_level) > 0) {
+      return NextResponse.json({ error: 'This event needs payment to register' }, { status: 400 })
     }
 
-    // Check capacity
-    if (event.max_capacity > 0) {
-      const { count } = await supabase
-        .from('event_registrations')
-        .select('*', { count: 'exact', head: true })
-        .eq('event_id', eventId)
-
-      if (count && count >= event.max_capacity) {
-        return NextResponse.json({ error: 'Event is full' }, { status: 400 })
-      }
-    }
-
-    // Create registration
-    const { error: regError } = await supabase
-      .from('event_registrations')
-      .insert({
-        event_id: eventId,
-        member_id: member.id,
-        membership_id: member.membership_id,
-        registration_date: new Date().toISOString(),
-        registration_status: 'Confirmed',
-      })
-
-    if (regError) {
-      console.error('Error creating registration:', regError)
-      return NextResponse.json({ error: 'Failed to register' }, { status: 500 })
+    const held = await holdRegistration(createServiceClient(), { eventId, memberId: member.id, paid: false })
+    if (!held.ok) {
+      return NextResponse.json({ error: held.error }, { status: held.status })
     }
 
     // Send confirmation email
@@ -84,11 +57,11 @@ export async function POST(request: NextRequest) {
     const emailContent = eventRegistrationEmail(memberName, member.membership_id, {
       event_name: event.event_name,
       event_date: event.event_date,
-      event_time: event.event_time,
-      location: event.location,
-      description: event.description,
+      event_time: event.event_time ?? '',
+      location: event.location ?? '',
+      description: event.description ?? undefined,
       category: event.category,
-      member_price: event.member_price,
+      member_price: event.member_price ?? 0,
     })
 
     const emailResult = await sendEmail({

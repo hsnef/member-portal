@@ -7,14 +7,18 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { CheckoutView, stripeAppearance } from '@/components/member/CheckoutView'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
+import { formatDate } from '@/utils/format'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
+// The columns of `requests` (types/database.ts); the page used to read
+// request_type / service_description / requested_date, which do not exist.
 interface RequestDetails {
   id: string
-  request_type: string
-  service_description: string
-  requested_date: string
+  request_number: string
+  purpose: string
+  description: string
+  due_date: string | null
   amount: number
   status: string
   notes?: string
@@ -59,26 +63,23 @@ function RequestPaymentForm({ request }: { request: RequestDetails }) {
 
   return (
     <CheckoutView
-      eyebrow={`Request ${request.id.slice(0, 8).toUpperCase()}`}
+      eyebrow={`Request ${request.request_number}`}
       title="Pay for your service request"
       description="Your request is marked paid once this clears. A receipt is emailed immediately."
       summaryItems={[
-        { label: 'Service', value: request.request_type },
-        { label: 'Description', value: request.service_description },
-        {
-          label: 'Requested for',
-          value: new Date(request.requested_date).toLocaleDateString(),
-          numeric: true,
-        },
+        { label: 'For', value: request.purpose },
+        { label: 'Description', value: request.description },
+        ...(request.due_date ? [{ label: 'Due', value: formatDate(request.due_date), numeric: true }] : []),
       ]}
-      lineItems={[{ label: request.request_type, amount: Number(request.amount) }]}
+      lineItems={[{ label: request.description, amount: Number(request.amount) }]}
       total={Number(request.amount)}
       paymentElement={<PaymentElement />}
       onSubmit={handleSubmit}
       submitting={loading}
       disabled={!stripe}
       error={message}
-      reference={request.id.slice(0, 8).toUpperCase()}
+      zelleItem={{ kind: 'request', requestId: request.id }}
+      reference={request.request_number}
       backHref="/member/requests"
       backLabel="Back to my requests"
     />
@@ -130,23 +131,15 @@ function RequestPaymentContent() {
         const response = await fetch('/api/stripe/create-payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amount: Math.round(requestData.amount * 100), // Convert to cents
-            memberId: member.id,
-            category: 'Request',
-            description: `${requestData.request_type}: ${requestData.service_description.substring(0, 50)}`,
-            metadata: {
-              requestId: requestData.id,
-              requestType: requestData.request_type,
-            },
-          }),
+          // The server charges the request's own amount, and only if it is the member's.
+          body: JSON.stringify({ item: { kind: 'request', requestId: requestData.id } }),
         })
 
         const data = await response.json()
         if (data.clientSecret) {
           setClientSecret(data.clientSecret)
         } else {
-          setError('Failed to initialize payment')
+          setError(data.error || 'Failed to initialize payment')
         }
       } catch (err) {
         console.error('Error initializing payment:', err)

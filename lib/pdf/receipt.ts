@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf'
+import { paymentMethodLabel } from '@/lib/payments/labels'
 import autoTable from 'jspdf-autotable'
 import { PDF } from './theme'
 import { TEMPLE_CONFIG } from '@/lib/constants/temple'
@@ -74,7 +75,7 @@ export function generateReceipt(data: ReceiptData): jsPDF {
   const paymentDetails: string[][] = [
     ['Category', data.category],
     ['Amount', `$${data.amount.toFixed(2)}`],
-    ['Payment Method', data.paymentMethod],
+    ['Payment Method', paymentMethodLabel(data.paymentMethod)],
   ]
 
   if (data.purpose) {
