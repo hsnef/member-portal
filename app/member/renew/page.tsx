@@ -153,8 +153,10 @@ function RenewMembershipContent() {
         const membershipPricing = await getMembershipPricing()
         setPricing(membershipPricing)
 
-        // Create payment intent with default annual price
-        const secret = await createPaymentIntent('annual', membershipPricing)
+        // Start on the level they asked for when joining (if any), else Annual.
+        const initial: RenewLevel = member.requested_level === 'Lifetime' ? 'lifetime' : 'annual'
+        setSelectedLevel(initial)
+        const secret = await createPaymentIntent(initial, membershipPricing)
         if (secret) {
           setClientSecret(secret)
         }

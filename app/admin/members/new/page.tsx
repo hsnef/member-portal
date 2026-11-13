@@ -10,7 +10,10 @@ import { PhoneInput, EINInput, ZipInput } from '@/components/ui/FormattedInputs'
 import type { MemberClass, MembershipLevel, Nakshatra } from '@/types/database'
 import { AdminFormView, FormSection } from '@/components/admin/AdminFormView'
 import { MemberFormFields } from '@/components/admin/MemberFormFields'
-import { MailIcon } from 'lucide-react'
+import { CreditCardIcon, MailIcon } from 'lucide-react'
+import { Field, Input, Select } from '@/components/ui/Field'
+import { paymentMethodLabel } from '@/lib/payments/labels'
+import type { OfficeMethod } from '@/lib/payments/office'
 
 // Validation schema
 const memberSchema = z.object({
@@ -98,7 +101,7 @@ export default function NewMemberPage() {
     resolver: zodResolver(memberSchema),
     defaultValues: {
       member_class: 'Personal',
-      current_level: 'Annual',
+      current_level: 'Community',
       is_founding_member: false,
       state: 'FL',
       country: 'US',
@@ -106,25 +109,47 @@ export default function NewMemberPage() {
   })
 
   const memberClass = watch('member_class')
+  const joiningAs = watch('current_level')
+  const [payment, setPayment] = useState({
+    when: 'now' as 'now' | 'later',
+    method: 'Cash' as OfficeMethod,
+    checkNumber: '',
+    reference: '',
+  })
+  const [createdMemberId, setCreatedMemberId] = useState<string | null>(null)
+  // One per form: saving twice cannot record the payment twice.
+  const [submissionId] = useState(() => crypto.randomUUID())
 
   const onSubmit = async (data: MemberFormData) => {
+    if (createdMemberId) {
+      router.push(`/admin/members/${createdMemberId}`)
+      return
+    }
     try {
       setLoading(true)
       setError(null)
 
-      // Generate membership ID based on level
-      const prefix = data.current_level === 'Lifetime' ? '1' : data.current_level === 'Annual' ? '2' : '3'
-      const randomNum = Math.floor(Math.random() * 100000).toString().padStart(5, '0')
-      const membershipId = `${prefix}${randomNum}00`
+      const paidLevel = data.current_level === 'Community' ? null : data.current_level
+      const payingNow = paidLevel !== null && payment.when === 'now'
+      if (data.is_founding_member && !(paidLevel === 'Lifetime' && payingNow)) {
+        throw new Error('A founding member is a Lifetime member: choose Lifetime and record the payment now.')
+      }
+      if (payingNow && payment.method === 'Check' && !payment.checkNumber.trim()) {
+        throw new Error('Enter the cheque number.')
+      }
 
       // Create member record
       const { data: memberData, error: memberError } = await supabase
         .from('members')
         .insert({
-          membership_id: membershipId,
+          // The database assigns the number (next in the Community series),
+          // under its lock. Everyone starts as Community: a paid level starts
+          // when it is paid, and gives a number in that level's series.
+          membership_id: '',
           member_class: data.member_class,
-          current_level: data.current_level,
-          is_founding_member: data.is_founding_member,
+          current_level: 'Community',
+          requested_level: paidLevel,
+          is_founding_member: false,
 
           // Personal fields
           first_name: data.first_name || null,
@@ -165,6 +190,37 @@ export default function NewMemberPage() {
 
       if (memberError) throw memberError
 
+      // Paying at the counter: recorded through the same step as any payment,
+      // so the level, dates, new number and receipt all follow.
+      if (payingNow && paidLevel) {
+        const res = await fetch('/api/admin/payments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            submissionId,
+            memberId: memberData.id,
+            method: payment.method,
+            item: { kind: 'membership', level: paidLevel },
+            checkNumber: payment.checkNumber,
+            reference: payment.reference,
+          }),
+        })
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}))
+          // The member exists; only the payment needs doing again. Stay here
+          // so the office sees why, and make saving again open the member
+          // rather than create them twice.
+          setCreatedMemberId(memberData.id)
+          setError(
+            `The member was added (as Community), but the ${paidLevel} payment was not recorded: ${body.error ?? 'unknown error'}. Record it under Payments, Record a payment.`,
+          )
+          return
+        }
+        if (data.is_founding_member) {
+          await supabase.from('members').update({ is_founding_member: true }).eq('id', memberData.id)
+        }
+      }
+
       // Send invitation email if requested
       if (sendInvitation) {
         try {
@@ -198,10 +254,70 @@ export default function NewMemberPage() {
       backHref="/admin/members"
       onSubmit={handleSubmit(onSubmit)}
       saving={loading}
-      saveLabel="Create member"
+      saveLabel={createdMemberId ? 'Open the member' : 'Create member'}
       error={error}
     >
-      <MemberFormFields register={register} errors={errors} memberClass={memberClass} />
+      <MemberFormFields register={register} errors={errors} memberClass={memberClass} level={{ mode: 'choose' }} />
+
+      {joiningAs !== 'Community' && (
+        <FormSection icon={CreditCardIcon} tone="saffron" title={`${joiningAs} membership payment`}>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="When are they paying?" required className="sm:col-span-2">
+              {({ id }) => (
+                <Select
+                  id={id}
+                  value={payment.when}
+                  onChange={(e) => setPayment({ ...payment, when: e.target.value as 'now' | 'later' })}
+                >
+                  <option value="now">Now, at the counter</option>
+                  <option value="later">Later (online, or at the office)</option>
+                </Select>
+              )}
+            </Field>
+            {payment.when === 'now' ? (
+              <>
+                <Field label="How they paid" required>
+                  {({ id }) => (
+                    <Select
+                      id={id}
+                      value={payment.method}
+                      onChange={(e) => setPayment({ ...payment, method: e.target.value as OfficeMethod })}
+                    >
+                      {(['Cash', 'Check', 'Zelle', 'Card'] as const).map((m) => (
+                        <option key={m} value={m}>
+                          {paymentMethodLabel(m)}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
+                </Field>
+                {payment.method === 'Check' ? (
+                  <Field label="Cheque number" required>
+                    {({ id }) => (
+                      <Input id={id} className="tnum" value={payment.checkNumber} onChange={(e) => setPayment({ ...payment, checkNumber: e.target.value })} />
+                    )}
+                  </Field>
+                ) : payment.method !== 'Cash' ? (
+                  <Field label={payment.method === 'Zelle' ? 'Zelle confirmation number' : 'Card machine receipt number'}>
+                    {({ id }) => (
+                      <Input id={id} className="tnum" value={payment.reference} onChange={(e) => setPayment({ ...payment, reference: e.target.value })} />
+                    )}
+                  </Field>
+                ) : null}
+                <p className="text-[13.5px] text-ink-3 sm:col-span-2">
+                  The membership starts as soon as you save: they get their {joiningAs} number and an emailed
+                  receipt. The amount is the {joiningAs} price in Portal Settings.
+                </p>
+              </>
+            ) : (
+              <p className="text-[13.5px] text-ink-3 sm:col-span-2">
+                They start as a Community member. Their portal asks them to complete their {joiningAs}{' '}
+                membership, and the office can record the payment at any time.
+              </p>
+            )}
+          </div>
+        </FormSection>
+      )}
 
       <FormSection icon={MailIcon} tone="tulsi" title="Portal access">
         <label className="flex items-start gap-3">

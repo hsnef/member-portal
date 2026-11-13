@@ -200,7 +200,7 @@ export default function EventRegistrationsPage() {
             {r.payment_status}
           </Badge>
         ) : (
-          <span className="text-ink-3">\—</span>
+          <span className="text-ink-3">—</span>
         ),
     },
     {

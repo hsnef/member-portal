@@ -24,9 +24,16 @@ export interface MemberFormFieldsProps {
   errors: FieldErrors<any>
   /** Watched value, so the form can show Personal or Business fields. */
   memberClass: 'Personal' | 'Business'
+  /**
+   * New member: the level is a choice (what they are joining as; a paid level
+   * starts when it is paid). Existing member: shown, not edited - the level
+   * changes only when a membership payment is recorded, which also gives the
+   * member a number in that level's series.
+   */
+  level: { mode: 'choose' } | { mode: 'show'; current: string }
 }
 
-export function MemberFormFields({ register, errors, memberClass }: MemberFormFieldsProps) {
+export function MemberFormFields({ register, errors, memberClass, level }: MemberFormFieldsProps) {
   const isPersonal = memberClass === 'Personal'
   const err = (name: string) => (errors?.[name]?.message as string | undefined) ?? undefined
 
@@ -42,15 +49,21 @@ export function MemberFormFields({ register, errors, memberClass }: MemberFormFi
               </Select>
             )}
           </Field>
-          <Field label="Level" required>
-            {({ id }) => (
-              <Select id={id} {...register('current_level')}>
-                <option value="Community">Community</option>
-                <option value="Annual">Annual</option>
-                <option value="Lifetime">Lifetime</option>
-              </Select>
-            )}
-          </Field>
+          {level.mode === 'choose' ? (
+            <Field label="Joining as" required hint="Annual and Lifetime start when they are paid for.">
+              {({ id }) => (
+                <Select id={id} {...register('current_level')}>
+                  <option value="Community">Community (free)</option>
+                  <option value="Annual">Annual</option>
+                  <option value="Lifetime">Lifetime</option>
+                </Select>
+              )}
+            </Field>
+          ) : (
+            <Field label="Level" hint="Changes when a membership payment is recorded (Payments, Record a payment).">
+              {({ id }) => <Input id={id} value={level.current} readOnly disabled />}
+            </Field>
+          )}
           <label className="flex items-center gap-3 sm:col-span-2">
             <input
               type="checkbox"

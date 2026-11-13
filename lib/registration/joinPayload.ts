@@ -193,11 +193,16 @@ export function toPendingRow(a: JoinApplication) {
  * Row for `members` — approval is off, so the member exists at once.
  * Only columns `members` has. `membership_id` is left to the DB trigger.
  * `business_type`, `how_did_you_hear` and `notes` have no home on `members`.
+ *
+ * Everyone starts as Community: a paid level is reached only by paying for it
+ * (docs/architecture/payments.md). The level they asked for is remembered, and
+ * their dashboard offers to complete it.
  */
 export function toMemberRow(a: JoinApplication) {
   return {
     member_class: a.memberClass,
-    current_level: a.requestedLevel,
+    current_level: 'Community' as const,
+    requested_level: requestedPaidLevel(a.requestedLevel),
     first_name: a.firstName,
     last_name: a.lastName,
     nakshatra: a.nakshatra,
@@ -217,4 +222,9 @@ export function toMemberRow(a: JoinApplication) {
     state: a.state,
     zip: a.zip,
   }
+}
+
+/** The paid level to remember, or null for Community. */
+export function requestedPaidLevel(level: MembershipLevel): 'Annual' | 'Lifetime' | null {
+  return level === 'Annual' || level === 'Lifetime' ? level : null
 }

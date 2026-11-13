@@ -18,3 +18,14 @@ describe('email footer', () => {
     expect(welcomeEmail(member).html).toContain('href="https://dev.member.hsnef.org"')
   })
 })
+
+describe('invitation', () => {
+  it('tells someone who asked for a paid level how to complete it, and no one else', async () => {
+    const { registrationInvitationEmail } = await import('./templates')
+    const asked = registrationInvitationEmail({ ...member, requested_level: 'Lifetime' }, 'https://member.hsnef.org/login')
+    expect(asked.text).toContain('Complete my Lifetime membership')
+    expect(asked.html).toContain('Complete my Lifetime membership')
+    const community = registrationInvitationEmail({ ...member, requested_level: null }, 'https://member.hsnef.org/login')
+    expect(community.text).not.toContain('Complete my')
+  })
+})
