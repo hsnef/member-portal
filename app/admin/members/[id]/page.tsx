@@ -22,6 +22,7 @@ import {
   FileClockIcon,
   ShieldCheckIcon,
   UserXIcon,
+  ReceiptIcon,
 } from 'lucide-react'
 import { formatDate } from '@/utils/format'
 
@@ -351,6 +352,9 @@ export default function MemberDetailPage() {
               items={[
                 { label: 'Membership', value: member.membership_id, numeric: true },
                 { label: 'Level', value: member.current_level },
+                ...(member.requested_level
+                  ? [{ label: 'Asked for', value: `${member.requested_level}, not yet paid` }]
+                  : []),
                 { label: 'Class', value: member.member_class },
                 {
                   label: 'Portal access',
@@ -364,6 +368,11 @@ export default function MemberDetailPage() {
           <Card>
             <CardHeader title="Actions" />
             <div className="space-y-2.5">
+              <AppLink to={`/admin/payments/new?memberId=${member.id}`} className="block">
+                <Button variant={member.requested_level ? 'primary' : 'secondary'} fullWidth icon={ReceiptIcon}>
+                  {member.requested_level ? `Record ${member.requested_level} payment` : 'Record a payment'}
+                </Button>
+              </AppLink>
               <Button
                 variant="secondary"
                 fullWidth

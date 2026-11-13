@@ -7,9 +7,8 @@
  *   /member/events/[id]/payment-success
  *   /member/requests/[id]/payment-success
  *
- * Presentation only. Each page owns its own confirmation call
- * (/api/stripe/confirm-payment, /api/stripe/verify-payment,
- * /api/events/confirm-payment) and passes the outcome in.
+ * Presentation only. Card payment pages use it through CardPaymentOutcome,
+ * which maps the server's answer (/api/stripe/confirm-payment) onto it.
  *
  * Exemplar: design-kit/pages/PaymentSuccess.tsx
  */
@@ -36,6 +35,8 @@ export interface PaymentOutcomeViewProps {
   warning?: string | null
   /** Copy for the confirming state. */
   confirmingLabel?: string
+  /** Overrides the small label above the title ("Payment received" / "Needs attention"). */
+  eyebrow?: string
 }
 
 export function PaymentOutcomeView({
@@ -47,6 +48,7 @@ export function PaymentOutcomeView({
   footnote,
   warning,
   confirmingLabel = 'Confirming your payment…',
+  eyebrow,
 }: PaymentOutcomeViewProps) {
   if (state === 'confirming') {
     return (
@@ -80,7 +82,7 @@ export function PaymentOutcomeView({
       <StatusScreen
         icon={state === 'success' ? CheckCircle2Icon : AlertTriangleIcon}
         tone={state === 'success' ? 'tulsi' : 'danger'}
-        eyebrow={state === 'success' ? 'Payment received' : 'Needs attention'}
+        eyebrow={eyebrow ?? (state === 'success' ? 'Payment received' : 'Needs attention')}
         title={title}
         description={description}
         facts={facts}

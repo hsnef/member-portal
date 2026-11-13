@@ -187,6 +187,25 @@ export interface MembershipPricing {
   }
 }
 
+/** Used when an Admin has not set prices yet (browser and server read the same). */
+export const DEFAULT_MEMBERSHIP_PRICING: MembershipPricing = {
+  community: {
+    price: 0,
+    displayPrice: 'Free',
+    description: 'Free community membership',
+  },
+  annual: {
+    price: 101,
+    displayPrice: '$101/year',
+    description: 'Annual membership with full benefits',
+  },
+  lifetime: {
+    price: 1008,
+    displayPrice: '$1,008 (one-time)',
+    description: 'Lifetime membership - one-time payment',
+  },
+}
+
 /**
  * Get membership pricing settings
  * Returns pricing for all membership levels
@@ -194,27 +213,8 @@ export interface MembershipPricing {
 export async function getMembershipPricing(): Promise<MembershipPricing> {
   const value = await getSettingValue('membership_pricing')
 
-  // Default pricing if not set
-  const defaultPricing: MembershipPricing = {
-    community: {
-      price: 0,
-      displayPrice: 'Free',
-      description: 'Free community membership',
-    },
-    annual: {
-      price: 101,
-      displayPrice: '$101/year',
-      description: 'Annual membership with full benefits',
-    },
-    lifetime: {
-      price: 1008,
-      displayPrice: '$1,008 (one-time)',
-      description: 'Lifetime membership - one-time payment',
-    },
-  }
-
   if (!value) {
-    return defaultPricing
+    return DEFAULT_MEMBERSHIP_PRICING
   }
 
   return value as MembershipPricing

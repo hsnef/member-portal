@@ -7,6 +7,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { CheckoutView, stripeAppearance } from '@/components/member/CheckoutView'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
+import { formatLongDate } from '@/utils/format'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
@@ -60,12 +61,8 @@ function PaymentForm({ event, amount }: { event: Event; amount: number }) {
     }
   }
 
-  const eventDate = new Date(event.event_date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  // formatLongDate reads a plain date as local, not UTC midnight (which showed the day before).
+  const eventDate = formatLongDate(event.event_date)
 
   return (
     <CheckoutView
@@ -85,6 +82,7 @@ function PaymentForm({ event, amount }: { event: Event; amount: number }) {
       submitting={loading}
       disabled={!stripe}
       error={message}
+      zelleItem={{ kind: 'event', eventId: event.id }}
       reference={event.id.slice(0, 8).toUpperCase()}
       backHref="/member/events"
       backLabel="Back to events"
@@ -139,7 +137,8 @@ function EventPaymentContent() {
         .select('id')
         .eq('event_id', eventId)
         .eq('member_id', member!.id)
-        .single()
+        .eq('status', 'Confirmed') // a place held for payment is not "registered" yet
+        .maybeSingle()
 
       if (existingReg) {
         setError('You are already registered for this event')
@@ -159,23 +158,15 @@ function EventPaymentContent() {
       const response = await fetch('/api/stripe/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: Math.round(price * 100), // Convert to cents
-          memberId: member!.id,
-          category: 'Event',
-          description: `Event Registration - ${eventData.event_name}`,
-          metadata: {
-            eventId: eventId,
-            eventName: eventData.event_name,
-          },
-        }),
+        // The server prices the event for this member and holds their place.
+        body: JSON.stringify({ item: { kind: 'event', eventId } }),
       })
 
       const data = await response.json()
       if (data.clientSecret) {
         setClientSecret(data.clientSecret)
       } else {
-        setError('Failed to initialize payment')
+        setError(data.error || 'Failed to initialize payment')
       }
     } catch (err) {
       console.error('Error:', err)

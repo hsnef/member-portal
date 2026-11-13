@@ -79,9 +79,10 @@ snapshot, wrong about routes, roles and dead links. See DEC-003.
 3. **Never hardcode a colour.** No hex values in `className`. Use the tokens:
    `saffron marigold kumkum tulsi lotus copper sandal neutral` and
    `ink ink-2 ink-3 canvas surface surface-sunk line line-strong`.
-   `#FF9933` and `#E68A2E` are at zero across the codebase; keep them there.
-   The only deliberate exception is `lib/themes/themes/built-in/default.ts`,
-   which IS the legacy palette by definition. Surfaces that cannot read CSS
+   `#FF9933`, `#E68A2E` and the old saffron `#c75b12` are at zero across the
+   codebase; keep them there. There is one palette, `app/globals.css`, with no
+   runtime theme switching (removed 2026-11-12), so dev and production always
+   match. Surfaces that cannot read CSS
    variables restate the tokens in `lib/email/theme.ts` and `lib/pdf/theme.ts` —
    change those together with `app/globals.css`.
 4. **Never import `react-router-dom`.** The kit routes through
@@ -127,7 +128,6 @@ in `docs/PROJECT-HUB.md`.
     `['Admin','Office Manager']` (narrowed 2026-11-11: importing and reverting
     whole batches is for Admin and Office Manager)
   - `/admin/portal-settings`, `/admin/zelle/settings` → `['Office Manager','Admin']`
-- `/admin/settings/appearance` uses an inline Admin check (a fourth pattern; see Tier 3)
 - `/verify-qr` sits outside both sections and keeps its own staff gate
 - `/admin/members/new` and `/[id]/edit` are **any staff role**, not
   Manager+Admin as previously documented
@@ -188,7 +188,7 @@ a sibling presentational component takes plain props and renders.
 <!-- govkit:start -->
 # HSNEF Member Portal — Engineering Guardrails
 
-_Last checked 2026-11-11._
+_Last checked 2026-11-12._
 
 > Scaffolded by [govkit](https://github.com/techsilon-oss/govkit) `/govkit-init`. This block is delimited by `govkit:start`/`govkit:end` markers so re-running init won't duplicate it. Edit freely — but keep the markers if you want idempotent updates.
 
@@ -199,7 +199,7 @@ This project's guardrails are **not local inventions**. They come from three ups
 | Upstream | Owns | Change it when |
 |---|---|---|
 | [**release-gate-kit**](https://github.com/techsilon-oss/release-gate-kit) | `scripts/release-gate.ts` — the local CI-fallback gate, and nothing else. Standalone by design: usable in any project with zero governance buy-in | The gate itself is wrong or missing a feature. **Never patch the vendored copy here** |
-| [**govkit**](https://github.com/techsilon-oss/govkit) | The guardrail spine: `/govkit-init`, `/sdlc`, `/govkit-doctor`, the hook, the doc-sync runners, this block | Any project would want the change |
+| [**govkit**](https://github.com/techsilon-oss/govkit) | The guardrail spine: `/govkit-init`, `/govkit-session`, `/govkit-doctor`, the hook, the doc-sync runners, this block | Any project would want the change |
 | **dev-standards** (private, TechSilon repos only) | The house layer: stack runbooks, the user `CLAUDE.md` profile, the guardrails cheatsheet | The change is house-specific, not universal |
 
 **Dependencies run one way only:** release-gate-kit ← govkit ← dev-standards ← this project. Nothing upstream references a consumer.
@@ -270,5 +270,5 @@ The gate's checks live in `release-gate.config.json` — edit them to match this
 
 - Architecture decisions, current status, and session handoffs live in [`docs/PROJECT-HUB.md`](docs/PROJECT-HUB.md).
 - What to work on next lives in [`docs/PRIORITY-ROADMAP.md`](docs/PRIORITY-ROADMAP.md).
-- Run `/sdlc status` (govkit skill) at session start for a current-state read.
+- Run `/govkit-session status` (govkit skill) at session start for a current-state read.
 <!-- govkit:end -->

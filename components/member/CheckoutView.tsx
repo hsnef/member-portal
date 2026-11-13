@@ -13,6 +13,8 @@
  * Exemplar: design-kit/pages/Checkout.tsx
  */
 
+import { ZelleCheckout } from '@/components/zelle/ZelleCheckout'
+import type { CheckoutItem } from '@/lib/payments/checkout'
 import React from 'react'
 import { CreditCardIcon, LockIcon, ShieldCheckIcon } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
@@ -30,7 +32,7 @@ import { TEMPLE_CONFIG } from '@/lib/constants/temple'
 export const stripeAppearance = {
   theme: 'flat' as const,
   variables: {
-    colorPrimary: '#c75b12',
+    colorPrimary: '#b8530e',
     colorBackground: '#ffffff',
     colorText: '#2b2018',
     colorDanger: '#b23a2e',
@@ -59,6 +61,8 @@ export interface CheckoutViewProps {
   error?: string | null
   /** Reference the office desk can use for a manual payment. */
   reference?: string | null
+  /** What is being paid for, so the member can choose Zelle instead (lib/payments/checkout). */
+  zelleItem?: CheckoutItem | null
   backHref: string
   backLabel: string
 }
@@ -76,6 +80,7 @@ export function CheckoutView({
   disabled = false,
   error,
   reference,
+  zelleItem,
   backHref,
   backLabel,
 }: CheckoutViewProps) {
@@ -117,18 +122,7 @@ export function CheckoutView({
 
           <Card tone="sunk">
             <CardHeader title="Prefer not to pay by card?" />
-            <p className="text-[15px] leading-relaxed text-ink-2">
-              You can pay by check or Zelle at the temple office.
-              {reference ? (
-                <>
-                  {' '}Bring the reference{' '}
-                  <span className="tnum font-semibold text-ink">{reference}</span> and the desk
-                  will mark this paid.
-                </>
-              ) : (
-                ' The desk can mark this paid for you.'
-              )}
-            </p>
+            <ZelleCheckout item={zelleItem ?? null} officeReference={reference} />
           </Card>
         </div>
 

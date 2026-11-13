@@ -1,322 +1,193 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+/**
+ * Zelle settings (Office Manager, Admin): on/off, where members send money,
+ * the QR code from the temple's banking app, reminder and expiry days. Saved
+ * through /api/zelle/settings, which validates them on the server.
+ * Spec: docs/architecture/payments.md, "What an Admin sets".
+ */
+
+import { useEffect, useState } from 'react'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { createClient } from '@/lib/supabase/client'
-import { formatPhoneNumber } from '@/lib/utils/formatters'
 import { AdminFormView, FormSection } from '@/components/admin/AdminFormView'
 import { Field, Input, Textarea } from '@/components/ui/Field'
-import { Alert } from '@/components/ui/Alert'
-import { WalletIcon, SettingsIcon, MailIcon } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { ClockIcon, LandmarkIcon, QrCodeIcon, Trash2Icon, UploadIcon } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { DEFAULT_ZELLE_SETTINGS, validateZelleSettings, type ZelleSettings } from '@/lib/zelle'
 
-interface ZelleSettingsData {
-  enabled: boolean
-  email: string
-  phone: string
-  autoConfirmThreshold: number
-  expiryHours: number
-  instructions: string
-}
+const qrUrl = (path: string) =>
+  path ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/portal-assets/${path}` : ''
 
-export default function ZelleSettingsPage() {
-  const router = useRouter()
+function ZelleSettingsForm() {
   const supabase = createClient()
-
-  const [settings, setSettings] = useState<ZelleSettingsData>({
-    enabled: false,
-    email: '',
-    phone: '',
-    autoConfirmThreshold: 50,
-    expiryHours: 48,
-    instructions: 'Please send your Zelle payment and include the reference code in the memo field.',
-  })
+  const [s, setS] = useState<ZelleSettings>(DEFAULT_ZELLE_SETTINGS)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const [hasAccess, setHasAccess] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
   useEffect(() => {
-    checkAccessAndLoadSettings()
+    fetch('/api/zelle/settings?all=1')
+      .then(async (r) => {
+        const d = await r.json()
+        if (!r.ok) throw new Error(d.error || 'Could not load the settings')
+        setS(d.settings)
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false))
   }, [])
 
-  async function checkAccessAndLoadSettings() {
-    try {
-      // Check if user has Admin or Office Manager role
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        setLoading(false)
-        return
-      }
-
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-
-      const isAdminOrManager = roles?.some(r =>
-        r.role === 'Admin' || r.role === 'Office Manager'
-      )
-
-      if (!isAdminOrManager) {
-        setHasAccess(false)
-        setLoading(false)
-        return
-      }
-
-      setHasAccess(true)
-
-      // Load settings
-      const { data: settingsData } = await supabase
-        .from('portal_settings')
-        .select('setting_key, setting_value, setting_type')
-        .in('setting_key', [
-          'zelle_enabled',
-          'zelle_email',
-          'zelle_phone',
-          'zelle_auto_confirm_threshold',
-          'zelle_request_expiry_hours',
-          'zelle_instructions',
-        ])
-
-      if (settingsData) {
-        const newSettings = { ...settings }
-
-        for (const row of settingsData) {
-          const value = row.setting_type === 'boolean'
-            ? row.setting_value?.enabled === true
-            : row.setting_value?.value
-
-          switch (row.setting_key) {
-            case 'zelle_enabled':
-              newSettings.enabled = value === true
-              break
-            case 'zelle_email':
-              newSettings.email = value || ''
-              break
-            case 'zelle_phone':
-              newSettings.phone = value || ''
-              break
-            case 'zelle_auto_confirm_threshold':
-              newSettings.autoConfirmThreshold = typeof value === 'number' ? value : 50
-              break
-            case 'zelle_request_expiry_hours':
-              newSettings.expiryHours = typeof value === 'number' ? value : 48
-              break
-            case 'zelle_instructions':
-              newSettings.instructions = value || settings.instructions
-              break
-          }
-        }
-
-        setSettings(newSettings)
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error)
-      setMessage({ type: 'error', text: 'Failed to load settings' })
-    } finally {
-      setLoading(false)
-    }
+  const set = <K extends keyof ZelleSettings>(k: K, v: ZelleSettings[K]) => {
+    setSuccess(null)
+    setS((prev) => ({ ...prev, [k]: v }))
   }
 
-  async function handleSave() {
+  const upload = async (file: File) => {
+    if (!/^image\/(png|jpeg|webp)$/.test(file.type) || file.size > 2_000_000) {
+      setError('Choose a PNG, JPEG or WebP image under 2 MB.')
+      return
+    }
+    setUploading(true)
+    setError(null)
+    const path = `zelle/qr-${Date.now()}.${file.type.split('/')[1]}`
+    const { error: upErr } = await supabase.storage.from('portal-assets').upload(path, file, { upsert: false })
+    setUploading(false)
+    if (upErr) setError(`Could not upload the image: ${upErr.message}`)
+    else set('qrImagePath', path)
+  }
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setSuccess(null)
+    const problems = validateZelleSettings(s)
+    if (problems.length) {
+      setError(problems.join(' '))
+      return
+    }
     setSaving(true)
-    setMessage(null)
-
     try {
-      // Validate: if enabled, must have at least email or phone
-      if (settings.enabled && !settings.email && !settings.phone) {
-        setMessage({ type: 'error', text: 'Please provide at least a Zelle email or phone number' })
-        setSaving(false)
-        return
-      }
-
-      // Update all settings
-      const updates = [
-        {
-          key: 'zelle_enabled',
-          value: { enabled: settings.enabled },
-        },
-        {
-          key: 'zelle_email',
-          value: { value: settings.email },
-        },
-        {
-          key: 'zelle_phone',
-          value: { value: settings.phone },
-        },
-        {
-          key: 'zelle_auto_confirm_threshold',
-          value: { value: settings.autoConfirmThreshold },
-        },
-        {
-          key: 'zelle_request_expiry_hours',
-          value: { value: settings.expiryHours },
-        },
-        {
-          key: 'zelle_instructions',
-          value: { value: settings.instructions },
-        },
-      ]
-
-      for (const update of updates) {
-        const { error } = await supabase
-          .from('portal_settings')
-          .update({ setting_value: update.value })
-          .eq('setting_key', update.key)
-
-        if (error) {
-          throw error
-        }
-      }
-
-      setMessage({ type: 'success', text: 'Zelle settings saved successfully!' })
-    } catch (error) {
-      console.error('Error saving settings:', error)
-      setMessage({ type: 'error', text: 'Failed to save settings' })
+      const res = await fetch('/api/zelle/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings: s }),
+      })
+      const d = await res.json()
+      if (!res.ok) throw new Error(d.error || 'Could not save')
+      setS(d.settings)
+      setSuccess(d.settings.enabled ? 'Saved. Zelle is offered at checkout.' : 'Saved. Zelle is switched off.')
+    } catch (err) {
+      setError((err as Error).message)
     } finally {
       setSaving(false)
     }
   }
 
-  if (!hasAccess) {
-    return (
-      <ProtectedRoute requiredRoles={['Office Manager', 'Admin']}>
-        <div />
-      </ProtectedRoute>
-    )
-  }
-
   return (
-    <ProtectedRoute requiredRoles={['Office Manager', 'Admin']}>
-      <AdminFormView
-        eyebrow="Settings"
-        title="Zelle payments"
-        description="Members transfer straight to the temple's bank. The office confirms each one."
-        backHref="/admin/zelle"
-        backLabel="Back to the queue"
-        onSubmit={(e) => {
-          e.preventDefault()
-          handleSave()
-        }}
-        saving={saving}
-        saveLabel="Save settings"
-        loading={loading}
-        error={message?.type === 'error' ? message.text : null}
-        success={message?.type === 'success' ? message.text : null}
-        disabled={settings.enabled && !settings.email.trim() && !settings.phone.trim()}
-        disabledReason="Add a Zelle email or phone number before turning this on."
-      >
-        <FormSection icon={WalletIcon} tone="tulsi" title="Availability">
-          <label className="flex items-start gap-3">
+    <AdminFormView
+      eyebrow="Zelle"
+      title="Zelle settings"
+      description="Members choose Zelle at checkout and send the money from their own bank. The office confirms it in the Zelle queue."
+      backHref="/admin/zelle"
+      backLabel="Zelle queue"
+      onSubmit={save}
+      saving={saving}
+      saveLabel="Save settings"
+      loading={loading}
+      error={error}
+      success={success}
+    >
+      <FormSection icon={LandmarkIcon} tone="tulsi" title="Where members send money">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <label className="flex items-start gap-3 sm:col-span-2">
             <input
               type="checkbox"
-              checked={settings.enabled}
-              onChange={(e) => setSettings({ ...settings, enabled: e.target.checked })}
+              checked={s.enabled}
+              onChange={(e) => set('enabled', e.target.checked)}
               className="mt-1 h-4 w-4 rounded border-line-strong text-saffron focus:ring-saffron-ring"
             />
             <span>
-              <span className="block text-[15px] text-ink">Offer Zelle at checkout</span>
-              <span className="block text-[13.5px] text-ink-3">
-                Members see Zelle alongside card payment when donating or paying an invoice.
-              </span>
+              <span className="block text-[15px] font-semibold text-ink">Offer Zelle at checkout</span>
+              <span className="block text-[13.5px] text-ink-3">Needs a Zelle email or phone below.</span>
             </span>
           </label>
+          <Field label="Zelle email" hint="The address the temple's Zelle account is registered to.">
+            {({ id }) => <Input id={id} type="email" value={s.email} onChange={(e) => set('email', e.target.value)} />}
+          </Field>
+          <Field label="Zelle phone" hint="Or the phone number, 10 digits.">
+            {({ id }) => <Input id={id} className="tnum" value={s.phone} onChange={(e) => set('phone', e.target.value)} />}
+          </Field>
+          <Field label="Name the bank shows" className="sm:col-span-2" hint="So members can check they are sending to the temple.">
+            {({ id }) => <Input id={id} value={s.recipientName} onChange={(e) => set('recipientName', e.target.value)} />}
+          </Field>
+          <Field label="Extra instructions (optional)" className="sm:col-span-2">
+            {({ id }) => <Textarea id={id} rows={2} value={s.instructions} onChange={(e) => set('instructions', e.target.value)} />}
+          </Field>
+        </div>
+      </FormSection>
 
-          {settings.enabled && !settings.email.trim() && !settings.phone.trim() && (
-            <div className="mt-4">
-              <Alert tone="warning" title="Members cannot pay yet">
-                Zelle is switched on but there is no email or phone for them to send to. Add at
-                least one below.
-              </Alert>
-            </div>
+      <FormSection icon={QrCodeIcon} tone="saffron" title="Zelle QR code (optional)">
+        <div className="flex flex-wrap items-center gap-5">
+          {s.qrImagePath ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={qrUrl(s.qrImagePath)} alt="The temple's Zelle QR code" className="h-36 w-36 rounded-xl border border-line bg-white p-2" />
+          ) : (
+            <p className="max-w-md text-[14px] text-ink-3">
+              Most banking apps can show the account&rsquo;s Zelle QR code. Save it as an image and upload it here; members
+              can then scan it instead of typing the email.
+            </p>
           )}
-        </FormSection>
-
-        <FormSection
-          icon={MailIcon}
-          tone="kumkum"
-          title="Where members send payment"
-          description="At least one is required. Both are shown to the member if provided."
-        >
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Zelle email">
-              {({ id }) => (
-                <Input
-                  id={id}
-                  type="email"
-                  value={settings.email}
-                  onChange={(e) => setSettings({ ...settings, email: e.target.value })}
-                />
-              )}
-            </Field>
-            <Field label="Zelle phone">
-              {({ id }) => (
-                <Input
-                  id={id}
-                  type="tel"
-                  className="tnum"
-                  value={settings.phone}
-                  onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
-                />
-              )}
-            </Field>
+          <div className="flex gap-3">
+            <label className="inline-flex">
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="sr-only"
+                onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
+              />
+              <span className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-line-strong bg-surface px-4 text-[14.5px] font-semibold text-ink hover:border-saffron-ring">
+                <UploadIcon className="h-[18px] w-[18px]" aria-hidden="true" />
+                {uploading ? 'Uploading…' : s.qrImagePath ? 'Replace image' : 'Upload image'}
+              </span>
+            </label>
+            {s.qrImagePath && (
+              <Button type="button" size="sm" variant="ghost" icon={Trash2Icon} onClick={() => set('qrImagePath', '')}>
+                Remove
+              </Button>
+            )}
           </div>
-        </FormSection>
+        </div>
+      </FormSection>
 
-        <FormSection icon={SettingsIcon} tone="sandal" title="How requests behave">
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field
-              label="Auto-confirm under"
-              hint="Transfers below this amount are confirmed without the office checking. Set 0 to always check."
-            >
-              {({ id }) => (
-                <Input
-                  id={id}
-                  type="number"
-                  step="1"
-                  className="tnum"
-                  value={settings.autoConfirmThreshold}
-                  onChange={(e) =>
-                    setSettings({ ...settings, autoConfirmThreshold: Number(e.target.value) })
-                  }
-                />
-              )}
-            </Field>
-            <Field
-              label="Reference expires after (hours)"
-              hint="How long a member has to send the transfer before the reference lapses."
-            >
-              {({ id }) => (
-                <Input
-                  id={id}
-                  type="number"
-                  step="1"
-                  className="tnum"
-                  value={settings.expiryHours}
-                  onChange={(e) =>
-                    setSettings({ ...settings, expiryHours: Number(e.target.value) })
-                  }
-                />
-              )}
-            </Field>
-            <Field
-              label="Instructions for members"
-              className="sm:col-span-2"
-              hint="Shown with the reference code. Say clearly that the code must go in the memo."
-            >
-              {({ id }) => (
-                <Textarea
-                  id={id}
-                  rows={3}
-                  value={settings.instructions}
-                  onChange={(e) => setSettings({ ...settings, instructions: e.target.value })}
-                />
-              )}
-            </Field>
-          </div>
-        </FormSection>
-      </AdminFormView>
+      <FormSection icon={ClockIcon} tone="marigold" title="Reminders and expiry">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Remind after (days)" hint="One reminder to members who have not paid.">
+            {({ id }) => (
+              <Input id={id} type="number" min="1" max="59" className="tnum" value={s.reminderDays} onChange={(e) => set('reminderDays', Number(e.target.value))} />
+            )}
+          </Field>
+          <Field label="Expire after (days)" hint="An unpaid request closes, and a held event place is released.">
+            {({ id }) => (
+              <Input id={id} type="number" min="2" max="60" className="tnum" value={s.expiryDays} onChange={(e) => set('expiryDays', Number(e.target.value))} />
+            )}
+          </Field>
+          <p className="text-[13.5px] text-ink-3 sm:col-span-2">
+            Changes apply to Zelle requests opened from now on; requests already open keep their dates. A request the
+            member says they have sent never expires on its own: it waits for the office.
+          </p>
+        </div>
+      </FormSection>
+    </AdminFormView>
+  )
+}
+
+export default function ZelleSettingsPage() {
+  // Narrower than the admin section's default (any staff): see app/admin/layout.tsx.
+  return (
+    <ProtectedRoute requiredRoles={['Office Manager', 'Admin']}>
+      <ZelleSettingsForm />
     </ProtectedRoute>
   )
 }

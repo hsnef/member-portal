@@ -53,10 +53,10 @@ describe('colour tokens (CLAUDE.md rule 3)', () => {
   })
 
   it('keeps the two legacy brand colours at zero', () => {
-    // Named explicitly in CLAUDE.md. lib/themes/themes/built-in/default.ts is
-    // the deliberate exception -- it IS the legacy palette -- and is not scanned
-    // here because this only walks app/ and components/.
+    // Named explicitly in CLAUDE.md.
     expect(offenders(/#(FF9933|E68A2E)/i)).toEqual([])
+    // The pre-2026-11-12 saffron, retired because white on it was 4.26:1.
+    expect(offenders(/#c75b12|%23c75b12/i)).toEqual([])
   })
 
   it('never puts a gradient stop on an element with no gradient', () => {

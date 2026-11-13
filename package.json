@@ -1,6 +1,6 @@
 {
   "name": "hsnef-membership-portal",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "generate-version": "tsx scripts/generate-version.ts",
@@ -16,12 +16,19 @@
     "release-gate:full": "tsx scripts/release-gate.ts --full",
     "docs:sync-check": "node scripts/docs-sync-check.mjs",
     "docs:sync-check:ci": "node scripts/docs-sync-check.mjs --ci",
-    "sdlc-docs:audit": "node scripts/sdlc-docs.mjs audit --warn",
-    "sdlc-docs:gate": "node scripts/sdlc-docs.mjs audit --gate",
-    "sdlc-docs:report": "node scripts/sdlc-docs.mjs report",
+    "docsync:audit": "node scripts/govkit-docsync.mjs audit --warn",
+    "sdlc-docs:audit": "npm run docsync:audit",
+    "docsync:gate": "node scripts/govkit-docsync.mjs audit --gate",
+    "sdlc-docs:gate": "npm run docsync:gate",
+    "docsync:report": "node scripts/govkit-docsync.mjs report",
+    "sdlc-docs:report": "npm run docsync:report",
     "govkit:doctor": "node scripts/govkit-doctor.mjs",
     "govkit:config": "node scripts/govkit-doctor.mjs config",
-    "supabase:auth-config": "tsx --env-file-if-exists=.env.local scripts/supabase-auth-config.ts"
+    "supabase:auth-config": "tsx --env-file-if-exists=.env.local scripts/supabase-auth-config.ts",
+    "release:status": "node scripts/release-version.mjs status",
+    "release:bump": "node scripts/release-version.mjs bump",
+    "release:tag": "node scripts/release-version.mjs tag",
+    "db:sql": "node --env-file-if-exists=.env.local scripts/db-sql.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

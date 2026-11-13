@@ -1,123 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe/config'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentMember } from '@/lib/auth/helpers'
+import { createServiceClient } from '@/lib/supabase/client'
+import { settleStripeIntent } from '@/lib/payments/stripe'
 
+/**
+ * Called by the member's payment success page with { paymentIntentId }.
+ * Asks Stripe what happened (never trusts the browser), records the payment
+ * if it succeeded (the webhook may already have), and answers with the
+ * outcome for the page to show:
+ *   { state: 'paid', receiptNumber, targetKind, targetId }
+ *   { state: 'processing' | 'failed', targetKind, targetId }
+ * Only the member the payment belongs to can ask.
+ */
 export async function POST(request: NextRequest) {
   try {
-    const { paymentIntentId } = await request.json()
+    const member = await getCurrentMember()
+    if (!member) return NextResponse.json({ error: 'Please sign in' }, { status: 401 })
 
-    if (!paymentIntentId) {
-      return NextResponse.json(
-        { error: 'Missing payment intent ID' },
-        { status: 400 }
-      )
+    const { paymentIntentId } = (await request.json().catch(() => ({}))) as { paymentIntentId?: unknown }
+    if (typeof paymentIntentId !== 'string' || !paymentIntentId.startsWith('pi_')) {
+      return NextResponse.json({ error: 'Payment not found' }, { status: 400 })
     }
 
-    const supabase = await createClient()
-
-    // Verify user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const intent = await stripe.paymentIntents.retrieve(paymentIntentId).catch(() => null)
+    if (!intent || intent.metadata?.memberId !== member.id) {
+      return NextResponse.json({ error: 'Payment not found' }, { status: 404 })
     }
 
-    // Retrieve payment intent from Stripe
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
-
-    if (paymentIntent.status !== 'succeeded') {
-      return NextResponse.json(
-        { error: 'Payment not successful', status: paymentIntent.status },
-        { status: 400 }
-      )
-    }
-
-    // Check if payment already exists
-    const { data: existingPayment } = await supabase
-      .from('payments')
-      .select('id')
-      .eq('stripe_payment_intent_id', paymentIntentId)
-      .maybeSingle()
-
-    if (existingPayment) {
-      // Payment already recorded (by webhook or previous call)
-      return NextResponse.json({
-        success: true,
-        message: 'Payment already recorded',
-        alreadyExists: true,
-      })
-    }
-
-    // Extract metadata
-    const {
-      memberId,
-      category,
-      purpose,
-      requestId,
-    } = paymentIntent.metadata
-
-    if (!memberId) {
-      return NextResponse.json(
-        { error: 'Missing member ID in payment metadata' },
-        { status: 400 }
-      )
-    }
-
-    // Build notes
-    let notes = 'Online payment via Stripe'
-    if (category === 'Donation' && purpose) {
-      notes = `Donation - ${purpose}`
-    } else if (paymentIntent.description) {
-      notes = `${notes} - ${paymentIntent.description}`
-    }
-
-    // Insert payment record
-    const { error: paymentError } = await supabase
-      .from('payments')
-      .insert({
-        member_id: memberId,
-        amount: paymentIntent.amount / 100, // Convert cents to dollars
-        payment_date: new Date().toISOString(),
-        method: 'Stripe',
-        purpose: category || 'Donation',
-        stripe_payment_intent_id: paymentIntentId,
-        request_id: requestId || null,
-        notes,
-      })
-
-    if (paymentError) {
-      console.error('Error inserting payment:', paymentError)
-      return NextResponse.json(
-        { error: 'Failed to record payment', details: paymentError.message },
-        { status: 500 }
-      )
-    }
-
-    // If this is a membership payment, update member's current_level
-    if (category === 'Membership') {
-      const newLevel = paymentIntent.metadata.membershipLevel || 'Annual'
-      await supabase
-        .from('members')
-        .update({ current_level: newLevel })
-        .eq('id', memberId)
-    }
-
-    // If this is a request payment, update request status
-    if (requestId) {
-      await supabase
-        .from('requests')
-        .update({ status: 'Paid' })
-        .eq('id', requestId)
-    }
-
+    const outcome = await settleStripeIntent(intent, { db: createServiceClient() })
+    const target = outcome.target
     return NextResponse.json({
-      success: true,
-      message: 'Payment recorded successfully',
+      state: outcome.state,
+      receiptNumber: outcome.state === 'paid' ? outcome.result.receiptNumber : null,
+      amount: (intent.amount_received || intent.amount) / 100,
+      targetKind: target?.kind ?? null,
+      targetId: target && 'id' in target ? target.id : null,
     })
   } catch (error) {
-    console.error('Error confirming payment:', error)
-    return NextResponse.json(
-      { error: 'Failed to confirm payment' },
-      { status: 500 }
-    )
+    console.error('[confirm-payment] failed:', error)
+    return NextResponse.json({ error: 'Could not confirm the payment' }, { status: 500 })
   }
 }

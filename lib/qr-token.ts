@@ -1,7 +1,17 @@
 import jwt from 'jsonwebtoken'
 
-// This should be a long, random secret stored in environment variables
-const QR_SECRET = process.env.QR_TOKEN_SECRET || 'your-secret-key-change-in-production'
+/**
+ * Server only. The secret lives in the environment (QR_TOKEN_SECRET, per
+ * Vercel environment). There is no fallback: a default committed to this
+ * public repository would let anyone forge a pass, and checking a pass in the
+ * browser (which never has the secret) could only ever fail. Passes are
+ * checked by /api/members/verify-pass.
+ */
+function secret(): string {
+  const s = process.env.QR_TOKEN_SECRET
+  if (!s) throw new Error('QR_TOKEN_SECRET is not set')
+  return s
+}
 
 export interface QRTokenPayload {
   membershipId: string
@@ -16,7 +26,7 @@ export interface QRTokenPayload {
  * Token expires in 1 year (can be scanned even if member is offline)
  */
 export function generateQRToken(payload: QRTokenPayload): string {
-  return jwt.sign(payload, QR_SECRET, {
+  return jwt.sign(payload, secret(), {
     expiresIn: '1y',
     issuer: 'hsnef-membership-portal',
   })
@@ -28,7 +38,7 @@ export function generateQRToken(payload: QRTokenPayload): string {
  */
 export function verifyQRToken(token: string): QRTokenPayload {
   try {
-    const decoded = jwt.verify(token, QR_SECRET, {
+    const decoded = jwt.verify(token, secret(), {
       issuer: 'hsnef-membership-portal',
     }) as QRTokenPayload
 

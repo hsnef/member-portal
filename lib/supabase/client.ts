@@ -7,6 +7,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
+import { browserAuthLock } from './authLock'
 
 // Browser client for client components (uses cookies for PKCE)
 // Note: We create a fresh client each time to ensure proper cookie handling
@@ -35,6 +36,9 @@ export function createClient(): SupabaseClient<Database> {
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
       },
+      // Supabase's own cross-tab lock waits forever, so one frozen tab hangs
+      // sign-in in every other tab. This one waits at most 10 s (authLock.ts).
+      auth: { lock: browserAuthLock },
     }
   ) as unknown as SupabaseClient<Database>
 }

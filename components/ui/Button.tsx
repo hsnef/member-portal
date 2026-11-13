@@ -16,7 +16,7 @@ interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>
   fullWidth?: boolean;
 }
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-saffron text-white border border-saffron-hover/40 shadow-[0_1px_0_rgba(255,255,255,0.25)_inset,0_6px_18px_-8px_rgba(199,91,18,0.65)] hover:bg-saffron-hover',
+  primary: 'bg-saffron text-white border border-saffron-hover/40 shadow-[0_1px_0_rgba(255,255,255,0.25)_inset,0_6px_18px_-8px_rgba(184, 83, 14,0.65)] hover:bg-saffron-hover',
   secondary: 'bg-surface text-ink border border-line-strong shadow-xs hover:border-saffron-ring hover:bg-saffron-soft/50',
   ghost: 'bg-transparent text-ink-2 border border-transparent hover:bg-surface-sunk hover:text-ink',
   quiet: 'bg-surface-sunk text-ink-2 border border-transparent hover:bg-canvas-deep hover:text-ink',

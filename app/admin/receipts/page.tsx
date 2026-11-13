@@ -1,5 +1,6 @@
 'use client'
 
+import { receiptNumberOf } from '@/lib/payments/labels'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { AdminListView } from '@/components/admin/AdminListView'
@@ -11,19 +12,23 @@ import { ReceiptTextIcon, DownloadIcon } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/utils/format'
 import type { Column } from '@/components/ui/DataTable'
 import { downloadReceipt } from '@/lib/pdf/receipt'
-import type { PaymentCategory, PaymentMethod } from '@/types/database'
+import type { PaymentPurpose, PaymentMethod } from '@/types/database'
 
+// The columns of `payments` (it has `method` and `purpose`; this page used to
+// read payment_method / category / transaction_id, which do not exist, so its
+// filter failed and its badges and PDFs printed blanks).
 interface Payment {
   id: string
   member_id: string
   amount: number
   payment_date: string
-  payment_method: PaymentMethod
-  category: PaymentCategory
-  check_number?: string
-  transaction_id?: string
-  stripe_payment_id?: string
-  notes?: string
+  method: PaymentMethod
+  purpose: PaymentPurpose
+  check_number?: string | null
+  zelle_reference?: string | null
+  stripe_payment_intent_id?: string | null
+  notes?: string | null
+  receipts?: Array<{ receipt_number: string }> | null
   members: {
     membership_id: string
     first_name: string
@@ -44,7 +49,7 @@ export default function AdminReceiptsPage() {
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
   const [filterYear, setFilterYear] = useState<number>(new Date().getFullYear())
-  const [filterCategory, setFilterCategory] = useState<'all' | PaymentCategory>('all')
+  const [filterCategory, setFilterCategory] = useState<'all' | PaymentPurpose>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [includeTestAccounts, setIncludeTestAccounts] = useState(false)
 
@@ -60,6 +65,7 @@ export default function AdminReceiptsPage() {
         .from('payments')
         .select(`
           *,
+          receipts ( receipt_number ),
           members (
             membership_id,
             first_name,
@@ -83,7 +89,7 @@ export default function AdminReceiptsPage() {
 
       // Filter by category
       if (filterCategory !== 'all') {
-        query = query.eq('category', filterCategory)
+        query = query.eq('purpose', filterCategory)
       }
 
       const { data, error } = await query
@@ -113,7 +119,7 @@ export default function AdminReceiptsPage() {
       : member.business_name || `${member.first_name} ${member.last_name}`
 
     downloadReceipt({
-      receiptNumber: `R-${payment.id.slice(0, 8).toUpperCase()}`,
+      receiptNumber: receiptNumberOf(payment as any),
       paymentId: payment.id,
       memberName,
       membershipId: member.membership_id,
@@ -123,11 +129,11 @@ export default function AdminReceiptsPage() {
         : undefined,
       amount: payment.amount,
       paymentDate: payment.payment_date,
-      paymentMethod: payment.payment_method,
-      category: payment.category,
-      checkNumber: payment.check_number,
-      transactionId: payment.transaction_id,
-      notes: payment.notes,
+      paymentMethod: payment.method,
+      category: payment.purpose,
+      checkNumber: payment.check_number ?? undefined,
+      transactionId: payment.zelle_reference ?? payment.stripe_payment_intent_id ?? undefined,
+      notes: payment.notes ?? undefined,
     })
   }
 
@@ -183,7 +189,7 @@ export default function AdminReceiptsPage() {
       key: 'category',
       header: 'Category',
       cell: (p) => (
-        <Badge tone={categoryTone[String(p.category)] ?? 'neutral'}>{p.category}</Badge>
+        <Badge tone={categoryTone[String(p.purpose)] ?? 'neutral'}>{p.purpose}</Badge>
       ),
     },
     {
@@ -227,7 +233,7 @@ export default function AdminReceiptsPage() {
           <p className="truncate font-semibold text-ink">{memberName(p)}</p>
           <p className="tnum mt-0.5 text-[13px] text-ink-3">{formatDate(p.payment_date)}</p>
         </div>
-        <Badge tone={categoryTone[String(p.category)] ?? 'neutral'}>{p.category}</Badge>
+        <Badge tone={categoryTone[String(p.purpose)] ?? 'neutral'}>{p.purpose}</Badge>
       </div>
       <div className="flex items-center justify-between gap-3">
         <span className="tnum font-serif text-[20px] text-ink">

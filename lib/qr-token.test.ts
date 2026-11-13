@@ -80,3 +80,16 @@ describe('generateQRCodeURL', () => {
     expect(generateQRCodeURL('abc')).toBe('https://member.example.org/verify-qr?token=abc')
   })
 })
+
+describe('no secret, no pass', () => {
+  it('refuses to sign or check a pass when QR_TOKEN_SECRET is not set, rather than use a default', () => {
+    const saved = process.env.QR_TOKEN_SECRET
+    delete process.env.QR_TOKEN_SECRET
+    try {
+      expect(() => generateQRToken({ membershipId: '20000100', memberId: 'm', memberClass: 'Personal', level: 'Annual' })).toThrow(/QR_TOKEN_SECRET/)
+      expect(() => verifyQRToken('anything')).toThrow(/QR_TOKEN_SECRET/)
+    } finally {
+      process.env.QR_TOKEN_SECRET = saved
+    }
+  })
+})

@@ -5,7 +5,7 @@
   "start_url": "/member/pass",
   "display": "standalone",
   "background_color": "#FFF7ED",
-  "theme_color": "#FF9933",
+  "theme_color": "#b8530e",
   "icons": [
     {
       "src": "/icons/icon-192.png",

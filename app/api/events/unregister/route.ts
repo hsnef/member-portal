@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServiceClient } from '@/lib/supabase/client'
 import { createClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/email/mailer'
 import { eventCancellationEmail } from '@/lib/email/templates'
@@ -36,15 +37,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 })
     }
 
-    // Delete registration
-    const { error: deleteError } = await supabase
+    // A paid registration is cancelled by the office, which handles the
+    // refund; deleting it here would leave the payment attached to nothing.
+    const db = createServiceClient()
+    const { data: registration } = await db
       .from('event_registrations')
-      .delete()
+      .select('id, payment_id')
       .eq('event_id', eventId)
       .eq('member_id', member.id)
+      .neq('status', 'Cancelled')
+      .maybeSingle()
+    if (!registration) {
+      return NextResponse.json({ error: 'You are not registered for this event' }, { status: 404 })
+    }
+    if (registration.payment_id) {
+      return NextResponse.json(
+        { error: 'This registration was paid for. Please contact the temple office to cancel it and arrange a refund.' },
+        { status: 400 },
+      )
+    }
 
-    if (deleteError) {
-      console.error('Error cancelling registration:', deleteError)
+    const { error: cancelError } = await db
+      .from('event_registrations')
+      .update({ status: 'Cancelled' })
+      .eq('id', registration.id)
+
+    if (cancelError) {
+      console.error('Error cancelling registration:', cancelError)
       return NextResponse.json({ error: 'Failed to cancel registration' }, { status: 500 })
     }
 
@@ -56,8 +75,8 @@ export async function POST(request: NextRequest) {
     const emailContent = eventCancellationEmail(memberName, {
       event_name: event.event_name,
       event_date: event.event_date,
-      event_time: event.event_time,
-      location: event.location,
+      event_time: event.event_time ?? '',
+      location: event.location ?? '',
     })
 
     const emailResult = await sendEmail({

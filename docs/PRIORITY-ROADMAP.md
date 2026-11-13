@@ -32,20 +32,18 @@
 **The next things, in order** (the full step-by-step is in `docs/PROJECT-HUB.md` →
 *Start here next session*):
 
-1. **Merge the PR `redesign/design-system → dev`** (Sujit), then test on dev:
-   `/join` with a `gsujit+test-NN@gmail.com` address (approval is ON on dev, so it
-   lands in Office → Pending registrations), approve it, sign in; then make a booking
-   as that member and as the office.
-2. **Sujit: Google redirect URI + client secret → dev** (Start here B in the hub).
-3. **Seed rework** (#20), on branch `wip/seed-dev`.
-4. **Release `dev → main`**, then, with approval, on prod-mp: auth config with
-   `supabase-auth-prod` (#18), migrations `20261111000001` (#43), `20261111000002`
-   (#40) and `20261111000003` (DEC-012), and decide `require_member_approval` (Sujit: ON at launch).
+1. ~~Google sign-in on dev~~ **done 2026-11-12**, and confirmed on prod (hub, Start here A).
+2. **Sujit: email delivery test** (#19). The Vercel `RESEND_API_KEY` is set per environment;
+   what is left is one invitation on dev that shows Delivered in Resend.
+3. **The real membership import** (#34): template to the temple, import on prod by an Admin.
+4. **Phase 1 area reviews** (#22–#28) on dev, per role.
 
-Done 2026-11-11: dev sign-in email through Resend (#18, dev), #43 and #40 on the
-branch with both migrations applied to dev-mp.
+Done 2026-11-11: **released to production** (PR #50): registration with approval (#43),
+bookings (#40), Resend sign-in email on both projects (#18), Admin-managed staff roles,
+the import format; both databases reset to ground zero with `gsujit@gmail.com` as the only
+Admin (DEC-012 for membership numbers).
 
-## Current Priority Tiers (as of 2026-11-11)
+## Current Priority Tiers (as of 2026-11-12)
 
 ### Tier 0 — EMPTY as of 2026-09-03
 
@@ -118,9 +116,8 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
   was checked against the code, wrong ones were fixed, and everything out of date now carries a
   banner explaining why it is not a good reference. See the Session 6 handoff in
   `docs/PROJECT-HUB.md` for what was found.
-  **Already fixed:** `#FF9933` is gone from `lib/constants/temple.ts` (it is `#c75b12`
-  now) and survives only in `lib/themes/themes/built-in/default.ts`, which IS the legacy
-  palette by definition — verified 2026-09-03. `CLAUDE.md` rule 9 now describes the
+  **Already fixed:** `#FF9933` is gone from `lib/constants/temple.ts` (it is `#b8530e`
+  now, darkened 2026-11-12 for contrast) and, since the theme code was removed on 2026-11-12, is at zero everywhere. `CLAUDE.md` rule 9 now describes the
   `docs/status/**` move correctly.
 
 **Blocked on Sujit:**
@@ -210,12 +207,9 @@ setup looks the way it does. The live work is in Tier 1 and Tier 2.
      caps the token. Pinned as a `KNOWN WEAKNESS` test in `lib/zelle/index.test.ts` so
      the behaviour is visible; that test is the one to invert when it is fixed.
      The token still has to be validly signed, so this is not a forgery route.
-  2. **`calculateMembershipFee` would throw if anything called it.**
-     `lib/stripe/payments.ts:70` reads `PAYMENT_CONFIG.membershipFees[level]`, but
-     `config.ts` deliberately removed `membershipFees` — fees come from Portal
-     Settings now. It has **zero callers**, so nothing is broken today, and `tsc`
-     already flags it (`TS2339`). Delete it, or reimplement it against
-     `getMembershipPricing()`. Leaving it is the option that eventually bites.
+  2. ~~**`calculateMembershipFee` would throw if anything called it.**~~ **Deleted
+     2026-11-12** (Sujit's call): it had no callers and read a fee table that no longer
+     exists. Fees come from Portal Settings via `getMembershipPricing()`.
 - ~~**Add `.github/workflows/ci.yml`.**~~ ✅ **Done 2026-09-03.** Two jobs, `Build` and
   `Tests`, named to match the `ciJob` values in `release-gate.config.json` so CI and the
   local gate describe the same checks. Runs on push and PR to `main` and `dev`, with
@@ -330,9 +324,12 @@ verify locally — copy dev's `QR_TOKEN_SECRET` from Vercel if you need that.
 
 | Date | Session | Changes |
 |------|---------|---------|
+| 2026-11-12 | 12 | Google sign-in on for dev and confirmed on prod; Vercel email key split per environment (#19 test pending); govkit 0.12.1; prod tagged `v0.1.0`; second Admin added; product docs wait on docs-kit 0.1 (docs-kit PR #1). |
+| 2026-11-11 | 11 (release) | Released to production (#50). START HERE now: Google on dev, Vercel email key, real import, phase 1 reviews. #18, #40, #43 closed; #20 closed as not needed. |
 | 2026-11-11 | 11 | START HERE: #18 done for dev, #43 and #40 fixed on the branch (migrations on dev-mp), the PR is next, then Google on dev, seed, release. |
 | 2026-10-09 | 10 | START HERE replaced with the resume order: Resend/Google steps for Sujit, then #43, #40, #20, release. #43 filed. Sign-in hardening (#41) merged to dev; Google (#42) open. |
 | 2026-10-08 | 9 | Go-live milestone created (#18–#38) with day-one scope. Sign-in email findings added to Tier 1 and START HERE; root cause was paused projects; dev-mp auth URLs fixed. Token revocation deferred by Sujit. Stale CI item removed from START HERE. |
+| 2026-11-12 | 7 | Payments rebuilt (`docs/architecture/payments.md`): one settlement step for card, Zelle and office payments; card payments are now recorded; Zelle for every payment type; office alert list; membership pass checked on the server with live standing and daily expiry; receipt and request numbering fixed. On `redesign/design-system`; six migrations wait for production. |
 | 2026-09-03 | 6 | vitest installed and the first 48 tests added over the QR pass, the Zelle money path and the shared formatter. `Tests` enabled in the release gate. Two defects recorded above, neither fixed: the Zelle malformed-`expiresAt` hole and the dead `calculateMembershipFee`. |
 | 2026-09-03 | 5 | Reconciled against the repo after `docs:sync-check` flagged this file stale. Tier 0 emptied (all three items closed 09-01/09-02). Cloudflare Phase 2 recorded as done — production is live. `userData` bug and stage 8 marked done. Every hardcoded type-error count replaced with the command. Environments table gained the Supabase refs, with a warning that `gapvsdrzavjaublwkqfm` is PRODUCTION. |
 | 2026-08-31 | 1 | Roadmap scaffolded by govkit; migrated from `tasks/NEXT_PRIORITIES.md`. |

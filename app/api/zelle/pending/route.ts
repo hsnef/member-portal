@@ -1,54 +1,10 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { getPendingZelleRequests } from '@/lib/zelle/server'
+import { isStaff } from '@/lib/auth/helpers'
+import { createServiceClient } from '@/lib/supabase/client'
+import { listQueue } from '@/lib/zelle/server'
 
-/**
- * GET /api/zelle/pending
- * Get all pending Zelle payment requests for staff review
- * Requires staff authentication
- */
+/** The office Zelle queue: open requests, then those closed in the last 60 days. Staff only. */
 export async function GET() {
-  try {
-    // Verify user is authenticated and has staff role
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    // Check for staff role
-    const { data: roles } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-
-    const isStaff = roles?.some(r =>
-      ['Office Staff', 'Office Manager', 'Admin'].includes(r.role)
-    )
-
-    if (!isStaff) {
-      return NextResponse.json(
-        { error: 'Staff access required' },
-        { status: 403 }
-      )
-    }
-
-    // Get pending requests
-    const requests = await getPendingZelleRequests()
-
-    return NextResponse.json({
-      requests,
-      count: requests.length,
-    })
-  } catch (error) {
-    console.error('Error fetching pending Zelle requests:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
-  }
+  if (!(await isStaff())) return NextResponse.json({ error: 'Only office staff' }, { status: 403 })
+  return NextResponse.json({ requests: await listQueue(createServiceClient()) })
 }

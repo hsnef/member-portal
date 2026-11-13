@@ -1,61 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createPaymentIntent } from '@/lib/stripe/payments'
-import { createClient } from '@/lib/supabase/server'
+import { stripe } from '@/lib/stripe/config'
+import { getCurrentMember } from '@/lib/auth/helpers'
+import { createServiceClient } from '@/lib/supabase/client'
+import { parseCheckoutItem, priceCheckout } from '@/lib/payments/checkout'
+import { createCheckoutIntent } from '@/lib/payments/stripe'
 
+/**
+ * Start a card payment. The body names what is being paid for
+ * ({ item: { kind: 'booking', bookingId } }, see CheckoutItem); the server
+ * decides the amount and checks the item is the signed-in member's.
+ * Returns the Stripe client secret and the amount to show.
+ */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { amount, memberId, category, description, metadata } = body
+    const member = await getCurrentMember()
+    if (!member) return NextResponse.json({ error: 'Please sign in to pay' }, { status: 401 })
 
-    // Validate required fields
-    if (!amount || !memberId || !category || !description) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
+    const item = parseCheckoutItem(await request.json().catch(() => null))
+    if (!item) return NextResponse.json({ error: 'Nothing to pay for' }, { status: 400 })
 
-    // Verify user is authenticated
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const priced = await priceCheckout(createServiceClient(), member, item)
+    if (!priced.ok) return NextResponse.json({ error: priced.error }, { status: priced.status })
 
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    // Get member details
-    const { data: member, error: memberError } = await supabase
-      .from('members')
-      .select('membership_id')
-      .eq('id', memberId)
-      .single()
-
-    if (memberError || !member) {
-      return NextResponse.json(
-        { error: 'Member not found' },
-        { status: 404 }
-      )
-    }
-
-    // Create payment intent
-    const result = await createPaymentIntent({
-      amount,
-      memberId,
-      membershipId: member.membership_id,
-      category,
-      description,
-      metadata,
+    const intent = await createCheckoutIntent(stripe, priced.checkout, member)
+    return NextResponse.json({
+      clientSecret: intent.client_secret,
+      paymentIntentId: intent.id,
+      amount: priced.checkout.amount,
+      description: priced.checkout.description,
     })
-
-    return NextResponse.json(result)
   } catch (error) {
-    console.error('Error in create-payment-intent:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('[create-payment-intent] failed:', error)
+    return NextResponse.json({ error: 'Could not start the payment' }, { status: 500 })
   }
 }
