@@ -78,6 +78,7 @@ function RequestPaymentForm({ request }: { request: RequestDetails }) {
       submitting={loading}
       disabled={!stripe}
       error={message}
+      zelleItem={{ kind: 'request', requestId: request.id }}
       reference={request.request_number}
       backHref="/member/requests"
       backLabel="Back to my requests"

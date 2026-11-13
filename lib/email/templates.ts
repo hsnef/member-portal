@@ -6,7 +6,7 @@ import type { Member, Receipt, Request } from '@/types/database'
 import { paymentMethodLabel } from '@/lib/payments/labels'
 
 // Base email wrapper with HSNEF branding
-function emailWrapper(content: string): string {
+export function emailWrapper(content: string): string {
   return `
 <!DOCTYPE html>
 <html lang="en">

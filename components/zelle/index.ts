@@ -1,5 +1,3 @@
-export { ZelleInstructions } from './ZelleInstructions'
-export { ZellePaymentQR } from './ZellePaymentQR'
-export { ZellePaymentOption } from './ZellePaymentOption'
-export { ZelleConfirmationForm } from './ZelleConfirmationForm'
+export { ZelleCheckout } from './ZelleCheckout'
+export { ZelleRequestCard } from './ZelleRequestCard'
 export { ZellePendingPayments } from './ZellePendingPayments'

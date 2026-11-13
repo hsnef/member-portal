@@ -89,6 +89,7 @@ function PaymentForm({ booking }: { booking: Booking }) {
       submitting={loading}
       disabled={!stripe}
       error={message}
+      zelleItem={{ kind: 'booking', bookingId: booking.id }}
       reference={booking.booking_number}
       backHref={`/member/bookings/${booking.id}`}
       backLabel="Back to this booking"

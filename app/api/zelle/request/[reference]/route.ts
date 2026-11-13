@@ -1,99 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { getZelleRequestByReference, getZelleSettingsServer } from '@/lib/zelle/server'
-import { generateZelleQRCode, getZellePaymentURL } from '@/lib/zelle'
+import { getCurrentMember, isStaff } from '@/lib/auth/helpers'
+import { createServiceClient } from '@/lib/supabase/client'
+import { listMemberOpen, readZelleSettings, recipientView, requestView } from '@/lib/zelle/server'
 
 /**
- * GET /api/zelle/request/[reference]
- * Get a Zelle payment request by reference code
- * This is a public endpoint for the payment page
+ * GET /api/zelle/request/<reference>: one request, for the member it belongs
+ * to (or staff), with where to send the money.
+ * GET /api/zelle/request/mine: the signed-in member's open requests.
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ reference: string }> }
-) {
-  try {
-    const { reference } = await params
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ reference: string }> }) {
+  const { reference } = await params
+  const member = await getCurrentMember()
+  const staff = await isStaff()
+  if (!member && !staff) return NextResponse.json({ error: 'Please sign in' }, { status: 401 })
 
-    if (!reference) {
-      return NextResponse.json(
-        { error: 'Reference code is required' },
-        { status: 400 }
-      )
-    }
+  const db = createServiceClient()
+  const recipient = recipientView(await readZelleSettings(db))
 
-    // Get the request
-    const zelleRequest = await getZelleRequestByReference(reference)
-
-    if (!zelleRequest) {
-      return NextResponse.json(
-        { error: 'Payment request not found' },
-        { status: 404 }
-      )
-    }
-
-    // Check if expired
-    if (new Date(zelleRequest.expires_at) < new Date() && zelleRequest.status === 'pending') {
-      return NextResponse.json(
-        { error: 'This payment request has expired', expired: true },
-        { status: 410 }
-      )
-    }
-
-    // Get Zelle settings
-    const settings = await getZelleSettingsServer()
-
-    // Get member info if linked
-    let memberInfo = null
-    if (zelleRequest.member_id) {
-      const supabase = await createClient()
-      const { data: member } = await supabase
-        .from('members')
-        .select('membership_id, first_name, last_name, business_name, member_class, primary_email')
-        .eq('id', zelleRequest.member_id)
-        .single()
-
-      if (member) {
-        memberInfo = {
-          membershipId: member.membership_id,
-          name: member.member_class === 'Personal'
-            ? `${member.first_name} ${member.last_name}`
-            : member.business_name,
-          email: member.primary_email,
-        }
-      }
-    }
-
-    // Generate QR code
-    const qrCode = await generateZelleQRCode(zelleRequest.reference_code)
-    const paymentUrl = getZellePaymentURL(zelleRequest.reference_code)
-
-    return NextResponse.json({
-      request: {
-        id: zelleRequest.id,
-        reference_code: zelleRequest.reference_code,
-        amount: zelleRequest.amount,
-        purpose: zelleRequest.purpose,
-        description: zelleRequest.description,
-        status: zelleRequest.status,
-        expires_at: zelleRequest.expires_at,
-        created_at: zelleRequest.created_at,
-        member_confirmed_at: zelleRequest.member_confirmed_at,
-      },
-      member: memberInfo,
-      zelle: {
-        email: settings.zelle_email,
-        phone: settings.zelle_phone,
-        instructions: settings.instructions,
-      },
-      qrCode,
-      paymentUrl,
-    })
-  } catch (error) {
-    console.error('Error fetching Zelle request:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+  if (reference === 'mine') {
+    if (!member) return NextResponse.json({ requests: [], recipient })
+    return NextResponse.json({ requests: await listMemberOpen(db, member.id), recipient })
   }
+
+  const { data: req } = await db.from('zelle_requests').select('*').eq('reference_code', reference.toUpperCase()).maybeSingle()
+  if (!req || (!staff && req.member_id !== member?.id)) return NextResponse.json({ error: 'Payment not found' }, { status: 404 })
+  const { data: transfers } = await db.from('zelle_transfers').select('amount').eq('request_id', req.id)
+  const received = (transfers ?? []).reduce((s, t) => s + Number(t.amount), 0)
+  return NextResponse.json({ request: requestView(req, received), recipient })
 }

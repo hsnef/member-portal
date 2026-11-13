@@ -82,6 +82,7 @@ function PaymentForm({ event, amount }: { event: Event; amount: number }) {
       submitting={loading}
       disabled={!stripe}
       error={message}
+      zelleItem={{ kind: 'event', eventId: event.id }}
       reference={event.id.slice(0, 8).toUpperCase()}
       backHref="/member/events"
       backLabel="Back to events"

@@ -12,7 +12,7 @@
  */
 
 import React from 'react'
-import { CreditCardIcon, HeartHandshakeIcon, LockIcon, ShieldCheckIcon } from 'lucide-react'
+import { CreditCardIcon, HeartHandshakeIcon, LandmarkIcon, LockIcon, ShieldCheckIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { Field, Input, Select } from '@/components/ui/Field'
@@ -36,8 +36,8 @@ export interface DonateViewProps {
   onPurposeChange: (purpose: string) => void
   paymentMethod: DonatePaymentMethod
   onPaymentMethodChange: (method: DonatePaymentMethod) => void
-  /** Rendered when the method is 'zelle' — the option tile from the page. */
-  zelleOption?: React.ReactNode
+  /** Offer Zelle as a second way to pay (when an Admin has switched it on). */
+  zelleAvailable?: boolean
   /** Rendered when the method is 'zelle' — instructions / QR / confirm form. */
   zelleSurface?: React.ReactNode
   /** Rendered when the method is 'card' — Stripe's <PaymentElement /> + submit. */
@@ -54,7 +54,7 @@ export function DonateView({
   onPurposeChange,
   paymentMethod,
   onPaymentMethodChange,
-  zelleOption,
+  zelleAvailable = false,
   zelleSurface,
   cardSurface,
   updating,
@@ -174,7 +174,27 @@ export function DonateView({
                 </span>
               </button>
 
-              {zelleOption}
+              {zelleAvailable && (
+                <button
+                  type="button"
+                  aria-pressed={paymentMethod === 'zelle'}
+                  onClick={() => onPaymentMethodChange('zelle')}
+                  className={cn(
+                    'flex items-center gap-3 rounded-2xl border p-4 text-left transition-all duration-200 ease-smooth',
+                    paymentMethod === 'zelle'
+                      ? 'border-saffron bg-saffron-soft'
+                      : 'border-line-strong bg-surface hover:border-saffron-ring'
+                  )}
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-t-full rounded-b-lg bg-tulsi-soft text-tulsi ring-1 ring-inset ring-tulsi/30">
+                    <LandmarkIcon className="h-5 w-5" strokeWidth={1.9} aria-hidden="true" />
+                  </span>
+                  <span>
+                    <span className="block text-[15px] font-semibold text-ink">Zelle</span>
+                    <span className="mt-0.5 block text-[13px] text-ink-3">From your bank, no fees</span>
+                  </span>
+                </button>
+              )}
             </div>
           </Card>
 

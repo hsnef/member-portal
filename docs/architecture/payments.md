@@ -1,6 +1,7 @@
 # Payments — specification (card, Zelle, office)
 
-_Status: **agreed 2026-11-12** (Sujit: "go for the wider job"). Being built._
+_Status: **agreed 2026-11-12** (Sujit: "go for the wider job"). Built on `redesign/design-system`;
+settlement, card, office and Zelle verified on dev 2026-11-12._
 _Replaces the prototype in `lib/zelle/`, `app/admin/zelle/`, `app/pay/` and `components/zelle/`,
 and the four separate "mark it paid" paths for card payments._
 
@@ -105,7 +106,8 @@ recorded and receipted like the rest.
 ## Zelle — the member's journey
 
 1. At checkout the member picks **Card** or **Zelle**.
-2. Zelle shows: the amount, the temple's Zelle email/phone, a QR code, and a reference
+2. Zelle shows: the amount, the temple's Zelle email/phone, the temple's Zelle QR code (an
+   image an Admin uploads from the bank's app, if they have), and a reference
    code such as `HSNEF-7K3Q9P`, with "put this code in the Zelle memo". It is also
    emailed to them, so they can pay later from their banking app.
 3. The item shows **Awaiting Zelle payment** in their portal, with the same details.
@@ -135,7 +137,7 @@ Each row: reference, member, what it is for, amount due, age, member's bank numb
 A payment can only be confirmed once: the confirmation claims the request in the database
 before anything else is written, so two staff or two tabs cannot both record it.
 
-**Record a Zelle payment** — for money that arrives without a portal request (a phone
+**Record a Zelle payment** (Payments → Record a payment, method Zelle) — for money that arrives without a portal request (a phone
 call, someone at the front desk). Staff pick the person, what it was for and the amount,
 and it goes through the same confirmation step. If the person is not yet a member, staff
 add them as a **Community** member (free) in the same form: name and email. That matches
@@ -168,7 +170,6 @@ of the flow works without the file.
 | Recipient name | Hindu Society of North East Florida | What the bank shows the member |
 | Days to pay before a reminder | 3 | |
 | Days to pay before the request expires | 7 | |
-| Hold a booking or event place while Zelle is pending | **on** | If off, the place is only taken once paid |
 
 Changing a setting needs no code change or release: an Admin edits it and it applies
 to Zelle requests created from then on. Requests already open keep the dates they were
@@ -234,7 +235,20 @@ Auto-confirm, the unused signed QR token (and its known weakness), the quick-pay
    settlement step (Sujit: "go for the wider job"). Joining at a paid level: approve,
    then pay; Community until paid. Membership year as in the temple's brief (above).
 
-1. Defaults accepted: 7 days to pay, reminder at 3, hold places on. Admin-editable.
+1. Defaults accepted: 7 days to pay, reminder at 3. Admin-editable. An event place is
+   always held while a Zelle request is open (built 2026-11-12 without an off switch: with
+   no hold, an event could fill while a member's money was on its way).
 2. Bank CSV import is built in; a sample export from the temple's bank follows the build.
    Without one, the office confirms by hand (above).
 3. Office alerts go to an Admin-maintained list, starting with `dev-mp@hsnef.org`.
+
+## As built (2026-11-12)
+
+- Tables and the transfer function: `supabase/migrations/20261112000006_zelle.sql`
+  (tests: `supabase/tests/zelle.sql`). Logic: `lib/zelle/index.ts` (pure) and
+  `lib/zelle/server.ts`. Routes: `app/api/zelle/*`. Office: `/admin/zelle` (queue),
+  `/admin/zelle/import` (bank file), `/admin/zelle/settings`. Member: the Zelle option on every
+  checkout (`components/zelle/ZelleCheckout.tsx`) and "Zelle payments in progress" on the
+  dashboard and Payments page.
+- Daily job: `/api/cron/zelle` at 13:00 UTC (8 or 9 am Eastern), `vercel.json`.
+- Office alerts: `lib/notify/office.ts`, list in `portal_settings.office_alert_emails`.
