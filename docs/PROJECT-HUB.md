@@ -2,7 +2,7 @@
 
 > The single source of truth for architecture decisions, current state, and session-to-session context. `/govkit-session status` reads this file. Keep it current — a stale hub poisons the next session's context.
 
-_Last checked 2026-11-12._
+_Last checked 2026-11-13._
 
 ## Current Status
 
@@ -10,7 +10,7 @@ _Last checked 2026-11-12._
 with working registration (approval ON), bookings, reliable sign-in, Resend sign-in email on
 both projects, and Admin-managed staff roles. Both databases are at ground zero: no members;
 the only roles are Admin, held by `gsujit@gmail.com` and (since 2026-11-12) dev-mp@hsnef.org.
-Production is tagged `v0.1.0`. Not launched to members yet: the real
+Production is tagged `v0.2.1` (`npm run release:status`). Not launched to members yet: the real
 membership import (#34) and the phase 1 reviews come first.**
 
 - **Production** — `main` → Vercel production → Supabase `prod-mp`
@@ -112,13 +112,12 @@ the success page regardless; the webhook covers a member who closes the tab.)
 Deleted with Sujit's yes (2026-11-12): `lib/stripe/payments.ts` and the old confirm routes
 `api/stripe/verify-payment`, `api/events/confirm-payment`; `api/stripe/confirm-payment` is the one.
 
-**F. Product docs and role how-tos: waiting on docs-kit 0.1 (decided 2026-11-12, Sujit).**
-Do not reorganise `docs/` or write role guides by hand. docs-kit (techsilon-oss) is built
-first, as a standalone tool with no reference to this repo; this repo then adopts it as its
-first trial. Feature records belong to qa-kit, not docs-kit. How-tos stay per subject, with a
-per-role index, now in the docs-kit design (techsilon-oss/docs-kit PR #1, merged
-2026-11-12). The next step is a separate session in the docs-kit repo, building 0.1. govkit was
-upgraded here to 0.12.1 on 2026-11-12; production `main` is tagged `v0.1.0` (`npm run release:status`).
+**F. Product docs and role how-tos: docs-kit adopted 2026-11-13 (DEC-013), released in v0.2.1.**
+`docs/` follows the docs-kit layout and `npm test` checks it. Move a doc only with
+`npx docs-kit move <old> <new>`. How-tos live at `<subject>/howto/HOWTO-<task>.md` with
+`title`, `last_checked` and `roles` front matter; run `npx docs-kit index` after adding one.
+The first is the Stripe webhook how-to. Role how-tos for office staff and members are still to
+write. Feature records belong to qa-kit, not docs-kit.
 
 **Standing facts:**
 - **Issues are tracked with govkit's tracker module (on 2026-11-12).** Every open issue has exactly one launch category (`pre-launch`, `post-launch`, `idea`, `triage`; the launch event is "member launch"), alongside the go-live phase labels. Owner actions and decisions live in the pinned **decision register, #51**. Close issues with `Completed:` (plain words) and optional `Technical:`.
@@ -444,6 +443,29 @@ Supabase auth hook, which is dashboard configuration.
 
 Related: 18 of 21 member routes had no "no membership" state and rendered against
 a null member. Nine reachable ones now share `NoMembershipState`.
+
+### Session 13 — 2026-11-13 — docs-kit adopted; v0.2.1 released
+
+**Done:** docs-kit 0.2.0 adopted in four PRs to `dev`, per the approved plan
+([`notes/2026-11-12-docs-kit-reorganisation.md`](notes/2026-11-12-docs-kit-reorganisation.md)):
+- #57: `docs-kit.json`, the `docs:check` script, `docs-kit` pinned as a devDependency.
+  `docs/architecture/payments.md` protected, because migrations cite it.
+- #58: a `README.md` map in every subject folder. New subjects: `notes`, `operations`.
+- #59: the ten root docs moved into subjects with their names kept. `docs-kit move`
+  rewrote every link and path, including CLAUDE.md and the `CANONICAL` constant in
+  `utils/supabase-refs.test.ts`. `docs/status/`, `docs/terms/` and the plan note are
+  immutable. `lib/docs-layout.test.ts` runs the check in `npm test`.
+- #60: the Stripe runbook became `operations/howto/HOWTO-set-up-stripe-webhook.md`, with
+  roles `developer, admin, office-manager, office-staff, member` and the generated
+  "How-tos by role" in `docs/README.md`.
+
+**Released:** PR #61 (`dev → main`) as **v0.2.1**, a patch: docs and tooling only, with no
+migrations and no environment changes. Tagged on `main` `2da9d61`; member.hsnef.org returns 200.
+
+**Decisions (Sujit):** DEC-013. `ONBOARDING.md` stays a guide, not a how-to.
+
+**Found, not fixed:** `docs-kit move` cannot see a doc named by file name alone, with no
+path. Two such mentions were fixed by hand in #60. docs-kit 0.3 adds this.
 
 ### Session 11, release — 2026-11-11 — production released and reset to ground zero
 
