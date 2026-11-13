@@ -38,6 +38,11 @@
 3. **The real membership import** (#34): template to the temple, import on prod by an Admin.
 4. **Phase 1 area reviews** (#22–#28) on dev, per role.
 
+Done 2026-11-12: **released v0.2.0 to production** (PR #56): payments rebuilt (card, Zelle,
+office; #55), security routes and error pages (#53), Google sign-in (#52); all six migrations
+applied to prod. Before members pay on prod: Stripe webhook secrets (runbook) and, for Zelle,
+the temple's Zelle email/phone. Sign-in log gap: #54.
+
 Done 2026-11-11: **released to production** (PR #50): registration with approval (#43),
 bookings (#40), Resend sign-in email on both projects (#18), Admin-managed staff roles,
 the import format; both databases reset to ground zero with `gsujit@gmail.com` as the only
@@ -324,6 +329,7 @@ verify locally — copy dev's `QR_TOKEN_SECRET` from Vercel if you need that.
 
 | Date | Session | Changes |
 |------|---------|---------|
+| 2026-11-12 | 12 (release) | Released v0.2.0 (#56): payments rebuild (#55), #53, #52; prod migrations 0001-0006 applied; dev test data removed; #54 filed. |
 | 2026-11-12 | 12 | Google sign-in on for dev and confirmed on prod; Vercel email key split per environment (#19 test pending); govkit 0.12.1; prod tagged `v0.1.0`; second Admin added; product docs wait on docs-kit 0.1 (docs-kit PR #1). |
 | 2026-11-11 | 11 (release) | Released to production (#50). START HERE now: Google on dev, Vercel email key, real import, phase 1 reviews. #18, #40, #43 closed; #20 closed as not needed. |
 | 2026-11-11 | 11 | START HERE: #18 done for dev, #43 and #40 fixed on the branch (migrations on dev-mp), the PR is next, then Google on dev, seed, release. |
