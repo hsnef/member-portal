@@ -865,6 +865,11 @@ export type Database = {
         Args: {};
         Returns: string;
       };
+      /** Service role only. Changes the level and issues a number in its series. */
+      set_member_level: {
+        Args: { p_member_id: string; p_level: MembershipLevel };
+        Returns: undefined;
+      };
       membership_term_year: {
         Args: { p_member_id: string; p_paid_on: string };
         Returns: number;

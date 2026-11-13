@@ -250,5 +250,6 @@ Auto-confirm, the unused signed QR token (and its known weakness), the quick-pay
   `/admin/zelle/import` (bank file), `/admin/zelle/settings`. Member: the Zelle option on every
   checkout (`components/zelle/ZelleCheckout.tsx`) and "Zelle payments in progress" on the
   dashboard and Payments page.
-- Daily job: `/api/cron/zelle` at 13:00 UTC (8 or 9 am Eastern), `vercel.json`.
+- Daily job: `/api/cron/daily` at 13:00 UTC (8 or 9 am Eastern), `vercel.json`: Zelle reminders and
+  expiry, and membership expiry (Annual past Dec 31 -> Community).
 - Office alerts: `lib/notify/office.ts`, list in `portal_settings.office_alert_emails`.
