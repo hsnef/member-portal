@@ -7,6 +7,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { CheckoutView, stripeAppearance } from '@/components/member/CheckoutView'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
+import { formatDate } from '@/utils/format'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
@@ -22,6 +23,7 @@ interface BookingItem {
 
 interface Booking {
   id: string
+  booking_number: string
   requester_name: string
   total_amount: number
   status: string
@@ -69,12 +71,12 @@ function PaymentForm({ booking }: { booking: Booking }) {
 
   return (
     <CheckoutView
-      eyebrow={`Booking #${booking.id.slice(0, 8)}`}
+      eyebrow={`Booking ${booking.booking_number}`}
       title="Complete your payment"
       description="Your booking is confirmed once this payment clears. A receipt is emailed immediately."
       summaryItems={items.map((item) => ({
         label: item.services.name,
-        value: new Date(item.service_date).toLocaleDateString(),
+        value: formatDate(item.service_date),
         numeric: true,
       }))}
       lineItems={items.map((item) => ({
@@ -87,7 +89,7 @@ function PaymentForm({ booking }: { booking: Booking }) {
       submitting={loading}
       disabled={!stripe}
       error={message}
-      reference={booking.id.slice(0, 8).toUpperCase()}
+      reference={booking.booking_number}
       backHref={`/member/bookings/${booking.id}`}
       backLabel="Back to this booking"
     />

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useAuth } from '@/lib/auth/AuthContext'
 
 /**
  * For a page Stripe returns to after a card payment. Asks the server what
@@ -24,6 +25,15 @@ const RETRY_MS = 2000
 
 export function usePaymentConfirmation(paymentIntentId: string | null): PaymentConfirmation {
   const [result, setResult] = useState<PaymentConfirmation>({ state: 'confirming' })
+  const { refreshMember } = useAuth()
+
+  // A membership payment changes the member's level (and number): reload it,
+  // so the header and the pass show the new one straight away.
+  const paidKind = result.state === 'paid' ? result.targetKind : null
+  useEffect(() => {
+    if (paidKind === 'membership') void refreshMember()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paidKind])
 
   useEffect(() => {
     if (!paymentIntentId) {

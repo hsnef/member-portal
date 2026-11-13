@@ -7,6 +7,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { CheckoutView, stripeAppearance } from '@/components/member/CheckoutView'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { createClient } from '@/lib/supabase/client'
+import { formatLongDate } from '@/utils/format'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
@@ -60,12 +61,8 @@ function PaymentForm({ event, amount }: { event: Event; amount: number }) {
     }
   }
 
-  const eventDate = new Date(event.event_date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  // formatLongDate reads a plain date as local, not UTC midnight (which showed the day before).
+  const eventDate = formatLongDate(event.event_date)
 
   return (
     <CheckoutView
